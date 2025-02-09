@@ -6,7 +6,7 @@ import datetime
 app = Flask(__name__)
 
 # 配置 Google Sheets API
-SERVICE_ACCOUNT_FILE = 'backend/config/service-account.json'
+SERVICE_ACCOUNT_FILE = 'config/service-account.json'
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 credentials = service_account.Credentials.from_service_account_file(
     SERVICE_ACCOUNT_FILE, scopes=SCOPES
