@@ -10,6 +10,16 @@ echo ">>> 拉取最新代码..."
 cd $PROJECT_PATH || { echo "无法进入目录：$PROJECT_PATH"; exit 1; }
 git pull origin master || { echo "拉取代码失败"; exit 1; }
 
+# 创建虚拟环境（如果不存在）
+if [ ! -d "$PROJECT_PATH/venv" ]; then
+    echo ">>> 创建虚拟环境..."
+    python3 -m venv $PROJECT_PATH/venv || { echo "虚拟环境创建失败"; exit 1; }
+fi
+
+# 激活虚拟环境
+echo ">>> 激活虚拟环境..."
+source $PROJECT_PATH/venv/bin/activate || { echo "激活虚拟环境失败"; exit 1; }
+
 # 激活虚拟环境并安装依赖
 echo ">>> 更新 Python 依赖..."
 source $PROJECT_PATH/venv/bin/activate || { echo "激活虚拟环境失败"; exit 1; }
