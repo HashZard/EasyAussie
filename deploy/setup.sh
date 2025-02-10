@@ -8,7 +8,7 @@ PROJECT_PATH="/var/www/EasyAussie-Form"
 # 拉取最新代码
 echo ">>> 拉取最新代码..."
 cd $PROJECT_PATH || { echo "无法进入目录：$PROJECT_PATH"; exit 1; }
-git pull origin main || { echo "拉取代码失败"; exit 1; }
+git pull origin master || { echo "拉取代码失败"; exit 1; }
 
 # 激活虚拟环境并安装依赖
 echo ">>> 更新 Python 依赖..."
