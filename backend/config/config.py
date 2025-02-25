@@ -1,0 +1,43 @@
+import os
+import platform
+
+# 自动检测当前运行环境
+def detect_environment():
+    """ 自动检测是本地开发还是服务器环境 """
+    if platform.system() == "Linux" and not os.getenv("DISPLAY"):
+        return "production"  # 服务器环境（Linux 无 GUI）
+    return "local"  # 本地环境（Mac/Windows/Linux GUI）
+
+APP_ENV = detect_environment()
+print(f"🌍 当前环境: {APP_ENV}")
+
+# 计算项目根目录路径
+BACKEND_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+CONFIG_ROOT = os.path.dirname(__file__)
+FRONTEND_ROOT = os.path.abspath(os.path.join(BACKEND_ROOT, '../frontend'))
+
+
+# Google Tasks 配置
+class GoogleTasksConfig:
+    SCOPES = ['https://www.googleapis.com/auth/tasks']
+    TASKS_LIST_ID = "@default"
+
+    if APP_ENV == "production":
+        SERVICE_ACCOUNT_FILE = os.path.join(CONFIG_ROOT, 'inspect_web_client_cred.json')
+        TOKEN_FILE = "/etc/google_tasks/token.json"
+    else:
+        SERVICE_ACCOUNT_FILE = os.path.join(CONFIG_ROOT, 'inspect_desktop_client_cred.json')
+        TOKEN_FILE = os.path.expanduser("~/.config/google_tasks/token.json")
+
+    print(f"✅ Google Tasks 配置: {APP_ENV}")
+    print(f"🔑 认证文件: {SERVICE_ACCOUNT_FILE}")
+    print(f"🗂 Token 文件: {TOKEN_FILE}")
+
+# 数据库配置
+class DatabaseConfig:
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'mysql+pymysql://easyaussie_user:your_password@localhost/easyaussie')
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+
+if __name__ == "__main__":
+    print("dizhi:" + CONFIG_ROOT)
