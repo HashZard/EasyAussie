@@ -4,6 +4,7 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
+from datetime import datetime, timezone
 
 from backend.app.models.register import RegisterInfo
 from backend.config.config import GoogleTasksConfig
@@ -54,6 +55,12 @@ def create_google_task(register_info: RegisterInfo):
     # Authenticate and create service
     service = authenticate_google_tasks()
 
+    appointment_datetime = register_info.appointment_date
+    if isinstance(appointment_datetime, datetime):
+        due_string = appointment_datetime.astimezone(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
+    else:
+        raise ValueError("appointment_date must be a `datetime` object")
+
     task = {
         "title": f"(代确认) {register_info.property_add}",
         "notes": f"Time: {register_info.appointment_date}\n"
@@ -63,11 +70,8 @@ def create_google_task(register_info: RegisterInfo):
                  f"Notes: {register_info.notice}",
         # Google Tasks 需要 ISO 8601 格式的 UTC 时间：2025-02-23T12:00:00.000Z
         # 只保留日期部分,去掉时间信息
-        "due": register_info.appointment_date
+        "due": due_string,
     }
-
-    # Specify task list (default task list)
-    tasklist_id = "@default"
 
     # Create task
     result = service.tasks().insert(tasklist=GoogleTasksConfig.TASKS_LIST_ID, body=task).execute()

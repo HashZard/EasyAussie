@@ -2,12 +2,17 @@
 import unittest
 from backend.app.services.google_tasks import create_google_task
 from backend.app.models.register import RegisterInfo
+from backend.app import create_app
 
 class TestGoogleTasks(unittest.TestCase):
+    def test_start(self):
+        # do nothing
+        app = create_app()
+        print("TestGoogleTasks started")
+
     def test_create_google_task_with_real_data(self):
         # 真实的 RegisterInfo 数据
         register_info = RegisterInfo(
-            id=1,
             publisher_id=1,
             property_add="123 Main St",
             appointment_date="2025-02-25T10:00:00.000Z",

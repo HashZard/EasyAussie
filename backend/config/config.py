@@ -33,11 +33,12 @@ class GoogleTasksConfig:
     print(f"🔑 认证文件: {SERVICE_ACCOUNT_FILE}")
     print(f"🗂 Token 文件: {TOKEN_FILE}")
 
-# 数据库配置
+# 数据库配置 SQLite
 class DatabaseConfig:
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'mysql+pymysql://easyaussie_user:your_password@localhost/easyaussie')
+    # SQLite 数据库路径
+    SQLALCHEMY_DATABASE_URI = f"sqlite:///{os.path.join(BACKEND_ROOT, 'app.db')}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
 if __name__ == "__main__":
-    print("dizhi:" + CONFIG_ROOT)
+    print("地址:" + DatabaseConfig.SQLALCHEMY_DATABASE_URI)

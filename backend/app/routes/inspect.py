@@ -1,5 +1,6 @@
 from flask import current_app, Blueprint, request, send_from_directory
 from backend.app.models.register import RegisterInfo
+from backend.app.models import db
 from backend.app.services.google_tasks import create_google_task
 from backend.config.config import FRONTEND_ROOT
 
@@ -11,6 +12,7 @@ def home():
 
 @inspect_bp.route('/submit', methods=['POST'])
 def submit():
+    current_app.logger.info("Submit endpoint accessed.")  # 记录访问
     data = request.get_json()
     register_info = RegisterInfo(
         publisher_id=data['publisher_id'],
@@ -21,6 +23,17 @@ def submit():
         phone=data.get('phone'),
         notice=data.get('notice')
     )
+
+    db.session.add(register_info)
+    try:
+        db.session.commit()
+        current_app.logger.info(f"Data inserted into database: {register_info}")
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Database insertion failed: {str(e)}")
+
+        return 'Database error'
+
     create_google_task(register_info)
     current_app.logger.info(f'Create Google Task for {register_info.name}')
     return 'OK'
