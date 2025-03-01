@@ -1,5 +1,5 @@
 from flask import Flask
-from backend.config.config import DatabaseConfig, BACKEND_ROOT
+from backend.config.config import DatabaseConfig, LoggerConfig
 from backend.app.models import db, init_db  # 现在可以安全导入 db
 
 
@@ -33,9 +33,8 @@ def setup_logger():
     )
 
     # 配置文件日志（使用 RotatingFileHandler）
-    file_handler = RotatingFileHandler(
-        BACKEND_ROOT+'/logs/app.log', maxBytes=10 * 1024 * 1024, backupCount=3  # 每个日志文件最大10MB，最多创建3个备份文件
-    )
+    file_handler = RotatingFileHandler(LoggerConfig.LOG_MAX_BYTES,
+        maxBytes=LoggerConfig.LOG_MAX_BYTES, backupCount=LoggerConfig.LOG_BACKUP_COUNT) # 每个日志文件最大10MB，最多创建3个备份文件
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(formatter)
 

@@ -39,6 +39,16 @@ class DatabaseConfig:
     SQLALCHEMY_DATABASE_URI = f"sqlite:///{os.path.join(BACKEND_ROOT, 'app.db')}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+# 日志配置
+class LoggerConfig:
+
+    if APP_ENV == "production":
+        LOG_FILE = "/var/log/inspect/app.log"
+    else:
+        LOG_FILE = os.path.join(BACKEND_ROOT, 'logs/app.log')
+    LOG_MAX_BYTES = 10 * 1024 * 1024  # 10MB
+    LOG_BACKUP_COUNT = 3
+
 
 if __name__ == "__main__":
     print("地址:" + DatabaseConfig.SQLALCHEMY_DATABASE_URI)
