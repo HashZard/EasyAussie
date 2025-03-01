@@ -33,7 +33,7 @@ def setup_logger():
     )
 
     # 配置文件日志（使用 RotatingFileHandler）
-    file_handler = RotatingFileHandler(LoggerConfig.LOG_MAX_BYTES,
+    file_handler = RotatingFileHandler(LoggerConfig.LOG_FILE,
         maxBytes=LoggerConfig.LOG_MAX_BYTES, backupCount=LoggerConfig.LOG_BACKUP_COUNT) # 每个日志文件最大10MB，最多创建3个备份文件
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(formatter)
