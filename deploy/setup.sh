@@ -43,16 +43,20 @@ function configure_services() {
     # 复制 Systemd 服务文件
     sudo cp $PROJECT_PATH/deploy/easyaussie.service $SERVICE_FILE || { echo "复制 Systemd 服务文件失败"; exit 1; }
     sudo systemctl daemon-reload
+    echo ">>> Systemd 服务文件已复制到：$SERVICE_FILE"
 
     # 启用并重启服务
     sudo systemctl restart easyaussie || { echo "服务重启失败"; exit 1; }
     sudo systemctl enable easyaussie
+    echo ">>> EasyAussie 服务已启用并重启"
 
     # 复制 Nginx 配置文件
     sudo cp $PROJECT_PATH/deploy/nginx.conf $NGINX_CONF_PATH || { echo "复制 Nginx 配置文件失败"; exit 1; }
     sudo ln -sf $NGINX_CONF_PATH /etc/nginx/sites-enabled/easyaussie-form
+    echo ">>> Nginx 配置文件已复制到：$NGINX_CONF_PATH"
     sudo nginx -t || { echo "Nginx 配置测试失败"; exit 1; }
     sudo systemctl restart nginx
+    echo ">>> Nginx 已重启"
 }
 
 # 更新代码
