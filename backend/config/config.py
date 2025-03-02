@@ -9,7 +9,7 @@ def detect_environment():
     return "local"  # 本地环境（Mac/Windows/Linux GUI）
 
 APP_ENV = detect_environment()
-print(f"🌍 当前环境: {APP_ENV}")
+print(f"🌍 Current environment: {APP_ENV}")
 
 # 计算项目根目录路径
 BACKEND_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -29,9 +29,9 @@ class GoogleTasksConfig:
         SERVICE_ACCOUNT_FILE = os.path.join(CONFIG_ROOT, 'inspect_desktop_client_cred.json')
         TOKEN_FILE = os.path.expanduser("~/.config/google_tasks/token.json")
 
-    print(f"✅ Google Tasks 配置: {APP_ENV}")
-    print(f"🔑 认证文件: {SERVICE_ACCOUNT_FILE}")
-    print(f"🗂 Token 文件: {TOKEN_FILE}")
+    print(f"✅ Google Tasks Config: {APP_ENV}")
+    print(f"🔑 Service Account File: {SERVICE_ACCOUNT_FILE}")
+    print(f"🗂 Token File: {TOKEN_FILE}")
 
 # 数据库配置 SQLite
 class DatabaseConfig:
@@ -43,11 +43,14 @@ class DatabaseConfig:
 class LoggerConfig:
 
     if APP_ENV == "production":
-        LOG_FILE = "/var/log/inspect/app.log"
+        APP_LOG_FILE = "/var/log/inspect/app.log"
+        DB_LOG_FILE = "/var/log/inspect/database.log"
     else:
-        LOG_FILE = os.path.join(BACKEND_ROOT, 'logs/app.log')
+        APP_LOG_FILE = os.path.join(BACKEND_ROOT, 'logs/app.log')
+        DB_LOG_FILE = os.path.join(BACKEND_ROOT, 'logs/database.log')
+    # 每个日志文件最大10MB，最多创建3个备份文件
     LOG_MAX_BYTES = 10 * 1024 * 1024  # 10MB
-    LOG_BACKUP_COUNT = 3
+    LOG_BACKUP_COUNT = 10
 
 
 if __name__ == "__main__":

@@ -1,8 +1,10 @@
 from datetime import datetime
 
 from backend.app import db
+from backend.app.models.basemodel import BaseModel
 
-class User(db.Model):
+
+class User(BaseModel):
     __tablename__ = "users"  # 指定数据库表名
 
     id = db.Column(db.Integer, primary_key=True)
@@ -13,14 +15,7 @@ class User(db.Model):
         self.username = username
         self.email = email
 
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "username": self.username,
-            "email": self.email,
-        }
-
-class RegisterInfo(db.Model):
+class RegisterInfo(BaseModel):
     __tablename__ = 'register_info'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -44,20 +39,3 @@ class RegisterInfo(db.Model):
         self.email = email
         self.phone = phone
         self.notice = notice
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "description": self.description,
-            "user_id": self.user_id,
-        }
-
-    def __repr__(self):
-        return (f"<RegisterInfo id={self.id}, "
-                f"name={self.name}, "
-                f"email={self.email}, "
-                f"phone={self.phone}, "
-                f"property_add={self.property_add}, "
-                f"appointment_date={self.appointment_date}, "
-                f"notice={self.notice}>")

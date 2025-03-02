@@ -19,8 +19,6 @@ class SubmitEndpointTest(unittest.TestCase):
     def tearDownClass(cls):
         pass
 
-
-
     def test_submit_success(self):
         """ 测试 /submit 是否成功 """
         data = {
