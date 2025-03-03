@@ -1,6 +1,7 @@
 import logging
 
 from flask import Blueprint, request, send_from_directory
+from datetime import datetime
 
 from backend.app.models.register import RegisterInfo
 from backend.app.services.google_tasks import create_google_task
@@ -21,7 +22,7 @@ def submit():
     register_info = RegisterInfo(
         None,
         property_add=data['property_add'],
-        appointment_date=data['appointment_date'],
+        appointment_date=datetime.strptime(data['appointment_date'], "%Y-%m-%dT%H:%M"),
         name=data['name'],
         email=data['email'],
         phone=data.get('phone'),

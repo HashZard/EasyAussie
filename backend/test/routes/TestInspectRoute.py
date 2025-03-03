@@ -24,7 +24,7 @@ class SubmitEndpointTest(unittest.TestCase):
         data = {
             "publisher_id": randint(1, 100),
             "property_add": "123 Main St",
-            "appointment_date": "2025-02-25 10:00:00", #使用datetime格式
+            "appointment_date": "2025-03-03T20:10", #使用datetime格式
             "name": "John Doe",
             "email": "john.doe@example.com",
             "phone": "123-456-7890",
