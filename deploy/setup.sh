@@ -2,90 +2,70 @@
 
 PROJECT_PATH="/var/www/EasyAussie-Form"
 VENV_PATH="$PROJECT_PATH/venv"
-SERVICE_FILE="/etc/systemd/system/easyaussie.service"
+SERVICE_NAME="easyaussie"
+SERVICE_FILE="/etc/systemd/system/$SERVICE_NAME.service"
 NGINX_CONF_PATH="/etc/nginx/sites-available/easyaussie-form"
 REQUIREMENTS_FILE="$PROJECT_PATH/requirements.txt"
 REQUIREMENTS_HASH_FILE="$PROJECT_PATH/.requirements.md5"
 
-# 输出使用说明
-function usage() {
-    echo "Usage: setup.sh [options]"
-    echo "Options:"
-    echo "  --full-setup       完整部署，创建虚拟环境、安装依赖、配置服务"
-    echo "  --only-update      仅更新代码并重启服务"
-    echo "  --help             显示帮助信息"
-}
-
-# 创建虚拟环境
-function create_virtualenv() {
-    if [ ! -d "$VENV_PATH" ]; then
-        echo ">>> 创建虚拟环境..."
-        python3 -m venv $VENV_PATH || { echo "虚拟环境创建失败"; exit 1; }
-    fi
+# 停止 `gunicorn`，确保不会重复启动
+function stop_old_processes() {
+    echo ">>> 停止旧的 Flask 进程..."
+    sudo systemctl stop $SERVICE_NAME
+    sudo pkill -f gunicorn  # 确保所有 Gunicorn 进程被杀死
+    sleep 2  # 等待进程完全退出
 }
 
 # 安装依赖（仅在 requirements.txt 更新时执行）
 function install_dependencies() {
     if [ ! -f "$REQUIREMENTS_HASH_FILE" ] || ! md5sum -c "$REQUIREMENTS_HASH_FILE" &>/dev/null; then
         echo ">>> 安装或更新 Python 依赖..."
-        source $VENV_PATH/bin/activate || { echo "激活虚拟环境失败"; exit 1; }
-        pip install -r $REQUIREMENTS_FILE || { echo "依赖安装失败"; exit 1; }
+        source $VENV_PATH/bin/activate || { echo "❌ 激活虚拟环境失败"; exit 1; }
+        pip install -r $REQUIREMENTS_FILE || { echo "❌ 依赖安装失败"; exit 1; }
         md5sum $REQUIREMENTS_FILE > $REQUIREMENTS_HASH_FILE  # 更新校验值
     else
         echo ">>> 依赖已是最新，无需重新安装。"
     fi
 }
 
-# 配置服务
-function configure_services() {
-    echo ">>> 配置 Systemd 和 Nginx 服务..."
-
-    # 复制 Systemd 服务文件
-    sudo cp $PROJECT_PATH/deploy/easyaussie.service $SERVICE_FILE || { echo "复制 Systemd 服务文件失败"; exit 1; }
-    sudo systemctl daemon-reload
-    echo ">>> Systemd 服务文件已复制到：$SERVICE_FILE"
-
-    # 启用并重启服务
-    sudo systemctl restart easyaussie || { echo "服务重启失败"; exit 1; }
-    sudo systemctl enable easyaussie
-    echo ">>> EasyAussie 服务已启用并重启"
-
-    # 复制 Nginx 配置文件
-    sudo cp $PROJECT_PATH/deploy/nginx.conf $NGINX_CONF_PATH || { echo "复制 Nginx 配置文件失败"; exit 1; }
-    sudo ln -sf $NGINX_CONF_PATH /etc/nginx/sites-enabled/easyaussie-form
-    echo ">>> Nginx 配置文件已复制到：$NGINX_CONF_PATH"
-    sudo nginx -t || { echo "Nginx 配置测试失败"; exit 1; }
-    sudo systemctl restart nginx
-    echo ">>> Nginx 已重启"
-}
-
 # 更新代码
 function update_code() {
     echo ">>> 拉取最新代码..."
-    cd $PROJECT_PATH || { echo "无法进入目录：$PROJECT_PATH"; exit 1; }
-    git pull origin master || { echo "代码更新失败"; exit 1; }
+    cd $PROJECT_PATH || { echo "❌ 进入目录失败"; exit 1; }
+    git pull origin master || { echo "❌ 代码更新失败"; exit 1; }
 }
 
-# 检查参数并执行对应操作
+# 重新启动服务
+function restart_services() {
+    echo ">>> 重新启动 Flask (Gunicorn)..."
+    sudo systemctl daemon-reload
+    sudo systemctl start $SERVICE_NAME
+    sudo systemctl enable $SERVICE_NAME
+
+    echo ">>> 重新启动 Nginx..."
+    sudo systemctl restart nginx
+}
+
+# 执行完整部署或更新
 if [ $# -eq 0 ]; then
     echo ">>> 默认执行更新操作..."
+    stop_old_processes
     update_code
     install_dependencies
-    sudo systemctl restart easyaussie
-    sudo systemctl restart nginx
+    restart_services
 else
     case $1 in
         --full-setup)
+            stop_old_processes
             update_code
-            create_virtualenv
             install_dependencies
-            configure_services
+            restart_services
             ;;
         --only-update)
+            stop_old_processes
             update_code
             install_dependencies
-            sudo systemctl restart easyaussie
-            sudo systemctl restart nginx
+            restart_services
             ;;
         --help)
             usage
@@ -98,4 +78,4 @@ else
     esac
 fi
 
-echo "=== 部署完成 ==="
+echo "✅ === 部署完成 === ✅"
