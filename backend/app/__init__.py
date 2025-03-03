@@ -22,7 +22,6 @@ def create_app():
 
     # 初始化数据库（延迟绑定）
     init_db(app)
-    # migrate.init_app(app, db)
     print("Database initialized.")
 
 

@@ -37,6 +37,13 @@ function update_code() {
 
 # 重新启动服务
 function restart_services() {
+    echo ">>> 运行数据库迁移..."
+    source $VENV_PATH/bin/activate  # 激活虚拟环境
+    export FLASK_APP=backend.app.app  # 确保 Flask 入口正确
+    export FLASK_ENV=production
+    flask db upgrade || { echo "❌ 数据库迁移失败"; exit 1; }
+
+
     echo ">>> 重新启动 Flask (Gunicorn)..."
     sudo systemctl daemon-reload
     sudo systemctl start $SERVICE_NAME

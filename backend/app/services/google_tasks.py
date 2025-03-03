@@ -67,7 +67,7 @@ def create_google_task(register_info: RegisterInfo):
                  f"Name: {register_info.name}\n"
                  f"Email: {register_info.email}\n"
                  f"Phone: {register_info.phone}\n"
-                 f"Notes: {register_info.notice}",
+                 f"Notes: {register_info.checklist}",
         # Google Tasks 需要 ISO 8601 格式的 UTC 时间：2025-02-23T12:00:00.000Z
         # 只保留日期部分,去掉时间信息
         "due": due_string,

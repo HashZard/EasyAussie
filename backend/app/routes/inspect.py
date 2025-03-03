@@ -25,7 +25,7 @@ def submit():
         name=data['name'],
         email=data['email'],
         phone=data.get('phone'),
-        notice=data.get('notice')
+        notice=data.get('checklist')
     )
     register_info.save()
 

@@ -25,7 +25,7 @@ class RegisterInfo(BaseModel):
     name = db.Column(db.String(64),  nullable=False)
     email = db.Column(db.String(64),  nullable=False)
     phone = db.Column(db.String(32),  nullable=True)
-    notice = db.Column(db.String(1024),  nullable=True)
+    checklist = db.Column(db.String(1024), nullable=True)
 
     def __init__(self, publisher_id, property_add, appointment_date, name, email, phone, notice):
         self.publisher_id = publisher_id
@@ -38,4 +38,4 @@ class RegisterInfo(BaseModel):
         self.name = name
         self.email = email
         self.phone = phone
-        self.notice = notice
+        self.checklist = notice
