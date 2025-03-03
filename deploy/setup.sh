@@ -40,7 +40,7 @@ function restart_services() {
     echo ">>> 运行数据库迁移..."
     source $VENV_PATH/bin/activate  # 激活虚拟环境
     export FLASK_APP=backend.app.app  # 确保 Flask 入口正确
-    export FLASK_ENV=production
+    export FLASK_ENV=development
     flask db upgrade || { echo "❌ 数据库迁移失败"; exit 1; }
 
 

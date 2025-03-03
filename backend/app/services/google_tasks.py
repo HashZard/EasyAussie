@@ -7,7 +7,7 @@ from googleapiclient.discovery import build
 from datetime import datetime, timezone
 
 from backend.app.models.register import RegisterInfo
-from backend.config.config import GoogleTasksConfig
+from backend.config.config import GoogleTasksConfig, APP_ENV
 
 
 def authenticate_google_tasks():
@@ -32,7 +32,7 @@ def authenticate_google_tasks():
     """ 使用 OAuth 2.0 认证用户 """
     if not creds or not creds.valid:
         flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_FILE, scopes=SCOPES)
-        if os.getenv("FLASK_ENV") == "production":
+        if APP_ENV == "production":
             creds = flow.run_console()
         else:
             creds = flow.run_local_server(port=0)
