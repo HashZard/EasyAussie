@@ -16,8 +16,8 @@ def home():
 
 @inspect_bp.route('/submit', methods=['POST'])
 def submit():
-    app_logger.info(f"Received data: {data}")  # 打印接收到的数据
     data = request.get_json()
+    app_logger.info(f"Received data: {data}")  # 打印接收到的数据
     register_info = RegisterInfo(
         None,
         property_add=data['property_add'],
