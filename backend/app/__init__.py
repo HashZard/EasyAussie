@@ -24,7 +24,6 @@ def create_app():
     init_db(app)
     print("Database initialized.")
 
-
     # 注册 Blueprint
     from backend.app.routes.inspect import inspect_bp
     app.register_blueprint(inspect_bp, url_prefix='/inspect')
