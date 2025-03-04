@@ -1,10 +1,10 @@
 #!/bin/bash
 
-PROJECT_PATH="/var/www/EasyAussie-Form"
+PROJECT_PATH="/var/www/EasyAussie"
 VENV_PATH="$PROJECT_PATH/venv"
 SERVICE_NAME="easyaussie"
 SERVICE_FILE="/etc/systemd/system/$SERVICE_NAME.service"
-NGINX_CONF_PATH="/etc/nginx/sites-available/easyaussie-form"
+NGINX_CONF_PATH="/etc/nginx/sites-available/easyaussie"
 REQUIREMENTS_FILE="$PROJECT_PATH/requirements.txt"
 REQUIREMENTS_HASH_FILE="$PROJECT_PATH/.requirements.md5"
 

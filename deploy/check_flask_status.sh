@@ -1,9 +1,9 @@
 #!/bin/bash
 
-PROJECT_PATH="/var/www/EasyAussie-Form"
+PROJECT_PATH="/var/www/EasyAussie"
 VENV_PATH="$PROJECT_PATH/venv"
 SERVICE_NAME="easyaussie"
-NGINX_CONF="/etc/nginx/sites-available/easyaussie-form"
+NGINX_CONF="/etc/nginx/sites-available/EasyAussie"
 FLASK_PORT=8080
 FLASK_API_URL="http://127.0.0.1:$FLASK_PORT/inspect/submit"
 

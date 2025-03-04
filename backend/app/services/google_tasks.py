@@ -1,4 +1,5 @@
 import os
+import logging
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -9,6 +10,7 @@ from datetime import datetime, timezone
 from backend.app.models.register import RegisterInfo
 from backend.config.config import GoogleTasksConfig, APP_ENV
 
+app_logger = logging.getLogger('app_logger')
 
 def authenticate_google_tasks():
     creds = None
@@ -22,20 +24,20 @@ def authenticate_google_tasks():
     """ 尝试加载存储的 Token """
     if os.path.exists(TOKEN_FILE):
         creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
+        app_logger.info("Token loaded.")
 
     # 令牌过期时自动刷新
     if creds and creds.expired and creds.refresh_token:
         creds.refresh(Request())
+        app_logger.info("Token refreshed.")
         with open(TOKEN_FILE, "w") as token_file:
             token_file.write(creds.to_json())
 
     """ 使用 OAuth 2.0 认证用户 """
     if not creds or not creds.valid:
+        app_logger.info("Token invalid. Requesting new token.")
         flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_FILE, scopes=SCOPES)
-        if APP_ENV == "production":
-            creds = flow.run_console()
-        else:
-            creds = flow.run_local_server(port=0)
+        creds = flow.run_local_server(port=0)
         with open(TOKEN_FILE, "w") as token_file:
             token_file.write(creds.to_json())
 
