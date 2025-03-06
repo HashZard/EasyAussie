@@ -71,6 +71,30 @@ function restart_services() {
     sudo systemctl restart nginx
 }
 
+# 更新系统配置文件
+# systemd 服务文件、Nginx 配置文件
+function update_systemd_config() {
+    echo ">>> 更新 systemd 服务文件..."
+    if [ -f "$PROJECT_PATH/deploy/easyaussie.service" ]; then
+        sudo cp "$PROJECT_PATH/deploy/easyaussie.service" "$SERVICE_FILE"
+        sudo systemctl daemon-reload
+        echo "✅ systemd 服务文件已更新！"
+    else
+        echo "❌ 未找到 easyaussie.service 文件，跳过更新。"
+    fi
+
+    echo ">>> 更新 Nginx 配置..."
+    if [ -f "$PROJECT_PATH/deploy/nginx.conf" ]; then
+        sudo cp "$PROJECT_PATH/deploy/nginx.conf" "$NGINX_CONF_PATH"
+        sudo ln -sf "$NGINX_CONF_PATH" "/etc/nginx/sites-enabled/easyaussie"
+        sudo systemctl restart nginx
+        echo "✅ Nginx 配置已更新并重启！"
+    else
+        echo "❌ 未找到 nginx.conf 文件，跳过更新。"
+    fi
+}
+
+
 # 执行完整部署或更新
 if [ $# -eq 0 ]; then
     echo ">>> 默认执行更新操作..."
@@ -84,6 +108,7 @@ else
             stop_old_processes
             update_code
             install_dependencies
+            update_systemd_config
             restart_services
             ;;
         --only-update)
