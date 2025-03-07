@@ -3,7 +3,7 @@ import unittest
 
 from backend.app import create_app
 from backend.app.models.register import RegisterInfo
-from backend.test.test_data import get_test_data
+from backend.test.test_data import get_test_data, get_test_data_json
 
 
 class SubmitEndpointTest(unittest.TestCase):
@@ -19,11 +19,9 @@ class SubmitEndpointTest(unittest.TestCase):
         pass
 
     def test_submit_success(self):
-        """ 测试 /submit 是否成功 """
-        data = get_test_data()
 
         # 发送 POST 请求
-        response = self.client.post('/inspect/submit', data=json.dumps(data), content_type='application/json')
+        response = self.client.post('/inspect/submit', data=get_test_data_json(), content_type='application/json')
 
         # 断言返回 200 OK
         self.assertEqual(response.status_code, 200)

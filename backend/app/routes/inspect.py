@@ -19,15 +19,8 @@ def home():
 def submit():
     data = request.get_json()
     app_logger.info(f"Received data: {data}")  # 打印接收到的数据
-    register_info = RegisterInfo(
-        None,
-        property_add=data['property_add'],
-        appointment_date=datetime.strptime(data['appointment_date'], "%Y-%m-%dT%H:%M"),
-        name=data['name'],
-        email=data['email'],
-        phone=data.get('phone'),
-        notice=data.get('checklist')
-    )
+
+    register_info = RegisterInfo(data)
     register_info.save()
 
     create_google_task(register_info)

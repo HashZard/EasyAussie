@@ -5,7 +5,7 @@ document.getElementById('bookingForm').addEventListener('submit', async function
   const data = Object.fromEntries(formData);
 
   try {
-    const response = await fetch('/api/submit', {
+    const response = await fetch('/inspect/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -17,4 +17,5 @@ document.getElementById('bookingForm').addEventListener('submit', async function
     console.error('提交失败:', error);
     alert('提交失败');
   }
+
 });
