@@ -33,12 +33,7 @@ class RegisterInfo(BaseModel):
         if data:
             self.publisher_id = data.get('publisher_id')
             self.property_add = data.get('property_add')
-            appointment_date = data.get('appointment_date', None)
-            # 确保 `appointment_date` 是 `datetime` 对象
-            if isinstance(appointment_date, str):
-                self.appointment_date = datetime.strptime(appointment_date, "%Y-%m-%dT%H:%M")
-            else:
-                self.appointment_date = appointment_date
+            self.appointment_date = datetime.strptime(data.get('appointment_date'), "%Y-%m-%dT%H:%M")
             self.name = data.get('name')
             self.email = data.get('email')
             self.phone = data.get('phone')
@@ -49,10 +44,7 @@ class RegisterInfo(BaseModel):
             self.publisher_id = publisher_id
             self.property_add = property_add
             # 确保 `appointment_date` 是 `datetime` 对象
-            if isinstance(appointment_date, str):
-                self.appointment_date = datetime.strptime(appointment_date, "%Y-%m-%d %H:%M:%S")
-            else:
-                self.appointment_date = appointment_date
+            self.appointment_date = datetime.strptime(appointment_date, "%Y-%m-%dT%H:%M")
             self.name = name
             self.email = email
             self.phone = phone

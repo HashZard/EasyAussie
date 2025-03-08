@@ -19,9 +19,11 @@ class SubmitEndpointTest(unittest.TestCase):
         pass
 
     def test_submit_success(self):
+        test_data = get_test_data_json()
+        print("Test data: ", test_data)
 
         # 发送 POST 请求
-        response = self.client.post('/inspect/submit', data=get_test_data_json(), content_type='application/json')
+        response = self.client.post('/inspect/submit', data=json.dumps(test_data), content_type='application/json')
 
         # 断言返回 200 OK
         self.assertEqual(response.status_code, 200)

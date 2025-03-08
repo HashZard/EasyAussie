@@ -20,7 +20,7 @@ def submit():
     data = request.get_json()
     app_logger.info(f"Received data: {data}")  # 打印接收到的数据
 
-    register_info = RegisterInfo(data)
+    register_info = RegisterInfo(data = data)
     register_info.save()
 
     create_google_task(register_info)
