@@ -1,7 +1,6 @@
 import logging
 
-from flask import Blueprint, request, send_from_directory
-from datetime import datetime
+from flask import Blueprint, request, send_from_directory, jsonify
 
 from backend.app.models.register import RegisterInfo
 from backend.app.services.google_tasks import create_google_task
@@ -25,7 +24,8 @@ def submit():
 
     create_google_task(register_info)
     app_logger.info(f'Create Google Task for {register_info.name}')
-    return 'OK'
+    return jsonify({"success": True, "message": "Task created successfully"}), 200
+
 
 
 
