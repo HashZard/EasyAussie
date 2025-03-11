@@ -14,7 +14,7 @@
 </main>
 
 <script>
-    fetch('/frontend/components/header.html') // ← 绝对路径更保险
+    fetch('/components/header.html') // ← 绝对路径更保险
         .then(res => res.text())
         .then(html => document.getElementById('header').innerHTML = html);
 </script>
