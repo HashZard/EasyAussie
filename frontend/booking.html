@@ -47,17 +47,18 @@
             </div>
             <div id="checklistSection">
                 <label class="block font-medium">重点检查事项 (≤5条):</label>
-                <div id="checklist-container">
-                    <!-- 默认的输入框 -->
-                    <div class="flex items-center mb-2">
+                <div id="checklist-container" class="space-y-2">
+                    <div class="flex items-center">
                         <input type="text" name="checklist[]"
                                class="flex-grow p-2 border rounded-md focus:ring-2 focus:ring-blue-400"
                                placeholder="输入重点检查事项">
-                        <button type="button" id="add-checklist"
-                                class="ml-2 px-2 py-1 rounded-full bg-blue-500 text-white hover:bg-blue-600 transition">
-                            +
-                        </button>
                     </div>
+                </div>
+                <div class="text-right mt-2">
+                    <button type="button" id="add-checklist"
+                            class="px-3 py-1 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition">添加检查项
+                        +
+                    </button>
                 </div>
             </div>
             <button type="submit"
@@ -71,9 +72,17 @@
     document.getElementById('bookingForm').addEventListener('submit', async function (e) {
         e.preventDefault();
         const formData = new FormData(this);
-        const data = Object.fromEntries(formData);
+        const data = {};
+        formData.forEach((value, key) => {
+            if (key === 'checklist[]') {
+                if (!data['checklist']) data['checklist'] = [];
+                data['checklist'].push(value);
+            } else {
+                data[key] = value;
+            }
+        });
         try {
-            const response = await fetch('/api/submit', {
+            const response = await fetch('/inspect/submit', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(data),
@@ -94,10 +103,7 @@
 
         addChecklistBtn.addEventListener("click", function () {
             const currentCount = checklistContainer.querySelectorAll("input[name='checklist[]']").length;
-
-            // 限制最多为 5 个输入框
             if (currentCount < 5) {
-                // 创建新的输入框
                 const checklistItem = document.createElement("div");
                 checklistItem.className = "flex items-center mb-2";
 
@@ -111,13 +117,10 @@
                 removeBtn.type = "button";
                 removeBtn.textContent = "-";
                 removeBtn.className = "ml-2 px-2 py-1 rounded-full bg-red-500 text-white hover:bg-red-600 transition";
-
-                // 删除当前输入框功能
                 removeBtn.addEventListener("click", function () {
                     checklistItem.remove();
                 });
 
-                // 将新输入框和删除按钮加入 DOM
                 checklistItem.appendChild(input);
                 checklistItem.appendChild(removeBtn);
                 checklistContainer.appendChild(checklistItem);
