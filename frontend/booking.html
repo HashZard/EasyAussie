@@ -23,17 +23,19 @@
             <div>
                 <label for="address" class="block font-medium">房产地址:</label>
                 <input type="text" id="address" name="address" required
-                       class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400">
+                       class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400"
+                       placeholder="Like: 35 Stirling Hwy, Crawley WA 6009">
             </div>
             <div>
-                <label for="date" class="block font-medium">预约时间:</label>
-                <input type="datetime-local" id="date" name="date" required step="300"
+                <label for="appointment_date" class="block font-medium">预约时间:</label>
+                <input type="datetime-local" id="appointment_date" name="appointment_date" required
                        class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400">
             </div>
             <div>
                 <label for="name" class="block font-medium">预约姓名:</label>
                 <input type="text" id="name" name="name" required
-                       class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400">
+                       class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400"
+                       placeholder="Full Name, Like Bruce Lee">
             </div>
             <div>
                 <label for="email" class="block font-medium">预约 Email:</label>
@@ -42,8 +44,9 @@
             </div>
             <div>
                 <label for="phone" class="block font-medium">预约电话:</label>
-                <input type="tel" id="phone" name="phone" pattern="04\d{8}" required
-                       class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400">
+                <input type="tel" id="phone" name="phone"
+                       class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400"
+                       placeholder="请输入澳洲手机号（+61），如无可留空">
             </div>
             <div id="checklistSection">
                 <label class="block font-medium">重点检查事项 (≤5条):</label>
