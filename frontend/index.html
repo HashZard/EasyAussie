@@ -1,121 +1,22 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>预约登记表</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主页 - Easy Aussie</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-  <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-    <h1 class="text-2xl font-semibold text-center mb-4">预约登记</h1>
-    <form id="bookingForm" class="space-y-4">
-      <div>
-        <label for="property_add" class="block font-medium">房产地址:</label>
-        <input type="text" id="property_add" name="property_add" required class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400">
-      </div>
+<body class="bg-gray-100 text-gray-900">
+<div id="header"></div>
+<main class="p-6 text-center">
+    <h1 class="text-3xl font-bold mb-4">欢迎来到 Easy Aussie 房屋服务</h1>
+    <p class="text-lg">我们提供专业的看房预约服务，让您的买房更轻松。</p>
+</main>
 
-      <div>
-          <label for="appointment_date" class="block font-medium">预约时间:</label>
-          <input type="datetime-local" id="appointment_date" name="appointment_date" required
-                 class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400">
-      </div>
-
-
-      <div>
-        <label for="name" class="block font-medium">预约姓名:</label>
-        <input type="text" id="name" name="name" required class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400">
-      </div>
-
-      <div>
-        <label for="email" class="block font-medium">预约 Email:</label>
-        <input type="email" id="email" name="email" required class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400">
-      </div>
-
-      <div>
-        <label for="phone" class="block font-medium">预约电话:</label>
-        <input type="tel" id="phone" name="phone" pattern="04\d{8}" required class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400">
-      </div>
-
-      <div id="checklistSection">
-        <label class="block font-medium">重点检查事项 (≤5条):</label>
-        <div id="checklist-container">
-          <!-- 默认的输入框 -->
-          <div class="flex items-center mb-2">
-            <input type="text" name="checklist[]" class="flex-grow p-2 border rounded-md focus:ring-2 focus:ring-blue-400" placeholder="输入重点检查事项">
-            <button type="button" id="add-checklist" class="ml-2 px-2 py-1 rounded-full bg-blue-500 text-white hover:bg-blue-600 transition">
-              +
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition">提交</button>
-    </form>
-  </div>
-
-  <script>
-    document.getElementById('bookingForm').addEventListener('submit', async function (e) {
-      e.preventDefault();
-
-      const formData = new FormData(this);
-      const data = Object.fromEntries(formData);
-
-      try {
-        const response = await fetch('/inspect/submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        });
-
-        const result = await response.json();
-        alert('提交成功: ' + result.message);
-      } catch (error) {
-        console.error('提交失败:', error);
-        alert('提交失败');
-      }
-    });
-  </script>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const checklistContainer = document.getElementById("checklist-container");
-      const addChecklistBtn = document.getElementById("add-checklist");
-
-      addChecklistBtn.addEventListener("click", function () {
-        const currentCount = checklistContainer.querySelectorAll("input[name='checklist[]']").length;
-
-        // 限制最多为 5 个输入框
-        if (currentCount < 5) {
-          // 创建新的输入框
-          const checklistItem = document.createElement("div");
-          checklistItem.className = "flex items-center mb-2";
-
-          const input = document.createElement("input");
-          input.type = "text";
-          input.name = "checklist[]";
-          input.className = "flex-grow p-2 border rounded-md focus:ring-2 focus:ring-blue-400";
-          input.placeholder = "输入重点检查事项";
-
-          const removeBtn = document.createElement("button");
-          removeBtn.type = "button";
-          removeBtn.textContent = "-";
-          removeBtn.className = "ml-2 px-2 py-1 rounded-full bg-red-500 text-white hover:bg-red-600 transition";
-
-          // 删除当前输入框功能
-          removeBtn.addEventListener("click", function () {
-            checklistItem.remove();
-          });
-
-          // 将新输入框和删除按钮加入 DOM
-          checklistItem.appendChild(input);
-          checklistItem.appendChild(removeBtn);
-          checklistContainer.appendChild(checklistItem);
-        } else {
-          alert("最多只能添加 5 个检查事项输入框");
-        }
-      });
-    });
-  </script>
+<script>
+    fetch('/frontend/components/header.html') // ← 绝对路径更保险
+        .then(res => res.text())
+        .then(html => document.getElementById('header').innerHTML = html);
+</script>
 </body>
 </html>

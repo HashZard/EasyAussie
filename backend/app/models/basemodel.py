@@ -10,6 +10,10 @@ class BaseModel(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
+    created_gmt = db.Column(db.DateTime, server_default=db.func.now())
+    updated_gmt = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
+
+
     def to_dict(self):
         """将模型对象转换为字典"""
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}

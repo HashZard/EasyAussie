@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>预约登记表 - Easy Aussie</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      fetch('/frontend/components/header.html')
+        .then(res => res.text())
+        .then(html => document.getElementById('header').innerHTML = html);
+    });
+  </script>
+</head>
+<body class="bg-gray-100 text-gray-900">
+  <div id="header"></div>
+
+  <main class="p-6">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl mx-auto">
+      <h1 class="text-3xl font-bold text-center mb-4">预约登记</h1>
+      <form id="bookingForm" class="space-y-4">
+        <div>
+          <label for="address" class="block font-medium">房产地址:</label>
+          <input type="text" id="address" name="address" required class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400">
+        </div>
+        <div>
+          <label for="date" class="block font-medium">预约时间:</label>
+          <input type="datetime-local" id="date" name="date" required step="300" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400">
+        </div>
+        <div>
+          <label for="name" class="block font-medium">预约姓名:</label>
+          <input type="text" id="name" name="name" required class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400">
+        </div>
+        <div>
+          <label for="email" class="block font-medium">预约 Email:</label>
+          <input type="email" id="email" name="email" required class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400">
+        </div>
+        <div>
+          <label for="phone" class="block font-medium">预约电话:</label>
+          <input type="tel" id="phone" name="phone" pattern="04\d{8}" required class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400">
+        </div>
+        <div>
+          <label for="checklist" class="block font-medium">重点检查事项 (≤5条):</label>
+          <textarea id="checklist" name="checklist" rows="3" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400"></textarea>
+        </div>
+        <button type="submit" class="w-full bg-blue-500 text-white py-2 font-semibold rounded-md hover:bg-blue-600 transition">提交</button>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    document.getElementById('bookingForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const data = Object.fromEntries(formData);
+      try {
+        const response = await fetch('/api/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        const result = await response.json();
+        alert('提交成功: ' + result.message);
+      } catch (error) {
+        console.error('提交失败:', error);
+        alert('提交失败');
+      }
+    });
+  </script>
+</body>
+</html>
