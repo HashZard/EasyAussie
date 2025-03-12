@@ -19,7 +19,7 @@ class TestGoogleTasks(unittest.TestCase):
             name="John Doe",
             email="john.doe@example.com",
             phone="123-456-7890",
-            notice="Test notice"
+            checklist="Test notice"
         )
 
         # 调用函数创建任务

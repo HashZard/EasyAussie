@@ -14,12 +14,12 @@ def create_app():
     @app.before_request
     def before_request():
         app_logger.info(f"Request: {request.method} {request.path}"
-                        + f" with data: {request.get_json()}")
+                        + f" with data: {request.get_json(silent=True)}")
 
     @app.after_request
     def after_request(response):
         app_logger.info(f"Response: {response.status}"
-                        + f" with data: {response.get_json()}")
+                        + f" with data: {response.get_json(silent=True)}")
         return response
 
     # 初始化数据库（延迟绑定）
@@ -28,8 +28,13 @@ def create_app():
 
     # 注册 Blueprint
     from backend.app.routes.inspect import inspect_bp
-    app.register_blueprint(inspect_bp, url_prefix='/inspect')
+    from backend.app.routes.auth import auth_bp
+    app.register_blueprint(inspect_bp, url_prefix='/api/inspect')
+    app.register_blueprint(auth_bp, url_prefix='/api/auth')
 
+    print("✅ 当前所有 app 路由:")
+    for rule in app.url_map.iter_rules():
+        print("➡", rule)
     return app
 
 import logging

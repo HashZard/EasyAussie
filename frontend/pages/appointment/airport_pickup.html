@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>预约接机服务 - Easy Aussie</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      fetch("/components/header.html")
+        .then(res => res.text())
+        .then(html => document.getElementById("header").innerHTML = html);
+    });
+  </script>
+</head>
+<body class="bg-gray-100 text-gray-900">
+  <div id="header"></div>
+
+  <main class="p-6 max-w-3xl mx-auto">
+    <h1 class="text-3xl font-bold text-center mb-6">📍预约接机信息填写</h1>
+    <form class="bg-white p-6 rounded-lg shadow space-y-4">
+      <div>
+        <label class="block font-medium">1. 飞机航班号：</label>
+        <input type="text" name="flight_number" required class="w-full p-2 border rounded-md">
+      </div>
+      <div>
+        <label class="block font-medium">2. 航空公司：</label>
+        <input type="text" name="airline" required class="w-full p-2 border rounded-md">
+      </div>
+      <div>
+        <label class="block font-medium">3. 飞机降落时间 / 需要接机时间：</label>
+        <input type="datetime-local" name="pickup_time" required class="w-full p-2 border rounded-md">
+      </div>
+      <div>
+        <label class="block font-medium">4. 联系人电话：</label>
+        <input type="tel" name="contact_phone" required class="w-full p-2 border rounded-md">
+      </div>
+      <div>
+        <label class="block font-medium">5. 目的地地址：</label>
+        <input type="text" name="destination" required class="w-full p-2 border rounded-md">
+      </div>
+      <div>
+        <label class="block font-medium">6. 行李数量：</label>
+        <textarea name="luggage_info" rows="3" placeholder="例：28寸箱子 ×2 个，24寸箱子 ×1 个" class="w-full p-2 border rounded-md"></textarea>
+      </div>
+      <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition">提交预约</button>
+    </form>
+
+    <section class="mt-10 bg-white p-6 rounded-lg shadow">
+      <h2 class="text-2xl font-semibold mb-4">📌 接机服务注意事项</h2>
+      <ol class="space-y-2 list-decimal list-inside text-gray-700">
+        <li>
+          <strong>费用说明：</strong><br>
+          • 接机服务需提前支付费用，可使用澳元或人民币支付。<br>
+          • 人民币按“澳元×5”换算（建议优先使用澳元支付，人民币支付因需换汇及提现，会产生汇率差及手续费）。
+        </li>
+        <li>
+          <strong>退款政策：</strong><br>
+          • 临时取消（当天）：不予退款；<br>
+          • 提前1–3天取消：退还50%费用；<br>
+          • 提前3天及以上通知取消：全额退款。
+        </li>
+        <li>
+          <strong>等待时长说明：</strong><br>
+          • 接机司机最多免费等待30分钟；<br>
+          • 超出时间后，每增加30分钟加收$10停车费（按机场收费标准）。
+        </li>
+        <li>
+          <strong>时间附加费说明：</strong><br>
+          • 晚间及凌晨接机（晚8点 – 早8点）将加收20%夜间附加费用。
+        </li>
+      </ol>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import random
 from faker import Faker
+from flask import jsonify
 
 # 初始化 Faker
 faker = Faker()
@@ -19,7 +20,7 @@ def get_test_data():
 
 
 def get_test_data_json():
-    return {
+    data = {
         "publisher_id": random.randint(1, 100),
         "property_add": faker.address(),
         "appointment_date": datetime.now().strftime("%Y-%m-%dT%H:%M"),
@@ -28,6 +29,7 @@ def get_test_data_json():
         "phone": faker.phone_number(),
         "checklist": generate_checklist_items()
     }
+    return jsonify(data).json
 
 
 def generate_checklist_items():

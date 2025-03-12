@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>租房 Cover Letter 信息填写 - Easy Aussie</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      fetch("/components/header.html")
+        .then(res => res.text())
+        .then(html => document.getElementById("header").innerHTML = html);
+
+    // 加载返回按钮组件
+      fetch("/components/back-button.html")
+        .then(res => res.text())
+        .then(html => {
+          document.getElementById("back-button-placeholder").innerHTML = html;
+          // 设置当前页面返回路径
+          document.getElementById("back-button").setAttribute("href", "/pages/appointment/index.html");
+        });
+    });
+  </script>
+</head>
+<body class="bg-gray-100 text-gray-900">
+  <div id="header"></div>
+  <main class="p-6 max-w-5xl mx-auto">
+    <div class="relative mb-6">
+      <div id="back-button-placeholder" class="absolute left-0 top-1"></div>
+      <h1 class="text-3xl font-bold text-center">租房 Cover Letter 信息填写</h1>
+    </div>
+
+
+    <div class="mb-6">
+      <label class="font-semibold block mb-2">请选择申请人身份：</label>
+      <select id="applicantType" class="w-full p-2 border rounded-md">
+        <option value="student">学生</option>
+        <option value="worker">工作人士</option>
+      </select>
+    </div>
+
+    <form id="studentForm" class="bg-white p-6 rounded-lg shadow space-y-4">
+      <h2 class="text-2xl font-semibold mb-4">学生信息表</h2>
+      <input type="text" placeholder="姓名*" required class="w-full p-2 border rounded-md">
+      <input type="text" placeholder="学校 / 专业*" required class="w-full p-2 border rounded-md">
+      <select class="w-full p-2 border rounded-md">
+        <option>是否愿意一次性付3个月房租：是</option>
+        <option>否</option>
+      </select>
+      <select class="w-full p-2 border rounded-md">
+        <option>是否愿意加房租：是</option>
+        <option>否</option>
+      </select>
+      <input type="number" placeholder="父母每月提供生活费（AUD）" class="w-full p-2 border rounded-md">
+      <input type="number" placeholder="存款金额（AUD）" class="w-full p-2 border rounded-md">
+      <input type="number" placeholder="存款金额（RMB）" class="w-full p-2 border rounded-md">
+      <input type="text" placeholder="个人资产情况（车/房等）" class="w-full p-2 border rounded-md">
+      <textarea placeholder="个人自我介绍" class="w-full p-2 border rounded-md"></textarea>
+      <input type="text" placeholder="目前居住地" class="w-full p-2 border rounded-md">
+      <input type="text" placeholder="联系方式" class="w-full p-2 border rounded-md">
+      <input type="email" placeholder="邮箱" class="w-full p-2 border rounded-md">
+      <input type="text" placeholder="电话（可选）" class="w-full p-2 border rounded-md">
+      <select class="w-full p-2 border rounded-md">
+        <option>是否养宠物：是</option>
+        <option>否</option>
+      </select>
+      <select class="w-full p-2 border rounded-md">
+        <option>是否抽烟：是</option>
+        <option>否</option>
+      </select>
+      <select class="w-full p-2 border rounded-md">
+        <option>在澳是否有租房经历：有</option>
+        <option>无</option>
+      </select>
+      <input type="text" placeholder="租房地址" class="w-full p-2 border rounded-md">
+      <input type="text" placeholder="起止时间" class="w-full p-2 border rounded-md">
+      <input type="text" placeholder="租房类型（学生公寓/房东/中介）" class="w-full p-2 border rounded-md">
+      <input type="text" placeholder="来澳时间：____年____月" class="w-full p-2 border rounded-md">
+      <input type="text" placeholder="在澳居住时间：约__年__月" class="w-full p-2 border rounded-md">
+    </form>
+
+    <form id="workerForm" class="bg-white p-6 rounded-lg shadow space-y-4 hidden">
+      <h2 class="text-2xl font-semibold mb-4">工作人士信息表</h2>
+      <input type="text" placeholder="姓名*" required class="w-full p-2 border rounded-md">
+      <input type="email" placeholder="邮箱*" required class="w-full p-2 border rounded-md">
+      <select class="w-full p-2 border rounded-md">
+        <option>在澳是否上过学：是</option>
+        <option>否</option>
+      </select>
+      <input type="text" placeholder="学校名称 / 专业 / 毕业时间" class="w-full p-2 border rounded-md">
+      <textarea placeholder="同居成员信息（姓名 / 邮箱）" class="w-full p-2 border rounded-md"></textarea>
+      <textarea placeholder="来珀斯目的及将来安排" class="w-full p-2 border rounded-md"></textarea>
+      <input type="text" placeholder="签证类型" class="w-full p-2 border rounded-md">
+      <input type="text" placeholder="来到澳洲时间 / 来澳多久" class="w-full p-2 border rounded-md">
+      <select class="w-full p-2 border rounded-md">
+        <option>一次性支付租金：3个月</option>
+        <option>6个月</option>
+        <option>全部房租</option>
+      </select>
+      <select class="w-full p-2 border rounded-md">
+        <option>是否接受加租金：是</option>
+        <option>否</option>
+      </select>
+      <input type="text" placeholder="可接受加租范围（AUD）" class="w-full p-2 border rounded-md">
+      <input type="text" placeholder="存款金额（AUD）" class="w-full p-2 border rounded-md">
+      <input type="text" placeholder="存款金额（RMB）" class="w-full p-2 border rounded-md">
+      <textarea placeholder="公司名称 / 职位 / 月收入" class="w-full p-2 border rounded-md"></textarea>
+      <textarea placeholder="是否由家人提供生活费（金额）" class="w-full p-2 border rounded-md"></textarea>
+      <textarea placeholder="是否有其他资产（车/房等）" class="w-full p-2 border rounded-md"></textarea>
+      <select class="w-full p-2 border rounded-md">
+        <option>是否养宠物：是</option>
+        <option>否</option>
+      </select>
+      <select class="w-full p-2 border rounded-md">
+        <option>是否抽烟：是</option>
+        <option>否</option>
+      </select>
+      <textarea placeholder="租房经历（1-2段）" class="w-full p-2 border rounded-md"></textarea>
+      <textarea placeholder="个人优势简述" class="w-full p-2 border rounded-md"></textarea>
+    </form>
+
+    <div class="text-center mt-6">
+      <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition">提交</button>
+    </div>
+  </main>
+
+  <script>
+    const applicantType = document.getElementById("applicantType");
+    const studentForm = document.getElementById("studentForm");
+    const workerForm = document.getElementById("workerForm");
+
+    applicantType.addEventListener("change", function () {
+      if (this.value === "student") {
+        studentForm.classList.remove("hidden");
+        workerForm.classList.add("hidden");
+      } else {
+        workerForm.classList.remove("hidden");
+        studentForm.classList.add("hidden");
+      }
+    });
+  </script>
+</body>
+</html>

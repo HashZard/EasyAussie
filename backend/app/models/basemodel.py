@@ -1,4 +1,6 @@
 import logging
+import json
+import datetime
 
 from backend.app import db
 
@@ -13,10 +15,27 @@ class BaseModel(db.Model):
     created_gmt = db.Column(db.DateTime, server_default=db.func.now())
     updated_gmt = db.Column(db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
 
-
     def to_dict(self):
-        """将模型对象转换为字典"""
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+        result = {}
+        for column in self.__table__.columns:
+            value = getattr(self, column.name)
+
+            # 转换 datetime 对象为字符串
+            if isinstance(value, datetime.datetime):
+                result[column.name] = value.isoformat()
+
+            # 反序列化 JSON 数据（如果字段已经是 JSON 格式的字符串）
+            elif isinstance(value, str):
+                try:
+                    result[column.name] = json.loads(value)  # 假设可以反序列化为 JSON
+                except (json.JSONDecodeError, TypeError):
+                    result[column.name] = value  # 如果反序列化失败，则保持原始字符串
+
+            # 默认处理（直接存储字段值）
+            else:
+                result[column.name] = value
+
+        return result
 
     def __repr__(self):
         """返回模型对象的字符串表示"""
