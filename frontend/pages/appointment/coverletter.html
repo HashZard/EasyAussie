@@ -24,120 +24,698 @@
 </head>
 <body class="bg-gray-100 text-gray-900">
   <div id="header"></div>
+
   <main class="p-6 max-w-5xl mx-auto">
-    <div class="relative mb-6">
-      <div id="back-button-placeholder" class="absolute left-0 top-1"></div>
-      <h1 class="text-3xl font-bold text-center">租房 Cover Letter 信息填写</h1>
+    <h1 class="text-3xl font-bold text-center mb-6">租房 Cover Letter 信息填写</h1>
+
+    <!-- 标签栏样式身份选择 -->
+    <div class="flex justify-center mb-6">
+      <div class="flex border border-gray-300 rounded-md overflow-hidden">
+        <button
+          id="tabStudent"
+          class="px-6 py-2 bg-blue-600 text-white font-semibold transition-colors"
+          onclick="switchTab('student')"
+        >
+          学生
+        </button>
+        <button
+          id="tabWorker"
+          class="px-6 py-2 bg-white text-gray-700 font-semibold hover:bg-gray-100 transition-colors"
+          onclick="switchTab('worker')"
+        >
+          工作
+        </button>
+      </div>
     </div>
 
+    <!-- 学生表单 -->
+    <form
+      id="studentForm"
+      class="bg-white p-6 rounded-lg shadow space-y-6 transition-opacity"
+    >
+      <!-- 一、基本信息 -->
+      <div>
+        <h2 class="text-xl font-bold mb-4 border-b pb-2">一、基本信息</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label class="block font-medium">
+            姓名：
+            <input
+              type="text"
+              class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+              placeholder="请输入姓名"
+            />
+          </label>
+          <label class="block font-medium">&nbsp;</label>
 
-    <div class="mb-6">
-      <label class="font-semibold block mb-2">请选择申请人身份：</label>
-      <select id="applicantType" class="w-full p-2 border rounded-md">
-        <option value="student">学生</option>
-        <option value="worker">工作人士</option>
-      </select>
-    </div>
+          <label class="block font-medium">
+            学校：
+            <input
+              type="text"
+              class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+              placeholder="学校名称"
+            />
+          </label>
+          <label class="block font-medium">
+            专业：
+            <input
+              type="text"
+              class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+              placeholder="专业"
+            />
+          </label>
 
-    <form id="studentForm" class="bg-white p-6 rounded-lg shadow space-y-4">
-      <h2 class="text-2xl font-semibold mb-4">学生信息表</h2>
-      <input type="text" placeholder="姓名*" required class="w-full p-2 border rounded-md">
-      <input type="text" placeholder="学校 / 专业*" required class="w-full p-2 border rounded-md">
-      <select class="w-full p-2 border rounded-md">
-        <option>是否愿意一次性付3个月房租：是</option>
-        <option>否</option>
-      </select>
-      <select class="w-full p-2 border rounded-md">
-        <option>是否愿意加房租：是</option>
-        <option>否</option>
-      </select>
-      <input type="number" placeholder="父母每月提供生活费（AUD）" class="w-full p-2 border rounded-md">
-      <input type="number" placeholder="存款金额（AUD）" class="w-full p-2 border rounded-md">
-      <input type="number" placeholder="存款金额（RMB）" class="w-full p-2 border rounded-md">
-      <input type="text" placeholder="个人资产情况（车/房等）" class="w-full p-2 border rounded-md">
-      <textarea placeholder="个人自我介绍" class="w-full p-2 border rounded-md"></textarea>
-      <input type="text" placeholder="目前居住地" class="w-full p-2 border rounded-md">
-      <input type="text" placeholder="联系方式" class="w-full p-2 border rounded-md">
-      <input type="email" placeholder="邮箱" class="w-full p-2 border rounded-md">
-      <input type="text" placeholder="电话（可选）" class="w-full p-2 border rounded-md">
-      <select class="w-full p-2 border rounded-md">
-        <option>是否养宠物：是</option>
-        <option>否</option>
-      </select>
-      <select class="w-full p-2 border rounded-md">
-        <option>是否抽烟：是</option>
-        <option>否</option>
-      </select>
-      <select class="w-full p-2 border rounded-md">
-        <option>在澳是否有租房经历：有</option>
-        <option>无</option>
-      </select>
-      <input type="text" placeholder="租房地址" class="w-full p-2 border rounded-md">
-      <input type="text" placeholder="起止时间" class="w-full p-2 border rounded-md">
-      <input type="text" placeholder="租房类型（学生公寓/房东/中介）" class="w-full p-2 border rounded-md">
-      <input type="text" placeholder="来澳时间：____年____月" class="w-full p-2 border rounded-md">
-      <input type="text" placeholder="在澳居住时间：约__年__月" class="w-full p-2 border rounded-md">
+          <div>
+            <label class="block font-medium mb-1">当前居住地：</label>
+            <div class="flex gap-4">
+              <label class="flex items-center">
+                <input
+                  type="radio"
+                  name="location"
+                  value="aus"
+                  class="mr-2"
+                  onchange="toggleArrivalField(this.value)"
+                />澳洲
+              </label>
+              <label class="flex items-center">
+                <input
+                  type="radio"
+                  name="location"
+                  value="home"
+                  class="mr-2"
+                  onchange="toggleArrivalField(this.value)"
+                  checked
+                />国内
+              </label>
+            </div>
+          </div>
+          <label class="block font-medium">&nbsp;</label>
+
+          <!-- 来澳时间 or 预计来澳时间 -->
+          <label id="arrivalDateLabel" class="block font-medium">
+            <span id="arrivalDateText">预计来澳时间（YYYY-MM）：</span>
+            <input
+              type="month"
+              class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+            />
+          </label>
+
+          <label class="block font-medium">
+            预计在澳居留至（YYYY-MM）：
+            <input
+              type="month"
+              class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+            />
+          </label>
+        </div>
+      </div>
+
+      <!-- 二、经济概况 -->
+      <div>
+        <h2 class="text-xl font-bold mb-4 border-b pb-2">二、经济概况</h2>
+        <div class="space-y-4">
+          <div class="md:flex md:items-center md:gap-6">
+            <label class="block font-medium mb-1 md:mb-0">是否接受提前支付房租：</label>
+            <div class="flex gap-4">
+              <label class="flex items-center">
+                <input
+                  type="radio"
+                  name="payRentAdvance"
+                  value="yes"
+                  class="mr-2"
+                  onchange="toggleInlineSection('upfrontTermBox', true)"
+                />是
+              </label>
+              <label class="flex items-center">
+                <input
+                  type="radio"
+                  name="payRentAdvance"
+                  value="no"
+                  class="mr-2"
+                  onchange="toggleInlineSection('upfrontTermBox', false)"
+                />否
+              </label>
+            </div>
+            <div
+              id="upfrontTermBox"
+              class="hidden md:ml-4 w-full md:w-auto mt-2 md:mt-0"
+            >
+              <label class="block font-medium">
+                可接受期限：
+                <select
+                  class="w-full p-2 border border-gray-300 rounded-md mt-1"
+                >
+                  <option>3个月</option>
+                  <option>6个月</option>
+                  <option>12个月</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div class="md:flex md:items-center md:gap-6">
+            <label class="block font-medium mb-1 md:mb-0">是否接受加租金：</label>
+            <div class="flex gap-4">
+              <label class="flex items-center">
+                <input
+                  type="radio"
+                  name="allowRentIncrease"
+                  value="yes"
+                  class="mr-2"
+                  onchange="toggleInlineSection('rentRangeBox', true)"
+                />是
+              </label>
+              <label class="flex items-center">
+                <input
+                  type="radio"
+                  name="allowRentIncrease"
+                  value="no"
+                  class="mr-2"
+                  onchange="toggleInlineSection('rentRangeBox', false)"
+                />否
+              </label>
+            </div>
+            <div id="rentRangeBox" class="hidden md:ml-4 grid grid-cols-2 gap-2 mt-2 md:mt-0">
+              <input
+                type="number"
+                placeholder="最低加租金额（AUD）"
+                class="p-2 border border-gray-300 rounded-md"
+              />
+              <input
+                type="number"
+                placeholder="最高加租金额（AUD）"
+                class="p-2 border border-gray-300 rounded-md"
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label class="block font-medium">存款金额：</label>
+            <div class="flex items-center gap-4">
+              <input
+                type="number"
+                class="w-32 p-2 border border-gray-300 rounded-md"
+                placeholder="AUD"
+              />
+              <span class="text-sm">AUD</span>
+              <input
+                type="number"
+                class="w-32 p-2 border border-gray-300 rounded-md"
+                placeholder="CNY"
+              />
+              <span class="text-sm">CNY</span>
+            </div>
+            <label class="block font-medium">
+              每月来自父母的生活费（AUD）：
+              <input
+                type="number"
+                class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+              />
+            </label>
+            <label class="block font-medium">
+              资产情况（车/房等）：
+              <input
+                type="text"
+                class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+              />
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- 三、居住历史 -->
+      <div>
+        <h2 class="text-xl font-bold mb-4 border-b pb-2">三、居住历史</h2>
+        <div id="studentRentalHistory" class="space-y-4">
+          <div class="rental-entry space-y-2 border border-gray-300 p-3 rounded-md">
+            <label class="block font-medium">
+              租房地址：
+              <input
+                type="text"
+                class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+              />
+            </label>
+            <label class="block font-medium">租房类型：</label>
+            <div class="flex flex-wrap gap-4">
+              <label class="flex items-center">
+                <input type="radio" name="rentalType1" value="学生公寓" class="mr-2" />学生公寓
+              </label>
+              <label class="flex items-center">
+                <input type="radio" name="rentalType1" value="房东直租" class="mr-2" />房东直租
+              </label>
+              <label class="flex items-center">
+                <input type="radio" name="rentalType1" value="中介租房" class="mr-2" />中介租房
+              </label>
+              <label class="flex items-center">
+                <input type="radio" name="rentalType1" value="其他" class="mr-2" onchange="toggleOtherInput(this, 'otherType1')" />其他
+              </label>
+              <input
+                id="otherType1"
+                type="text"
+                class="hidden w-40 p-2 border border-gray-300 rounded-md"
+                placeholder="请输入类型"
+              />
+            </div>
+
+            <label class="block font-medium mt-2">居住时间：</label>
+            <div class="grid grid-cols-2 gap-4">
+              <input
+                type="month"
+                class="p-2 border border-gray-300 rounded-md"
+                placeholder="起始时间"
+              />
+              <input
+                type="month"
+                class="p-2 border border-gray-300 rounded-md"
+                placeholder="结束时间"
+              />
+            </div>
+          </div>
+        </div>
+        <button
+          type="button"
+          onclick="addRentalEntry('studentRentalHistory')"
+          class="text-blue-600 hover:underline mt-2"
+        >
+          ➕ 增加一条居住历史
+        </button>
+      </div>
+    <!-- 四、其他信息 -->
+      <div>
+        <h2 class="text-xl font-bold mb-4 border-b pb-2">四、其他信息</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-medium mb-1">是否养宠物：</label>
+            <div class="flex gap-6">
+              <label class="flex items-center"><input type="radio" name="petStudent" class="mr-2">是</label>
+              <label class="flex items-center"><input type="radio" name="petStudent" class="mr-2">否</label>
+            </div>
+          </div>
+          <div>
+            <label class="block font-medium mb-1">是否抽烟：</label>
+            <div class="flex gap-6">
+              <label class="flex items-center"><input type="radio" name="smokeStudent" class="mr-2">是</label>
+              <label class="flex items-center"><input type="radio" name="smokeStudent" class="mr-2">否</label>
+            </div>
+          </div>
+        </div>
+        <label class="block font-medium mt-4">个人优势描述：</label>
+        <textarea class="w-full p-2 border border-gray-300 rounded-md" placeholder="如：爱干净、生活规律、安静不吵闹、易沟通等"></textarea>
+      </div>
     </form>
 
-    <form id="workerForm" class="bg-white p-6 rounded-lg shadow space-y-4 hidden">
-      <h2 class="text-2xl font-semibold mb-4">工作人士信息表</h2>
-      <input type="text" placeholder="姓名*" required class="w-full p-2 border rounded-md">
-      <input type="email" placeholder="邮箱*" required class="w-full p-2 border rounded-md">
-      <select class="w-full p-2 border rounded-md">
-        <option>在澳是否上过学：是</option>
-        <option>否</option>
-      </select>
-      <input type="text" placeholder="学校名称 / 专业 / 毕业时间" class="w-full p-2 border rounded-md">
-      <textarea placeholder="同居成员信息（姓名 / 邮箱）" class="w-full p-2 border rounded-md"></textarea>
-      <textarea placeholder="来珀斯目的及将来安排" class="w-full p-2 border rounded-md"></textarea>
-      <input type="text" placeholder="签证类型" class="w-full p-2 border rounded-md">
-      <input type="text" placeholder="来到澳洲时间 / 来澳多久" class="w-full p-2 border rounded-md">
-      <select class="w-full p-2 border rounded-md">
-        <option>一次性支付租金：3个月</option>
-        <option>6个月</option>
-        <option>全部房租</option>
-      </select>
-      <select class="w-full p-2 border rounded-md">
-        <option>是否接受加租金：是</option>
-        <option>否</option>
-      </select>
-      <input type="text" placeholder="可接受加租范围（AUD）" class="w-full p-2 border rounded-md">
-      <input type="text" placeholder="存款金额（AUD）" class="w-full p-2 border rounded-md">
-      <input type="text" placeholder="存款金额（RMB）" class="w-full p-2 border rounded-md">
-      <textarea placeholder="公司名称 / 职位 / 月收入" class="w-full p-2 border rounded-md"></textarea>
-      <textarea placeholder="是否由家人提供生活费（金额）" class="w-full p-2 border rounded-md"></textarea>
-      <textarea placeholder="是否有其他资产（车/房等）" class="w-full p-2 border rounded-md"></textarea>
-      <select class="w-full p-2 border rounded-md">
-        <option>是否养宠物：是</option>
-        <option>否</option>
-      </select>
-      <select class="w-full p-2 border rounded-md">
-        <option>是否抽烟：是</option>
-        <option>否</option>
-      </select>
-      <textarea placeholder="租房经历（1-2段）" class="w-full p-2 border rounded-md"></textarea>
-      <textarea placeholder="个人优势简述" class="w-full p-2 border rounded-md"></textarea>
+    <!-- 工作人士表单 -->
+    <form
+      id="workerForm"
+      class="hidden bg-white p-6 rounded-lg shadow space-y-6 transition-opacity"
+    >
+      <!-- 一、基本信息 -->
+      <div>
+        <h2 class="text-xl font-bold mb-4 border-b pb-2">一、基本信息（工作人士）</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label class="block font-medium">
+            姓名：
+            <input
+              type="text"
+              class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+              placeholder="请输入姓名"
+            />
+          </label>
+          <label class="block font-medium">
+            邮箱：
+            <input
+              type="email"
+              class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+              placeholder="name@example.com"
+            />
+          </label>
+
+          <label class="block font-medium">
+            是否在澳洲上过学：
+            <div class="mt-1 flex gap-4">
+              <label class="flex items-center">
+                <input
+                  type="radio"
+                  name="studiedInAus"
+                  value="yes"
+                  class="mr-2"
+                />是
+              </label>
+              <label class="flex items-center">
+                <input
+                  type="radio"
+                  name="studiedInAus"
+                  value="no"
+                  class="mr-2"
+                />否
+              </label>
+            </div>
+          </label>
+          <label class="block font-medium">
+            学校名称（如有）：
+            <input
+              type="text"
+              class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+              placeholder="学校"
+            />
+          </label>
+
+          <label class="block font-medium">
+            专业（如有）：
+            <input
+              type="text"
+              class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+              placeholder="专业"
+            />
+          </label>
+          <label class="block font-medium">
+            毕业时间（如有）：
+            <input
+              type="month"
+              class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+            />
+          </label>
+
+          <label class="block font-medium md:col-span-2">
+            签证类型：
+            <input
+              type="text"
+              class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+              placeholder="如：工签、TR、PR 等"
+            />
+          </label>
+          <label class="block font-medium md:col-span-2">
+            来澳时间（YYYY-MM）：
+            <input
+              type="month"
+              class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+            />
+          </label>
+          <label class="block font-medium md:col-span-2">
+            目前预计在澳居留至（YYYY-MM）：
+            <input
+              type="month"
+              class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+            />
+          </label>
+          <label class="block font-medium md:col-span-2">
+            来珀斯目的与将来安排：
+            <textarea
+              class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+              rows="3"
+            ></textarea>
+          </label>
+        </div>
+      </div>
+
+      <!-- 二、经济概况（工作人士） -->
+      <div>
+        <h2 class="text-xl font-bold mb-4 border-b pb-2">二、经济概况</h2>
+        <div class="space-y-4">
+          <!-- 是否接受提前支付房租 -->
+          <div class="md:flex md:items-center md:gap-6">
+            <label class="block font-medium mb-1 md:mb-0">是否接受提前支付房租：</label>
+            <div class="flex gap-4">
+              <label class="flex items-center">
+                <input
+                  type="radio"
+                  name="payRentAdvanceWorker"
+                  value="yes"
+                  class="mr-2"
+                  onchange="toggleInlineSection('upfrontTermBoxWorker', true)"
+                />是
+              </label>
+              <label class="flex items-center">
+                <input
+                  type="radio"
+                  name="payRentAdvanceWorker"
+                  value="no"
+                  class="mr-2"
+                  onchange="toggleInlineSection('upfrontTermBoxWorker', false)"
+                />否
+              </label>
+            </div>
+            <div
+              id="upfrontTermBoxWorker"
+              class="hidden md:ml-4 w-full md:w-auto mt-2 md:mt-0"
+            >
+              <label class="block font-medium">
+                可接受期限：
+                <select
+                  class="w-full p-2 border border-gray-300 rounded-md mt-1"
+                >
+                  <option>3个月</option>
+                  <option>6个月</option>
+                  <option>12个月</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <!-- 是否接受加租金 -->
+          <div class="md:flex md:items-center md:gap-6">
+            <label class="block font-medium mb-1 md:mb-0">是否接受加租金：</label>
+            <div class="flex gap-4">
+              <label class="flex items-center">
+                <input
+                  type="radio"
+                  name="allowRentIncreaseWorker"
+                  value="yes"
+                  class="mr-2"
+                  onchange="toggleInlineSection('rentRangeBoxWorker', true)"
+                />是
+              </label>
+              <label class="flex items-center">
+                <input
+                  type="radio"
+                  name="allowRentIncreaseWorker"
+                  value="no"
+                  class="mr-2"
+                  onchange="toggleInlineSection('rentRangeBoxWorker', false)"
+                />否
+              </label>
+            </div>
+            <div id="rentRangeBoxWorker" class="hidden md:ml-4 grid grid-cols-2 gap-2 mt-2 md:mt-0">
+              <input
+                type="number"
+                placeholder="最低加租金额（AUD）"
+                class="p-2 border border-gray-300 rounded-md"
+              />
+              <input
+                type="number"
+                placeholder="最高加租金额（AUD）"
+                class="p-2 border border-gray-300 rounded-md"
+              />
+            </div>
+          </div>
+
+          <!-- 存款金额、月收入等 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label class="block font-medium">存款金额：</label>
+            <div class="flex items-center gap-4">
+              <input
+                type="number"
+                class="w-32 p-2 border border-gray-300 rounded-md"
+                placeholder="AUD"
+              />
+              <span class="text-sm">AUD</span>
+              <input
+                type="number"
+                class="w-32 p-2 border border-gray-300 rounded-md"
+                placeholder="CNY"
+              />
+              <span class="text-sm">CNY</span>
+            </div>
+
+            <label class="block font-medium">
+              工作公司 / 职位 / 月收入：
+              <input
+                type="text"
+                class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+                placeholder="公司、职位、月收入"
+              />
+            </label>
+
+            <label class="block font-medium">
+              家人提供生活费（如有）：
+              <input
+                type="text"
+                class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+                placeholder="每月父母补贴等"
+              />
+            </label>
+
+            <label class="block font-medium">
+              资产情况（车/房等）：
+              <input
+                type="text"
+                class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+                placeholder="列出主要资产"
+              />
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- 三、居住历史（工作人士） -->
+      <div>
+        <h2 class="text-xl font-bold mb-4 border-b pb-2">三、居住历史</h2>
+        <div id="workerRentalHistory" class="space-y-4">
+          <div class="rental-entry space-y-2 border border-gray-300 p-3 rounded-md">
+            <label class="block font-medium">
+              租房地址：
+              <input
+                type="text"
+                class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+              />
+            </label>
+            <label class="block font-medium">租房类型：</label>
+            <div class="flex flex-wrap gap-4">
+              <label class="flex items-center">
+                <input
+                  type="radio"
+                  name="workerRentalType1"
+                  value="学生公寓"
+                  class="mr-2"
+                />学生公寓
+              </label>
+              <label class="flex items-center">
+                <input
+                  type="radio"
+                  name="workerRentalType1"
+                  value="房东直租"
+                  class="mr-2"
+                />房东直租
+              </label>
+              <label class="flex items-center">
+                <input
+                  type="radio"
+                  name="workerRentalType1"
+                  value="中介租房"
+                  class="mr-2"
+                />中介租房
+              </label>
+              <label class="flex items-center">
+                <input
+                  type="radio"
+                  name="workerRentalType1"
+                  value="其他"
+                  class="mr-2"
+                  onchange="toggleOtherInput(this, 'otherTypeWorker1')"
+                />其他
+              </label>
+              <input
+                id="otherTypeWorker1"
+                type="text"
+                class="hidden w-40 p-2 border border-gray-300 rounded-md"
+                placeholder="请输入类型"
+              />
+            </div>
+
+            <label class="block font-medium mt-2">居住时间：</label>
+            <div class="grid grid-cols-2 gap-4">
+              <input
+                type="month"
+                class="p-2 border border-gray-300 rounded-md"
+                placeholder="起始时间"
+              />
+              <input
+                type="month"
+                class="p-2 border border-gray-300 rounded-md"
+                placeholder="结束时间"
+              />
+            </div>
+          </div>
+        </div>
+        <button
+          type="button"
+          onclick="addRentalEntry('workerRentalHistory')"
+          class="text-blue-600 hover:underline mt-2"
+        >
+          ➕ 增加一条居住历史
+        </button>
+      </div>
+    <!-- 四、其他信息（工作人士） -->
+      <div>
+        <h2 class="text-xl font-bold mb-4 border-b pb-2">四、其他信息</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-medium mb-1">是否养宠物：</label>
+            <div class="flex gap-6">
+              <label class="flex items-center"><input type="radio" name="petWorker" class="mr-2">是</label>
+              <label class="flex items-center"><input type="radio" name="petWorker" class="mr-2">否</label>
+            </div>
+          </div>
+          <div>
+            <label class="block font-medium mb-1">是否抽烟：</label>
+            <div class="flex gap-6">
+              <label class="flex items-center"><input type="radio" name="smokeWorker" class="mr-2">是</label>
+              <label class="flex items-center"><input type="radio" name="smokeWorker" class="mr-2">否</label>
+            </div>
+          </div>
+        </div>
+        <label class="block font-medium mt-4">个人优势描述：</label>
+        <textarea class="w-full p-2 border border-gray-300 rounded-md" placeholder="如：爱干净、生活稳定、工作规律、守信用、安静不吵闹、易沟通等"></textarea>
+      </div>
     </form>
+    <script>
+      function switchTab(type) {
+        const studentForm = document.getElementById('studentForm');
+        const workerForm = document.getElementById('workerForm');
+        const tabStudent = document.getElementById('tabStudent');
+        const tabWorker = document.getElementById('tabWorker');
 
-    <div class="text-center mt-6">
-      <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition">提交</button>
-    </div>
-  </main>
-
-  <script>
-    const applicantType = document.getElementById("applicantType");
-    const studentForm = document.getElementById("studentForm");
-    const workerForm = document.getElementById("workerForm");
-
-    applicantType.addEventListener("change", function () {
-      if (this.value === "student") {
-        studentForm.classList.remove("hidden");
-        workerForm.classList.add("hidden");
-      } else {
-        workerForm.classList.remove("hidden");
-        studentForm.classList.add("hidden");
+        if (type === 'student') {
+          studentForm.classList.remove('hidden');
+          tabStudent.classList.add('bg-blue-600', 'text-white');
+          tabWorker.classList.remove('bg-blue-600', 'text-white');
+          tabWorker.classList.add('bg-white', 'text-gray-700');
+          if (workerForm) workerForm.classList.add('hidden');
+        } else {
+          if (workerForm) workerForm.classList.remove('hidden');
+          studentForm.classList.add('hidden');
+          tabWorker.classList.add('bg-blue-600', 'text-white');
+          tabStudent.classList.remove('bg-blue-600', 'text-white');
+          tabStudent.classList.add('bg-white', 'text-gray-700');
+        }
       }
-    });
-  </script>
+
+      function toggleArrivalField(value) {
+        const textSpan = document.getElementById("arrivalDateText");
+        if (value === "aus") {
+          textSpan.textContent = "来澳时间：";
+        } else {
+          textSpan.textContent = "预计来澳时间：";
+        }
+      }
+
+      function toggleInlineSection(id, show) {
+        const el = document.getElementById(id);
+        if (el) {
+          el.classList.toggle('hidden', !show);
+        }
+      }
+
+      function toggleOtherInput(radio, inputId) {
+        const input = document.getElementById(inputId);
+        if (radio.checked && radio.value === '其他') {
+          input.classList.remove('hidden');
+        } else {
+          input.classList.add('hidden');
+        }
+      }
+
+      function addRentalEntry(containerId) {
+        const container = document.getElementById(containerId);
+        const newEntry = container.querySelector('.rental-entry').cloneNode(true);
+        newEntry.querySelectorAll('input').forEach((input) => {
+          input.value = '';
+          if (input.type === 'radio') {
+            input.checked = false;
+          }
+        });
+        container.appendChild(newEntry);
+      }
+    </script>
+  </main>
 </body>
 </html>
