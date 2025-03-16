@@ -6,6 +6,7 @@
     <title>Cover Letter 信息填写</title>
     <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../../js/auth.js"></script>
 </head>
 <body class="bg-gray-100 text-gray-900">
 <main class="p-6 max-w-5xl mx-auto">
@@ -57,6 +58,7 @@
                 <label class="block font-medium">
                     邮箱：
                     <input
+                            id="email"
                             type="email"
                             name="email"
                             class="mt-1 w-full p-2 border border-gray-300 rounded-md"
@@ -488,6 +490,21 @@
 </main>
 
 <script>
+    // 读取指定 Cookie 值的函数
+    function getCookie(name) {
+        const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+        return match ? decodeURIComponent(match[2]) : null;
+    }
+
+    // 页面加载时自动填入邮箱
+    window.addEventListener('DOMContentLoaded', () => {
+        const email = checkLogin(); // ✅ 直接获取返回值
+        const emailInput = document.querySelector('input[name="email"]');
+        if (email && emailInput) {
+            emailInput.value = email;
+        }
+    });
+
     function switchApplicantType(type) {
         const tabStudent = document.getElementById('tabStudent');
         const tabWorker = document.getElementById('tabWorker');
