@@ -111,10 +111,8 @@ else
             update_systemd_config
             restart_services
             ;;
-        --only-update)
+        --restart)
             stop_old_processes
-            update_code
-            install_dependencies
             restart_services
             ;;
         --help)
