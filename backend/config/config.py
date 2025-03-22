@@ -52,6 +52,14 @@ class LoggerConfig:
     LOG_MAX_BYTES = 10 * 1024 * 1024  # 10MB
     LOG_BACKUP_COUNT = 10
 
+# 文件上传配置
+class UploadConfig:
+    UPLOAD_FOLDER = os.path.join(BACKEND_ROOT, 'uploads')
+    ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+
+    # 如果目录不存在则创建
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    print(f"📂 Upload Folder: {UPLOAD_FOLDER}")
 
 if __name__ == "__main__":
     print("地址:" + DatabaseConfig.SQLALCHEMY_DATABASE_URI)
