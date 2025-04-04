@@ -1,186 +1,81 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>预约登记表 - Easy Aussie</title>
+    <link rel="stylesheet" href="/css/common.css"/>
+    <link rel="stylesheet" href="/css/ea-card.css"/>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            fetch('/components/header.html')
-                .then(res => res.text())
-                .then(html => document.getElementById('header').innerHTML = html);
-        });
-    </script>
 </head>
 <body class="bg-gray-100 text-gray-900">
+
 <div id="header"></div>
 
-<main class="p-6">
-    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl mx-auto">
-        <h1 class="text-3xl font-bold text-center mb-4">预约登记</h1>
+<main class="w-full max-w-4xl mx-auto p-6">
+    <div class="ea-card">
+        <h2 class="text-2xl font-bold mb-4 text-center">预约登记</h2>
         <form id="bookingForm" class="space-y-4">
+
             <div>
-                <label for="address" class="block font-medium">房产地址:</label>
+                <label for="address" class="ea-label">房产地址:</label>
                 <input type="text" id="address" name="address" required
-                       class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400"
-                       placeholder="Like: 35 Stirling Hwy, Crawley WA 6009">
+                       class="ea-input"
+                       placeholder="Like: 35 Stirling Hwy, Crawley WA 6009"/>
             </div>
+
             <div>
-                <label for="appointment_date" class="block font-medium">预约时间:</label>
+                <label for="appointment_date" class="ea-label">预约时间:</label>
                 <input type="datetime-local" id="appointment_date" name="appointment_date" required
-                       class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400">
+                       class="ea-input"/>
             </div>
+
             <div>
-                <label for="name" class="block font-medium">预约姓名:</label>
+                <label for="name" class="ea-label">预约姓名:</label>
                 <input type="text" id="name" name="name" required
-                       class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400"
-                       placeholder="Full Name, Like Bruce Lee">
+                       class="ea-input"
+                       placeholder="Full Name, Like Bruce Lee"/>
             </div>
+
             <div>
-                <label for="email" class="block font-medium">预约 Email:</label>
+                <label for="email" class="ea-label">预约 Email:</label>
                 <input type="email" id="email" name="email" required
-                       class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400">
+                       class="ea-input"/>
             </div>
+
             <div>
-                <label for="phone" class="block font-medium">预约电话:</label>
+                <label for="phone" class="ea-label">预约电话:</label>
                 <input type="tel" id="phone" name="phone"
-                       class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-400"
-                       placeholder="请输入澳洲手机号（+61），如无可留空">
+                       class="ea-input"
+                       placeholder="请输入澳洲手机号（+61），如无可留空"/>
             </div>
+
             <div id="checklistSection">
-                <label class="block font-medium">重点检查事项 (≤5条):</label>
+                <label class="ea-label">重点检查事项 (≤5条):</label>
                 <div id="checklist-container" class="space-y-2">
                     <div class="flex items-center">
-                        <input type="text" name="checklist[]"
-                               class="flex-grow p-2 border rounded-md focus:ring-2 focus:ring-blue-400"
-                               placeholder="输入重点检查事项">
+                        <input type="text" name="checklist[]" class="flex-grow ea-input"
+                               placeholder="输入重点检查事项"/>
                     </div>
                 </div>
                 <div class="text-right mt-2">
                     <button type="button" id="add-checklist"
-                            class="px-3 py-1 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition">添加检查项
-                        +
+                            class="ea-button-blue">添加检查项 +
                     </button>
                 </div>
             </div>
-            <button type="submit"
-                    class="w-full bg-blue-500 text-white py-2 font-semibold rounded-md hover:bg-blue-600 transition">提交
+
+            <button type="submit" class="ea-button-blue w-full">
+                提交
             </button>
         </form>
     </div>
 </main>
 
-<script>
-    document.getElementById('bookingForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        const data = {};
-        formData.forEach((value, key) => {
-            if (key === 'checklist[]') {
-                if (!data['checklist']) data['checklist'] = [];
-                data['checklist'].push(value);
-            } else {
-                data[key] = value;
-            }
-        });
-        try {
-            const response = await fetch('/inspect/submit', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(data),
-            });
+<div id="footer" class="mt-12"></div>
 
-            const result = await response.json();
-            if (response.ok) {
-                // Redirect to index.html on successful form submission
-                alert('提交成功: ' + result.message);
-                window.location.href = '/index.html';
-            } else {
-                alert('提交失败: ' + result.message + ' 请稍后再试！');
-            }
-        } catch (error) {
-            console.error('提交失败:', error);
-            alert('提交失败');
-        }
-    });
-</script>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const checklistContainer = document.getElementById("checklist-container");
-        const addChecklistBtn = document.getElementById("add-checklist");
-
-        addChecklistBtn.addEventListener("click", function () {
-            const currentCount = checklistContainer.querySelectorAll("input[name='checklist[]']").length;
-            if (currentCount < 5) {
-                const checklistItem = document.createElement("div");
-                checklistItem.className = "flex items-center mb-2";
-
-                const input = document.createElement("input");
-                input.type = "text";
-                input.name = "checklist[]";
-                input.className = "flex-grow p-2 border rounded-md focus:ring-2 focus:ring-blue-400";
-                input.placeholder = "输入重点检查事项";
-
-                const removeBtn = document.createElement("button");
-                removeBtn.type = "button";
-                removeBtn.textContent = "-";
-                removeBtn.className = "ml-2 px-2 py-1 rounded-full bg-red-500 text-white hover:bg-red-600 transition";
-                removeBtn.addEventListener("click", function () {
-                    checklistItem.remove();
-                });
-
-                checklistItem.appendChild(input);
-                checklistItem.appendChild(removeBtn);
-                checklistContainer.appendChild(checklistItem);
-            } else {
-                alert("最多只能添加 5 个检查事项输入框");
-            }
-        });
-    });
-</script>
-
-<script>
-  // 自动填充历史信息
-  async function preloadLatestInspectionData() {
-    const email = getCookie("user_email");
-    if (!email) return;
-
-    try {
-      const response = await fetch('/inspect/latest');
-      if (response.ok) {
-        const data = await response.json();
-
-        if (data && data.name) document.getElementById("name").value = data.name;
-        if (data.email) document.getElementById("email").value = data.email;
-        if (data.phone) document.getElementById("phone").value = data.phone;
-        if (data.checklist && Array.isArray(data.checklist)) {
-          const container = document.getElementById("checklist-container");
-          container.innerHTML = '';
-          data.checklist.slice(0, 5).forEach(item => {
-            const checklistItem = document.createElement("div");
-            checklistItem.className = "flex items-center mb-2";
-            const input = document.createElement("input");
-            input.type = "text";
-            input.name = "checklist[]";
-            input.className = "flex-grow p-2 border rounded-md focus:ring-2 focus:ring-blue-400";
-            input.value = item;
-            checklistItem.appendChild(input);
-            container.appendChild(checklistItem);
-          });
-        }
-      }
-    } catch (err) {
-      console.error("预加载历史数据失败：", err);
-    }
-  }
-
-  // 加载时执行
-  document.addEventListener("DOMContentLoaded", () => {
-    preloadLatestInspectionData();
-  });
-</script>
-
+<!-- 动态加载 Header/Footer -->
+<script src="/js/layout.js"></script>
+<script src="/js/inspection.js"></script>
 </body>
 </html>

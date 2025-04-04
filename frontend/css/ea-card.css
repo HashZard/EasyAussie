@@ -1,0 +1,51 @@
+.ea-card {
+    width: 100%; /* 让卡片撑满外层容器 */
+    background-color: white;
+    border: 1px solid #e5e7eb; /* Tailwind 的 border-gray-200 */
+    border-radius: 0.5rem; /* rounded-lg */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* shadow */
+    padding: 1.5rem; /* p-6 */
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.ea-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.ea-card-title {
+    font-size: 1.25rem; /* = text-xl */
+    font-weight: 600; /* = font-semibold */
+    color: #1f2937; /* = text-gray-800 */
+    margin-bottom: 0.5rem;
+}
+
+.ea-card-price {
+    color: #2563eb; /* = text-blue-600 */
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.ea-card-description {
+    color: #4b5563; /* = text-gray-600 */
+    font-size: 0.875rem; /* = text-sm */
+}
+
+.ea-card-action {
+    margin-left: 1.5rem;
+}
+
+.ea-card-action a {
+    background-color: #2563eb; /* blue-600 */
+    color: white;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 0.375rem;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.ea-card-action a:hover {
+    background-color: #1d4ed8; /* blue-700 */
+}

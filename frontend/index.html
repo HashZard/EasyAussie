@@ -1,22 +1,23 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>主页 - Easy Aussie</title>
+    <meta charset="UTF-8"/>
+    <title>Easy Aussie 首页</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 text-gray-900">
+
+<body class="flex flex-col min-h-screen">
 <div id="header"></div>
-<main class="p-6 text-center">
+
+<main class="flex-grow p-6 max-w-5xl mx-auto">
     <h1 class="text-3xl font-bold mb-4">欢迎来到 Easy Aussie 房屋服务</h1>
-    <p class="text-lg">我们提供专业的看房预约服务，让您的买房更轻松。</p>
+    <p class="text-lg">我们提供专业的看房预约服务，让您的租房更轻松。</p>
 </main>
 
-<script>
-    fetch('/components/header.html') // ← 绝对路径更保险
-        .then(res => res.text())
-        .then(html => document.getElementById('header').innerHTML = html);
-</script>
+<div id="footer"></div>
+
+<script src="/js/layout.js"></script>
 </body>
+
 </html>

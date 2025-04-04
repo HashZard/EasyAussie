@@ -1,45 +1,57 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>预约服务 - Easy Aussie</title>
+  <meta charset="UTF-8" />
+  <title>预约服务</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      fetch("/components/header.html")
-        .then(res => res.text())
-        .then(html => document.getElementById("header").innerHTML = html);
-    });
-  </script>
-  <script src="/js/auth.js"></script>
-  <script>
-    const userEmail = checkLogin();
-  </script>
+  <link rel="stylesheet" href="/css/common.css" />
+  <link rel="stylesheet" href="/css/ea-card.css" />
 </head>
-<body class="bg-gray-100 text-gray-900">
+<body class="bg-gray-50 text-gray-900">
   <div id="header"></div>
 
-  <main class="p-6 max-w-6xl mx-auto">
-    <h1 class="text-3xl font-bold text-center mb-8">预约服务</h1>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <a href="inspection.html" class="block bg-white p-6 rounded-lg shadow hover:shadow-md hover:bg-blue-50 transition">
-        <h2 class="text-xl font-semibold mb-2">预约看房</h2>
-        <p class="text-gray-600">提交看房预约登记表，提前安排您的房屋参观时间。</p>
-      </a>
-      <a href="coverletter.html" class="block bg-white p-6 rounded-lg shadow hover:shadow-md hover:bg-blue-50 transition">
-        <h2 class="text-xl font-semibold mb-2">Cover Letter</h2>
-        <p class="text-gray-600">生成个性化的租房求职信，提升租房申请成功率。</p>
-      </a>
-      <a href="rental_application.html" class="block bg-white p-6 rounded-lg shadow hover:shadow-md hover:bg-blue-50 transition">
-        <h2 class="text-xl font-semibold mb-2">租房申请</h2>
-        <p class="text-gray-600">在线填写并提交标准租房申请表，快速进入申请流程。</p>
-      </a>
-      <a href="airport_pickup.html" class="block bg-white p-6 rounded-lg shadow hover:shadow-md hover:bg-blue-50 transition">
-        <h2 class="text-xl font-semibold mb-2">预约接机</h2>
-        <p class="text-gray-600">安排您的机场接机服务，确保抵达的顺利与便捷。</p>
-      </a>
+  <main class="max-w-4xl mx-auto p-6 space-y-6">
+    <div class="text-center mb-4">
+      <p class="text-gray-600">请选择您要预约的服务</p>
+    </div>
+
+    <!-- 卡片列表 -->
+    <div class="space-y-4">
+      <div class="ea-card">
+        <h2 class="ea-card-title">预约看房</h2>
+        <p class="ea-card-description">如果您想亲自查看房源，请填写相关信息并提交申请。</p>
+        <a href="/pages/appointment/inspection.html" class="ea-card-link">立即预约</a>
+      </div>
+
+<div class="ea-card flex justify-between items-start mb-6">
+  <!-- 左侧内容 -->
+  <div class="flex-1">
+    <h2 class="ea-card-title">接机服务</h2>
+    <p class="ea-card-description">为新生或访客提供从机场到市区的接送服务，安全、方便、省心。</p>
+  </div>
+
+  <!-- 右侧立即预约按钮 -->
+  <div class="card-action">
+    <a href="/pages/appointment/airport_pickup.html">立即预约</a>
+  </div>
+</div>
+
+
+      <div class="ea-card">
+        <h2 class="ea-card-title">租房申请辅助</h2>
+        <p class="ea-card-description">我们将帮您整理资料、填写申请，快速高效地完成租房申请流程。</p>
+        <a href="/pages/appointment/rental_application.html" class="ea-card-link">提交资料</a>
+      </div>
+
+      <div class="ea-card">
+        <h2 class="ea-card-title">接机/住宿安排</h2>
+        <p class="ea-card-description">新生抵达前的接机与临时住宿安排，让您安心落地。</p>
+        <a href="/pages/appointment/airport_pickup.html" class="ea-card-link">填写需求</a>
+      </div>
     </div>
   </main>
+
+  <div id="footer"></div>
+  <script src="/js/layout.js"></script>
 </body>
 </html>
