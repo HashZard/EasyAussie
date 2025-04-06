@@ -50,8 +50,8 @@ document.addEventListener("DOMContentLoaded", () => {
             input.placeholder = "输入重点检查事项";
 
             const remove = document.createElement("button");
-            remove.textContent = "-";
-            remove.className = "ml-2 px-2 py-1 rounded-full bg-red-500 text-white hover:bg-red-600";
+            remove.textContent = "移除";
+            remove.className = "ml-2 px-3 py-1 text-sm rounded bg-red-100 text-red-600 hover:bg-red-200 transition whitespace-nowrap";
             remove.addEventListener("click", () => item.remove());
 
             item.appendChild(input);

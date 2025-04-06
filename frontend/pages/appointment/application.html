@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>租房申请 - Easy Aussie</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/common.css"/>
+    <link rel="stylesheet" href="/css/ea-card.css"/>
+    <script src="/js/layout.js" defer></script>
+    <script src="/js/form_dynamic.js" defer></script>
+    <script src="/js/file_upload.js" defer></script>
+
+</head>
+<body class="bg-gray-100 text-gray-900">
+<div id="header"></div>
+
+<main class="w-full max-w-5xl mx-auto p-6">
+    <div class="ea-card">
+        <div class="relative mb-6">
+            <div id="back-button"></div>
+            <h2 class="text-2xl font-bold mb-4 text-center">租房申请信息填写</h2>
+        </div>
+
+        <form action="#" method="POST" enctype="multipart/form-data" class="space-y-6">
+
+            <!-- 基本信息 -->
+            <div class="ea-section">
+                <h3 class="ea-section-title">一、基本信息</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <label class="ea-label">姓名：
+                        <input type="text" name="name" required class="ea-input"/>
+                    </label>
+                    <label class="ea-label">邮箱：
+                        <input type="email" name="email" required class="ea-input"/>
+                    </label>
+                    <label class="ea-label">学校：
+                        <input type="text" name="uniName" class="ea-input"/>
+                    </label>
+                    <label class="ea-label">专业：
+                        <input type="text" name="major" class="ea-input"/>
+                    </label>
+                    <label class="ea-label">电话：
+                        <input type="tel" name="phone" required class="ea-input"/>
+                    </label>
+                    <label class="ea-label">预期入住时间：
+                        <input type="date" name="move_in" required class="ea-input"/>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 居住历史 -->
+            <div class="ea-section" id="rentalHistoryContainer" data-limit="5">
+                <h3 class="ea-section-title">二、居住历史(近三年)</h3>
+                <div class="form-clone-wrapper space-y-4">
+                    <div class="form-entry relative space-y-4 border border-gray-300 p-4 rounded-md">
+                        <!-- 第一行：房产地址 -->
+                        <div class="grid grid-cols-1">
+                            <label class="ea-label">租房地址：
+                                <input type="text" name="rentalAddress[]" class="ea-input w-full mt-2"/>
+                            </label>
+                        </div>
+
+                        <!-- 第二行：租房类型 + 备注 -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="ea-inline-field">
+                                <label class="ea-inline-label">租房类型：</label>
+                                <select name="rentalType[]" class="ea-select w-32">
+                                    <option value="学生公寓">学生公寓</option>
+                                    <option value="房东直租">房东直租</option>
+                                    <option value="中介租房">中介租房</option>
+                                    <option value="其他">其他(无合同)</option>
+                                </select>
+                            </div>
+                            <div class="ea-inline-field">
+                                <label class="ea-inline-label">备注：</label>
+                                <input type="text" name="rentalNote[]" class="ea-input"
+                                       placeholder="如：二房东、合租等"/>
+                            </div>
+                        </div>
+
+                        <!-- 第三行：居住时间 + 租金 -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="ea-inline-field">
+                                <label class="ea-inline-label">居住时间：</label>
+                                <input type="month" name="rentalStart[]" class="ea-input w-32"/>
+                                <span class="mx-2">至</span>
+                                <input type="month" name="rentalEnd[]" class="ea-input w-32"/>
+                            </div>
+                            <div class="ea-inline-field">
+                                <label class="ea-inline-label">租金：</label>
+                                <input type="text" name="rentalPrice[]" class="ea-input"
+                                       placeholder="如 250/week"/>
+                            </div>
+                        </div>
+
+                        <!-- 第四行：地址联系人 -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <label class="ea-label">联系人姓名：
+                                <input type="text" name="rentalContactName[]" class="ea-input"/>
+                            </label>
+                            <label class="ea-label">联系人身份:
+                                <input type="text" name="rentalContactRelation[]" class="ea-input"
+                                       placeholder="如：房东、室友等"/>
+                            </label>
+                            <label class="ea-label">联系人电话:
+                                <input type="tel" name="rentalContactPhone[]" class="ea-input"/>
+                            </label>
+                            <label class="ea-label">联系人邮箱:
+                                <input type="email" name="rentalContactEmail[]" class="ea-input"/>
+                            </label>
+                            <label class="ea-label">租房合同：
+                                <input type="file" name="rental_agreement[]" class="ea-input"/>
+                            </label>
+                            <label class="ea-label">租金支付记录：
+                                <input type="file" name="rental_ledger[]" class="ea-input"/>
+                            </label>
+                        </div>
+                        <button type="button" class="ea-add-btn text-blue-600 hover:underline"
+                                data-target="#rentalHistoryContainer">➕ 增加历史居住信息
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 推荐人信息 -->
+            <div class="ea-section">
+                <h3 class="ea-section-title">三、推荐人信息</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <label class="ea-label">姓名 (Reference1)：
+                        <input type="text" name="referee_name_1" class="ea-input"/>
+                    </label>
+                    <label class="ea-label">电话：
+                        <input type="tel" name="referee_phone_1" class="ea-input"/>
+                    </label>
+                    <label class="ea-label">邮箱：
+                        <input type="email" name="referee_email_1" class="ea-input"/>
+                    </label>
+                    <label class="ea-label">与租客关系：
+                        <input type="text" name="referee_relation_1" class="ea-input"/>
+                    </label>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <label class="ea-label">姓名 (Reference2)：
+                        <input type="text" name="referee_name_2" class="ea-input"/>
+                    </label>
+                    <label class="ea-label">电话：
+                        <input type="tel" name="referee_phone_2" class="ea-input"/>
+                    </label>
+                    <label class="ea-label">邮箱：
+                        <input type="email" name="referee_email_2" class="ea-input"/>
+                    </label>
+                    <label class="ea-label">与租客关系：
+                        <input type="text" name="referee_relation_2" class="ea-input"/>
+                    </label>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <label class="ea-label">姓名 (紧急联系人)：
+                        <input type="text" name="emergency_name_1" class="ea-input"/>
+                    </label>
+                    <label class="ea-label">电话：
+                        <input type="tel" name="emergency_phone_2" class="ea-input"/>
+                    </label>
+                    <label class="ea-label">邮箱：
+                        <input type="email" name="emergency_email_2" class="ea-input"/>
+                    </label>
+                    <label class="ea-label">与租客关系：
+                        <input type="text" name="emergency_relation_2" class="ea-input"/>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 申请材料 -->
+            <div class="ea-section">
+                <h3 class="ea-section-title">四、必要申请材料</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <label class="ea-label">护照（Passport）：
+                        <input type="file" name="passport" required class="ea-input"/>
+                    </label>
+                    <label class="ea-label">签证（Visa）：
+                        <input type="file" name="visa" required class="ea-input"/>
+                    </label>
+                    <div>
+                        <div class="ea-label">存款证明（Proof of Balance）：</div>
+                        <input type="file" name="balance_proof[]" multiple class="ea-input"
+                               data-preview="balance_proof_preview"/>
+                        <ul id="balance_proof_preview" class="text-sm text-gray-600 mt-2 space-y-1"></ul>
+                    </div>
+                    <div>
+                        <div class="ea-label">银行流水（Bank Statement）：</div>
+                        <input type="file" name="bank_statement[]" multiple class="ea-input"
+                               data-preview="bank_statement_preview"/>
+                        <ul id="bank_statement_preview" class="text-sm text-gray-600 mt-2 space-y-1"></ul>
+                    </div>
+                    <label class="ea-label">学生证 (Student ID Card)：
+                        <input type="file" name="student_id" class="ea-input"/>
+                    </label>
+                    <label class="ea-label">COE：
+                        <input type="file" name="coe" class="ea-input"/>
+                    </label>
+                    <label class="ea-label">水电账单（Bill Receipt）：
+                        <input type="file" name="utility_bill" class="ea-input"/>
+                    </label>
+                    <label class="ea-label">父母支持保证书（Guarantee Letter）：
+                        <input type="file" name="guarantee_letter" class="ea-input"/>
+                    </label>
+                    <div>
+                        <div class="ea-label">其他补充材料 ：</div>
+                        <input type="file" name="other_files[]" multiple class="ea-input"
+                               data-preview="other_files_preview"/>
+                        <ul id="other_files_preview" class="text-sm text-gray-600 mt-2 space-y-1"></ul>
+                    </div>
+                    <div>
+                        <div class="ea-label">其他补充材料说明：</div>
+                        <textarea name="other_files_notes" rows="2" class="ea-input"
+                                  placeholder="租房经历、驾照、资产证明、推荐信等（可附照片/文件）"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 工作经历 -->
+            <div id="workHistoryContainer" class="ea-section" data-limit="3">
+                <h3 class="ea-section-title">工作经历</h3>
+                <div class="form-clone-wrapper space-y-4">
+                    <!-- 单条工作记录 -->
+                    <div class="form-entry relative space-y-4 border border-gray-300 p-4 rounded-md">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <label class="ea-label">公司名称：
+                                <input type="text" name="companyName[]" class="ea-input mt-2"
+                                       placeholder="请输入公司名称"/>
+                            </label>
+                            <label class="ea-label">公司地址：
+                                <input type="text" name="companyAddress[]" class="ea-input mt-2"
+                                       placeholder="请输入公司地址"/>
+                            </label>
+
+                            <label class="ea-label">职位：
+                                <input type="text" name="jobPosition[]" class="ea-input"
+                                       placeholder="请输入职位"/>
+                            </label>
+                            <label class="ea-label">收入情况：
+                                <input type="text" name="income[]" class="ea-input" placeholder="例如 1000 AUD/Week"/>
+                            </label>
+                            <div>
+                                <div class="ea-label">Duration：</div>
+                                <div class="ea-inline-field">
+                                    <input type="month" name="rentalStart[]" class="ea-input"/>
+                                    <span class="mx-2">至</span>
+                                    <input type="month" name="rentalEnd[]" class="ea-input"/>
+                                </div>
+                            </div>
+                            <label class="ea-label">证明人姓名：
+                                <input type="text" name="supervisor_name[]" class="ea-input"
+                                       placeholder="请输入Full Name"/>
+                            </label>
+                            <label class="ea-label">证明人职位:
+                                <input type="text" name="supervisor_position[]" class="ea-input">
+                            </label>
+                            <label class="ea-label">证明人电话：
+                                <input type="tel" name="supervisor_phone[]" class="ea-input">
+                            </label>
+                            <label class="ea-label">证明人邮箱:
+                                <input type="email" name="supervisor_email[]" class="ea-input">
+                            </label>
+                            <div>
+                                <div class="ea-label">近期3张工资单：</div>
+                                <input type="file" name="pay_slips[]" multiple class="ea-input"
+                                       data-preview="pay_slips_preview"/>
+                                <ul id="pay_slips_preview" class="text-sm text-gray-600 mt-2 space-y-1"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 添加按钮 -->
+
+                <button type="button" class="ea-add-btn text-blue-600 hover:underline"
+                        data-target="#workHistoryContainer">➕ 增加一条工作经历
+                </button>
+            </div>
+
+            <!-- 提交按钮 -->
+            <div class="text-center mt-6">
+                <button type="submit" class="ea-btn-primary">提交申请</button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<div id="footer" class="mt-12"></div>
+</body>
+</html>

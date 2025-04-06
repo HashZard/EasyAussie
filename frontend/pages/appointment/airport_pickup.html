@@ -1,76 +1,118 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>预约接机服务 - Easy Aussie</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      fetch("/components/header.html")
-        .then(res => res.text())
-        .then(html => document.getElementById("header").innerHTML = html);
-    });
-  </script>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>预约接机服务 - Easy Aussie</title>
+    <link rel="stylesheet" href="/css/common.css"/>
+    <link rel="stylesheet" href="/css/ea-card.css"/>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 text-gray-900">
-  <div id="header"></div>
+<div id="header"></div>
 
-  <main class="p-6 max-w-3xl mx-auto">
-    <h1 class="text-3xl font-bold text-center mb-6">📍预约接机信息填写</h1>
-    <form class="bg-white p-6 rounded-lg shadow space-y-4">
-      <div>
-        <label class="block font-medium">1. 飞机航班号：</label>
-        <input type="text" name="flight_number" required class="w-full p-2 border rounded-md">
-      </div>
-      <div>
-        <label class="block font-medium">2. 航空公司：</label>
-        <input type="text" name="airline" required class="w-full p-2 border rounded-md">
-      </div>
-      <div>
-        <label class="block font-medium">3. 飞机降落时间 / 需要接机时间：</label>
-        <input type="datetime-local" name="pickup_time" required class="w-full p-2 border rounded-md">
-      </div>
-      <div>
-        <label class="block font-medium">4. 联系人电话：</label>
-        <input type="tel" name="contact_phone" required class="w-full p-2 border rounded-md">
-      </div>
-      <div>
-        <label class="block font-medium">5. 目的地地址：</label>
-        <input type="text" name="destination" required class="w-full p-2 border rounded-md">
-      </div>
-      <div>
-        <label class="block font-medium">6. 行李数量：</label>
-        <textarea name="luggage_info" rows="3" placeholder="例：28寸箱子 ×2 个，24寸箱子 ×1 个" class="w-full p-2 border rounded-md"></textarea>
-      </div>
-      <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition">提交预约</button>
-    </form>
+<main class="w-full max-w-4xl mx-auto p-6">
+    <!-- 主卡片 -->
+    <div class="ea-card">
+        <div class="relative mb-6">
+            <div id="back-button"></div>
+            <h2 class="text-2xl font-bold mb-4 text-center">预约接机服务</h2>
+        </div>
 
-    <section class="mt-10 bg-white p-6 rounded-lg shadow">
-      <h2 class="text-2xl font-semibold mb-4">📌 接机服务注意事项</h2>
-      <ol class="space-y-2 list-decimal list-inside text-gray-700">
-        <li>
-          <strong>费用说明：</strong><br>
-          • 接机服务需提前支付费用，可使用澳元或人民币支付。<br>
-          • 人民币按“澳元×5”换算（建议优先使用澳元支付，人民币支付因需换汇及提现，会产生汇率差及手续费）。
-        </li>
-        <li>
-          <strong>退款政策：</strong><br>
-          • 临时取消（当天）：不予退款；<br>
-          • 提前1–3天取消：退还50%费用；<br>
-          • 提前3天及以上通知取消：全额退款。
-        </li>
-        <li>
-          <strong>等待时长说明：</strong><br>
-          • 接机司机最多免费等待30分钟；<br>
-          • 超出时间后，每增加30分钟加收$10停车费（按机场收费标准）。
-        </li>
-        <li>
-          <strong>时间附加费说明：</strong><br>
-          • 晚间及凌晨接机（晚8点 – 早8点）将加收20%夜间附加费用。
-        </li>
-      </ol>
+        <form id="pickupForm" class="space-y-4">
+            <div>
+                <label class="ea-label">微信名：</label>
+                <input type="text" name="wx_name" required class="ea-input"/>
+            </div>
+            <div>
+                <label class="ea-label">航班号：</label>
+                <input type="text" name="flight_number" required class="ea-input"/>
+            </div>
+            <div>
+                <label class="ea-label">飞机降落时间 / 接机时间：</label>
+                <input type="datetime-local" name="pickup_time" required class="ea-input"/>
+            </div>
+            <div>
+                <label class="ea-label">联系电话：</label>
+                <input type="tel" name="contact_phone" required class="ea-input"/>
+            </div>
+            <div>
+                <label class="ea-label">目的地地址：</label>
+                <input type="text" name="destination" required class="ea-input"/>
+            </div>
+            <div>
+                <label class="ea-label">行李数量：</label>
+                <textarea name="luggage_info" rows="3" class="ea-input"
+                          placeholder="例：28寸箱子 ×2 个，24寸箱子 ×1 个"></textarea>
+            </div>
+            <div>
+                <label class="ea-label">备注：</label>
+                <textarea name="note" rows="3" class="ea-input"></textarea>
+            </div>
+
+            <button type="submit" class="ea-button w-full">提交预约</button>
+        </form>
+    </div>
+
+    <!-- 注意事项 -->
+    <section class="ea-card mt-10">
+        <h2 class="text-xl font-semibold mb-4">接机服务须知</h2>
+        <div class="text-gray-700 text-sm space-y-3 leading-relaxed">
+            <p>接机服务需提前支付，可使用澳元或人民币，人民币按“澳元×5”换算（建议优先使用澳元）。</p>
+            <p>取消规则如下：当天取消不退款；提前1至3天取消退还50%；提前3天以上取消全额退款。</p>
+            <p>司机免费等待时间为30分钟，超时将收取每30分钟 $10 附加费用。</p>
+            <p>晚上 8 点至早上 8 点期间接机，将加收 20% 夜间服务费。</p>
+        </div>
     </section>
-  </main>
+</main>
+
+<div id="footer" class="mt-12"></div>
+
+<!-- 公共组件加载 -->
+<script src="/js/layout.js"></script>
+
+<script>
+
+    document.getElementById("pickupForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const formData = {
+            wx_name: document.getElementById("wx_name").value.trim(),
+            flight_number: document.getElementById("flight_number").value.trim(),
+            pickup_time: document.getElementById("pickup_time").value,
+            contact_phone: document.getElementById("contact_phone").value.trim(),
+            destination: document.getElementById("destination").value.trim(),
+            luggage_info: document.getElementById("luggage_info").value.trim()
+            note: document.getElementById("note").value.trim()
+        };
+
+        // 简单校验（除备注外）
+        for (let key in formData) {
+            if (key !== "note" && !formData[key]) {
+                alert("请完整填写所有必填项！");
+                return;
+            }
+        }
+
+        try {
+            const response = await fetch("/pickup/submit", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(formData)
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                alert("提交成功：" + result.message);
+                window.location.href = "/index.html";
+            } else {
+                alert("提交失败：" + result.message);
+            }
+        } catch (err) {
+            console.error("提交失败：", err);
+            alert("提交失败，请稍后重试");
+        }
+    });
+</script>
 </body>
 </html>

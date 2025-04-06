@@ -1,5 +1,10 @@
-<a id="back-button" class="text-blue-600 hover:text-blue-800 transition inline-block">
-  <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-  </svg>
-</a>
+<!-- 返回上一级按钮组件 -->
+<!-- 返回按钮（绝对定位，不占据布局空间） -->
+<button onclick="history.back()"
+        class="absolute left-0 top-1 flex items-center text-blue-600 hover:underline text-sm font-medium">
+    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+         xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
+    </svg>
+    返回
+</button>
