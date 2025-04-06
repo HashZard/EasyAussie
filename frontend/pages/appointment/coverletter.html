@@ -7,9 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/css/common.css"/>
     <link rel="stylesheet" href="/css/ea-card.css"/>
-    <script src="/js/layout.js" defer></script>
-    <script src="/js/coverletter.js" defer></script>
-    <script src="/js/form_dynamic.js" defer></script>
+    <script src="/js/components/layout.js" defer></script>
+    <script src="/js/components/form-dynamic.js" defer></script>
+    <script src="/js/components/ea-form.js" defer></script>
+    <script src="/js/services/coverletter.js" defer></script>
 </head>
 <body class="bg-gray-100 text-gray-900">
 <div id="header"></div>
@@ -33,7 +34,8 @@
             </div>
         </div>
 
-        <form id="unifiedForm" action="/api/coverletter/submit" method="POST" class="space-y-6">
+        <form id="standardForm" action="/api/coverletter/submit" method="POST" class="space-y-6"
+              data-success="/pages/submit-success.html" data-fail="/pages/submit-fail.html">
             <!-- 基本信息 -->
             <div class="ea-section">
                 <h3 class="ea-section-title">基本信息</h3>
@@ -90,7 +92,6 @@
                     </div>
                 </div>
             </div>
-
 
             <!-- 工作经历 -->
             <div id="workHistoryContainer" class="ea-section" data-limit="3">
@@ -309,9 +310,9 @@
                 </div>
             </div>
 
-            <div class="text-center mt-6">
-                <button type="submit" class="ea-btn-primary">提交</button>
-            </div>
+            <button type="submit" class="ea-button w-full">
+                提交
+            </button>
         </form>
     </div>
 </main>

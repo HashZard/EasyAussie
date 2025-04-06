@@ -7,9 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/css/common.css"/>
     <link rel="stylesheet" href="/css/ea-card.css"/>
-    <script src="/js/layout.js" defer></script>
-    <script src="/js/form_dynamic.js" defer></script>
-    <script src="/js/file_upload.js" defer></script>
+    <script src="/js/components/layout.js" defer></script>
+    <script src="/js/components/form-dynamic.js" defer></script>
+    <script src="/js/components/ea-form.js" defer></script>
+    <script src="/js/components/file-upload.js" defer></script>
 
 </head>
 <body class="bg-gray-100 text-gray-900">
@@ -22,7 +23,8 @@
             <h2 class="text-2xl font-bold mb-4 text-center">租房申请信息填写</h2>
         </div>
 
-        <form action="#" method="POST" enctype="multipart/form-data" class="space-y-6">
+        <form id="standardForm" action="/api/application/submit" method="POST" class="space-y-6"
+              data-success="/pages/submit-success.html" data-fail="/pages/submit-fail.html">
 
             <!-- 基本信息 -->
             <div class="ea-section">
@@ -272,18 +274,15 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- 添加按钮 -->
-
                 <button type="button" class="ea-add-btn text-blue-600 hover:underline"
                         data-target="#workHistoryContainer">➕ 增加一条工作经历
                 </button>
             </div>
 
-            <!-- 提交按钮 -->
-            <div class="text-center mt-6">
-                <button type="submit" class="ea-btn-primary">提交申请</button>
-            </div>
+            <button type="submit" class="ea-button w-full">
+                提交
+            </button>
         </form>
     </div>
 </main>

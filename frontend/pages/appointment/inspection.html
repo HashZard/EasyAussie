@@ -6,6 +6,7 @@
     <title>预约登记表 - Easy Aussie</title>
     <link rel="stylesheet" href="/css/common.css"/>
     <link rel="stylesheet" href="/css/ea-card.css"/>
+    <script src="/js/components/ea-form.js" defer></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 text-gray-900">
@@ -21,7 +22,8 @@
             <h2 class="text-2xl font-bold mb-4 text-center">预约登记</h2>
         </div>
 
-        <form id="bookingForm" class="space-y-4">
+        <form id="standardForm" action="/api/inspection/submit" method="POST" class="space-y-6"
+              data-success="/pages/submit-success.html" data-fail="/pages/submit-fail.html" >
 
             <div>
                 <label for="address" class="ea-label">房产地址:</label>
@@ -81,7 +83,7 @@
 <div id="footer" class="mt-12"></div>
 
 <!-- 动态加载 Header/Footer -->
-<script src="/js/layout.js"></script>
-<script src="/js/inspection.js"></script>
+<script src="/js/components/layout.js"></script>
+<script src="/js/services/inspection.js"></script>
 </body>
 </html>

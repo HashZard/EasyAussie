@@ -44,8 +44,6 @@ function switchApplicantType(type) {
         studiedInAusField.classList.remove('hidden');
         workExperienceContainer.classList.remove('hidden');
         visaType.classList.remove('hidden');
-
-        // 隐藏学生字段
     }
 }
 
@@ -56,6 +54,7 @@ function toggleInlineSection(id, show) {
     el.classList.toggle('opacity-0', !show);
     el.classList.toggle('pointer-events-none', !show);
 }
+
 // 是否可选选项,false禁用and重置
 function toggleSelectBox(enable, selectId) {
   const select = document.getElementById(selectId);
@@ -69,6 +68,7 @@ function toggleSelectBox(enable, selectId) {
     select.classList.add('ea-select-disabled');
   }
 }
+
 function toggleSelectByNames(enable, names) {
   if (!Array.isArray(names)) return;
 

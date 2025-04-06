@@ -1,37 +1,3 @@
-// 表单提交
-document.getElementById('bookingForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-    const data = {};
-    formData.forEach((value, key) => {
-        if (key === 'checklist[]') {
-            data.checklist = data.checklist || [];
-            data.checklist.push(value);
-        } else {
-            data[key] = value;
-        }
-    });
-
-    try {
-        const response = await fetch('/inspect/submit', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data),
-        });
-
-        const result = await response.json();
-        if (response.ok) {
-            alert('提交成功: ' + result.message);
-            window.location.href = '/index.html';
-        } else {
-            alert('提交失败: ' + result.message);
-        }
-    } catch (error) {
-        console.error('提交失败:', error);
-        alert('提交失败');
-    }
-});
-
 // 添加/移除检查项
 document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("checklist-container");

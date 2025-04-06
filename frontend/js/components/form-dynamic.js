@@ -40,7 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
       deleteBtn.onclick = () => clone.remove();
       clone.appendChild(deleteBtn);
 
-
       wrapper.appendChild(clone);
     });
   });
