@@ -28,11 +28,9 @@ def create_app():
     print("Database initialized.")
 
     # 注册 Blueprint
-    from backend.app.routes.inspect import inspect_bp
     from backend.app.routes.auth import auth_bp
     from backend.app.routes.standard_form_router import standard_form
 
-    app.register_blueprint(inspect_bp, url_prefix='/api/inspect')
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(standard_form, url_prefix='/api/standard_form')
 
@@ -40,6 +38,7 @@ def create_app():
     for rule in app.url_map.iter_rules():
         print("➡", rule)
     return app
+
 
 import logging
 from logging.handlers import RotatingFileHandler
@@ -52,6 +51,7 @@ def setup_logger():
     }
 
     return loggers
+
 
 def create_logger(logger_name, log_file, log_level):
     # 创建日志格式器
@@ -75,4 +75,3 @@ def create_logger(logger_name, log_file, log_level):
     logger.propagate = False
 
     return logger
-

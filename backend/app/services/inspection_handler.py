@@ -1,16 +1,16 @@
 import logging
 import os
+from datetime import datetime, timezone
 
 from flask import jsonify
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-from datetime import datetime, timezone
 
 from backend.app.models.register import RegisterInfo, get_latest_data_by_email
 from backend.app.utils import cookie_utils
-from backend.config.config import GoogleTasksConfig, APP_ENV
+from backend.config.config import GoogleTasksConfig
 
 app_logger = logging.getLogger('app_logger')
 

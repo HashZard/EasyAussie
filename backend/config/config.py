@@ -43,8 +43,8 @@ class DatabaseConfig:
 class LoggerConfig:
 
     if APP_ENV == "production":
-        APP_LOG_FILE = "/var/log/inspect/app.log"
-        DB_LOG_FILE = "/var/log/inspect/database.log"
+        APP_LOG_FILE = "/var/log/easyaussie/app.log"
+        DB_LOG_FILE = "/var/log/easyaussie/database.log"
     else:
         APP_LOG_FILE = os.path.join(BACKEND_ROOT, 'logs/app.log')
         DB_LOG_FILE = os.path.join(BACKEND_ROOT, 'logs/database.log')

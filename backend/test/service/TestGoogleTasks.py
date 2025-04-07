@@ -1,6 +1,6 @@
 # backend/tests/services/test_google_tasks.py
 import unittest
-from backend.app.services.google_tasks import create_google_task
+from backend.app.services.inspection_handler import create_google_task
 from backend.app.models.register import RegisterInfo
 from backend.app import create_app
 
