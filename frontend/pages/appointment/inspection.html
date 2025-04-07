@@ -22,8 +22,10 @@
             <h2 class="text-2xl font-bold mb-4 text-center">预约登记</h2>
         </div>
 
-        <form id="standardForm" action="/api/inspection/submit" method="POST" class="space-y-6"
+        <form id="standardForm" action="/api/form-submit" method="POST" class="space-y-6"
               data-success="/pages/submit-success.html" data-fail="/pages/submit-fail.html" >
+            <!-- 页面标识 -->
+            <input type="hidden" name="formType" value="inspection"/>
 
             <div>
                 <label for="address" class="ea-label">房产地址:</label>

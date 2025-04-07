@@ -34,8 +34,10 @@
             </div>
         </div>
 
-        <form id="standardForm" action="/api/coverletter/submit" method="POST" class="space-y-6"
+        <form id="standardForm" action="/api/form-submit" method="POST" class="space-y-6"
               data-success="/pages/submit-success.html" data-fail="/pages/submit-fail.html">
+            <!-- 页面标识 -->
+            <input type="hidden" name="formType" value="coverletter"/>
             <!-- 基本信息 -->
             <div class="ea-section">
                 <h3 class="ea-section-title">基本信息</h3>
@@ -46,6 +48,9 @@
                     </label>
                     <label class="ea-label">邮箱：
                         <input type="email" name="email" id="email" class="ea-input" required/>
+                    </label>
+                    <label id="visaType" class="ea-label">签证类型：
+                        <input type="text" name="visaType" class="ea-input"/>
                     </label>
 
                     <!-- 是否在澳洲上过学 -->
@@ -64,9 +69,6 @@
                             </label>
                         </div>
                     </div>
-                    <label id="visaType" class="ea-label">签证类型：
-                        <input type="text" name="visaType" class="ea-input"/>
-                    </label>
 
                     <label id="uniField" class="ea-label">学校：
                         <input type="text" name="uniName" class="ea-input"/>
@@ -94,7 +96,7 @@
             </div>
 
             <!-- 工作经历 -->
-            <div id="workHistoryContainer" class="ea-section" data-limit="3">
+            <div id="workExperienceContainer" class="ea-section" data-limit="3">
                 <h3 class="ea-section-title">工作经历</h3>
                 <div class="form-clone-wrapper space-y-4">
                     <!-- 单条工作记录 -->
@@ -121,7 +123,7 @@
                 <!-- 添加按钮 -->
 
                 <button type="button" class="ea-add-btn text-blue-600 hover:underline"
-                        data-target="#workHistoryContainer">➕ 增加一条工作经历
+                        data-target="#workExperienceContainer">➕ 增加一条工作经历
                 </button>
             </div>
 

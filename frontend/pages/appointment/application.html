@@ -23,9 +23,10 @@
             <h2 class="text-2xl font-bold mb-4 text-center">租房申请信息填写</h2>
         </div>
 
-        <form id="standardForm" action="/api/application/submit" method="POST" class="space-y-6"
+        <form id="standardForm" action="/api/form-submit" method="POST" class="space-y-6"
               data-success="/pages/submit-success.html" data-fail="/pages/submit-fail.html">
-
+            <!-- 页面标识 -->
+            <input type="hidden" name="formType" value="rentalApplication"/>
             <!-- 基本信息 -->
             <div class="ea-section">
                 <h3 class="ea-section-title">一、基本信息</h3>
@@ -119,11 +120,11 @@
                                 <input type="file" name="rental_ledger[]" class="ea-input"/>
                             </label>
                         </div>
-                        <button type="button" class="ea-add-btn text-blue-600 hover:underline"
-                                data-target="#rentalHistoryContainer">➕ 增加历史居住信息
-                        </button>
                     </div>
                 </div>
+                <button type="button" class="ea-add-btn text-blue-600 hover:underline"
+                        data-target="#rentalHistoryContainer">➕ 增加历史居住信息
+                </button>
             </div>
 
             <!-- 推荐人信息 -->
@@ -175,7 +176,7 @@
 
             <!-- 申请材料 -->
             <div class="ea-section">
-                <h3 class="ea-section-title">四、必要申请材料</h3>
+                <h3 class="ea-section-title">四、申请材料</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <label class="ea-label">护照（Passport）：
                         <input type="file" name="passport" required class="ea-input"/>
@@ -223,7 +224,7 @@
 
             <!-- 工作经历 -->
             <div id="workHistoryContainer" class="ea-section" data-limit="3">
-                <h3 class="ea-section-title">工作经历</h3>
+                <h3 class="ea-section-title">五、工作经历 (如有)</h3>
                 <div class="form-clone-wrapper space-y-4">
                     <!-- 单条工作记录 -->
                     <div class="form-entry relative space-y-4 border border-gray-300 p-4 rounded-md">

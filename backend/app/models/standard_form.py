@@ -3,8 +3,8 @@ from sqlalchemy import Column, String, Text
 from backend.app.models.basemodel import BaseModel
 
 
-class FormSubmission(BaseModel):
-    __tablename__ = "form_submissions"
+class StandardForm(BaseModel):
+    __tablename__ = "standard_form"
 
     email = Column(String(120), nullable=False)
     form_type = Column(String(50), nullable=False)  # student / worker

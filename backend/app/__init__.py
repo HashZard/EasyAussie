@@ -1,4 +1,5 @@
 from flask import Flask, request
+
 from backend.config.config import DatabaseConfig, LoggerConfig
 from backend.app.models import db, init_db  # 现在可以安全导入 db
 
@@ -29,8 +30,11 @@ def create_app():
     # 注册 Blueprint
     from backend.app.routes.inspect import inspect_bp
     from backend.app.routes.auth import auth_bp
+    from backend.app.routes.standard_form_router import standard_form
+
     app.register_blueprint(inspect_bp, url_prefix='/api/inspect')
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
+    app.register_blueprint(standard_form, url_prefix='/api/standard_form')
 
     print("✅ 当前所有 app 路由:")
     for rule in app.url_map.iter_rules():

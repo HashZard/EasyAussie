@@ -21,8 +21,10 @@
             <h2 class="text-2xl font-bold mb-4 text-center">预约接机服务</h2>
         </div>
 
-        <form id="standardForm" action="/api/pickup/submit" method="POST" class="space-y-6"
+        <form id="standardForm" action="/api/form-submit" method="POST" class="space-y-6"
               data-success="/pages/submit-success.html" data-fail="/pages/submit-fail.html">
+            <!-- 页面标识 -->
+            <input type="hidden" name="formType" value="airportPickup"/>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="ea-label">微信名：</label>
@@ -46,7 +48,7 @@
                 <input type="text" name="destination" required class="ea-input"/>
             </div>
             <div>
-                <label class="ea-label">行李数量：</label>
+                <label class="ea-label">行李数量及尺寸：</label>
                 <textarea name="luggage_info" rows="3" class="ea-input"
                           placeholder="例：28寸箱子 ×2 个，24寸箱子 ×1 个"></textarea>
             </div>

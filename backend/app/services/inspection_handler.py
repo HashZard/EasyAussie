@@ -1,16 +1,49 @@
-import os
 import logging
+import os
 
+from flask import jsonify
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from datetime import datetime, timezone
 
-from backend.app.models.register import RegisterInfo
+from backend.app.models.register import RegisterInfo, get_latest_data_by_email
+from backend.app.utils import cookie_utils
 from backend.config.config import GoogleTasksConfig, APP_ENV
 
 app_logger = logging.getLogger('app_logger')
+
+
+def handle(req):
+    data = req.get_json()
+
+    register_info = RegisterInfo(data=data)
+    register_info.save()
+
+    create_google_task(register_info)
+    return jsonify({"success": True, "message": "Task created successfully"}), 200
+
+
+def reload_record():
+    """
+    get the latest data from the database based on the email in the Cookie.
+
+    Returns:
+        - success: return the latest data from database in JSON format.
+        - error: return error message in JSON format.
+    """
+
+    email = cookie_utils.get_email_from_cookie()
+    if not email:
+        return jsonify({"error": "Cookie中未找到邮箱"}), 400
+
+    latest_record = get_latest_data_by_email(email)
+    if latest_record:
+        return jsonify({"success": True, "data": latest_record.to_dict()}), 200
+    else:
+        return jsonify({"error": "未找到数据"}), 404
+
 
 def authenticate_google_tasks():
     creds = None
@@ -62,7 +95,8 @@ def create_google_task(register_info: RegisterInfo):
 
     appointment_datetime = register_info.appointment_date
     if isinstance(appointment_datetime, datetime):
-        due_string = appointment_datetime.astimezone(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
+        due_string = (appointment_datetime.astimezone(timezone.utc).isoformat(timespec="milliseconds")
+                      .replace("+00:00", "Z"))
     else:
         raise ValueError("appointment_date must be a `datetime` object")
 
@@ -80,5 +114,6 @@ def create_google_task(register_info: RegisterInfo):
 
     # Create task
     result = service.tasks().insert(tasklist=GoogleTasksConfig.TASKS_LIST_ID, body=task).execute()
+    app_logger.info(f'Create Google Task for {register_info.name}, result: {result}')
 
     return result

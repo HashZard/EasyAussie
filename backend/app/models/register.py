@@ -7,17 +7,6 @@ from backend.app import db
 from backend.app.models.basemodel import BaseModel, db_logger
 
 
-class User(BaseModel):
-    __tablename__ = "users"  # 指定数据库表名
-
-    name = db.Column(db.String(80), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-
-    def __init__(self, username, email):
-        self.username = username
-        self.email = email
-
-
 class RegisterInfo(BaseModel):
     __tablename__ = 'register_info'
 
@@ -52,32 +41,33 @@ class RegisterInfo(BaseModel):
             self.phone = phone
             self.checklist = json.dumps(data.get('checklist'))
 
-    def get_latest_data_by_email(email):
-        """
-        get the latest data from the database based on the email in the Cookie.
 
-        Returns:
-            - success: return the latest data from database in JSON format.
-            - error: return error message in JSON format.
-        """
-        try:
-            if not email:
-                db_logger.info("get_latest_data_by_email: input email is None")
-                return
+def get_latest_data_by_email(email):
+    """
+    get the latest data from the database based on the email in the Cookie.
 
-            # query the latest record from the database based on the email
-            latest_record = RegisterInfo.query.filter_by(email=email) \
-                .order_by(RegisterInfo.created_gmt.desc()) \
-                .first()
-
-            if not latest_record:
-                db_logger.info("get_latest_data_by_email: no matching data found")
-                return
-
-            # 将记录序列化为JSON形式返回
-            return latest_record
-
-        except SQLAlchemyError as e:
-            # 如果发生数据库错误，记录日志
-            db_logger.error(f"get_latest_data_by_email: database query failed, error: {str(e)}")
+    Returns:
+        - success: return the latest data from database in JSON format.
+        - error: return error message in JSON format.
+    """
+    try:
+        if not email:
+            db_logger.info("get_latest_data_by_email: input email is None")
             return
+
+        # query the latest record from the database based on the email
+        latest_record = RegisterInfo.query.filter_by(email=email) \
+            .order_by(RegisterInfo.created_gmt.desc()) \
+            .first()
+
+        if not latest_record:
+            db_logger.info("get_latest_data_by_email: no matching data found")
+            return
+
+        # 将记录序列化为JSON形式返回
+        return latest_record
+
+    except SQLAlchemyError as e:
+        # 如果发生数据库错误，记录日志
+        db_logger.error(f"get_latest_data_by_email: database query failed, error: {str(e)}")
+        return

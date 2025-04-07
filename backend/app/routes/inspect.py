@@ -37,7 +37,7 @@ def get_latest_data_by_email():
     if not email:
         return jsonify({"error": "Cookie中未找到邮箱"}), 400
 
-    latest_record = RegisterInfo.get_latest_data_by_email(email)
+    latest_record = get_latest_data_by_email()
     if latest_record:
         return jsonify({"success": True, "data": latest_record.to_dict()}), 200
     else:
