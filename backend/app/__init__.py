@@ -31,8 +31,8 @@ def create_app():
     from backend.app.routes.auth import auth_bp
     from backend.app.routes.standard_form_router import standard_form
 
-    app.register_blueprint(auth_bp, url_prefix='/api/auth')
-    app.register_blueprint(standard_form, url_prefix='/api/standard_form')
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(standard_form)
 
     print("✅ 当前所有 app 路由:")
     for rule in app.url_map.iter_rules():

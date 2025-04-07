@@ -1,7 +1,7 @@
 # backend/routes/auth.py
 from flask import Blueprint, request, jsonify
 
-auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
+auth_bp = Blueprint('auth', __name__, url_prefix='/api')
 
 # ✅ 简易版本：默认密码由管理员统一设置
 DEFAULT_PASSWORD = "admin2025"
