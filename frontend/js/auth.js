@@ -19,6 +19,7 @@ function checkLogin(redirect = true) {
   const email = getCookie("user_email");
   if (!email && redirect) {
     window.location.href = "/pages/auth/login.html";
+
   }
   return email;
 }

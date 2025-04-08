@@ -7,6 +7,8 @@ SERVICE_FILE="/etc/systemd/system/$SERVICE_NAME.service"
 NGINX_CONF_PATH="/etc/nginx/sites-available/easyaussie"
 REQUIREMENTS_FILE="$PROJECT_PATH/requirements.txt"
 REQUIREMENTS_HASH_FILE="$PROJECT_PATH/.requirements.md5"
+LOG_DIR="/var/log/easyaussie"   # 定义日志路径
+
 
 # 停止 `gunicorn`，确保不会重复启动
 function stop_old_processes() {
@@ -94,6 +96,19 @@ function update_systemd_config() {
     fi
 }
 
+# 确保日志目录存在并有写权限
+function ensure_log_directory() {
+    echo ">>> 检查日志目录 $LOG_DIR ..."
+    if [ ! -d "$LOG_DIR" ]; then
+        echo ">>> 日志目录不存在，正在创建..."
+        sudo mkdir -p "$LOG_DIR" || { echo "❌ 创建日志目录失败"; exit 1; }
+    fi
+
+    # 修改权限为可写（推荐设置为运行 gunicorn 的用户，例如 www-data）
+    sudo chown -R www-data:www-data "$LOG_DIR" || { echo "❌ 设置日志目录权限失败"; exit 1; }
+
+    echo "✅ 日志目录检查完成！"
+}
 
 # 执行完整部署或更新
 if [ $# -eq 0 ]; then
@@ -109,6 +124,7 @@ else
             update_code
             install_dependencies
             update_systemd_config
+            ensure_log_directory
             restart_services
             ;;
         --restart)
