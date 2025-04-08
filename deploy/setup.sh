@@ -96,19 +96,51 @@ function update_systemd_config() {
     fi
 }
 
-# 确保日志目录存在并有写权限
-function ensure_log_directory() {
-    echo ">>> 检查日志目录 $LOG_DIR ..."
+function prepare_runtime_environment() {
+    SERVICE_USER="www-data"
+
+    LOG_DIR="/var/log/easyaussie"
+    UPLOAD_DIR="/var/www/EasyAussie/backend/uploads"
+    DB_FILE="/var/www/EasyAussie/backend/app.db"
+    DB_DIR="/var/www/EasyAussie/backend"
+
+    echo "==================== 🔧 准备运行环境（权限 & 目录） ===================="
+
+    ## 日志目录
+    echo "📁 检查日志目录: $LOG_DIR"
     if [ ! -d "$LOG_DIR" ]; then
-        echo ">>> 日志目录不存在，正在创建..."
-        sudo mkdir -p "$LOG_DIR" || { echo "❌ 创建日志目录失败"; exit 1; }
+        echo "➕ 创建日志目录..."
+        sudo mkdir -p "$LOG_DIR"
+    fi
+    echo "🔐 设置日志目录权限给 $SERVICE_USER"
+    sudo chown -R $SERVICE_USER:$SERVICE_USER "$LOG_DIR"
+
+    ## 上传目录
+    echo "📁 检查上传目录: $UPLOAD_DIR"
+    if [ ! -d "$UPLOAD_DIR" ]; then
+        echo "➕ 创建上传目录..."
+        sudo mkdir -p "$UPLOAD_DIR"
+    fi
+    echo "🔐 设置上传目录权限给 $SERVICE_USER"
+    sudo chown -R $SERVICE_USER:$SERVICE_USER "$UPLOAD_DIR"
+
+    ## 数据库文件权限
+    echo "📄 检查数据库文件权限: $DB_FILE"
+    if [ -f "$DB_FILE" ]; then
+        sudo chown $SERVICE_USER:$SERVICE_USER "$DB_FILE"
+        sudo chmod 664 "$DB_FILE"
+    else
+        echo "⚠️ 尚未生成数据库文件，跳过权限设置"
     fi
 
-    # 修改权限为可写（推荐设置为运行 gunicorn 的用户，例如 www-data）
-    sudo chown -R www-data:www-data "$LOG_DIR" || { echo "❌ 设置日志目录权限失败"; exit 1; }
+    ## 数据库目录权限
+    echo "📁 设置数据库目录权限: $DB_DIR"
+    sudo chown $SERVICE_USER:$SERVICE_USER "$DB_DIR"
 
-    echo "✅ 日志目录检查完成！"
+    echo "✅ 运行环境准备完成！"
 }
+
+
 
 # 执行完整部署或更新
 if [ $# -eq 0 ]; then
@@ -124,7 +156,7 @@ else
             update_code
             install_dependencies
             update_systemd_config
-            ensure_log_directory
+            prepare_runtime_environment
             restart_services
             ;;
         --restart)
