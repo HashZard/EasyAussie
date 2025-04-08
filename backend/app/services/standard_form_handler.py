@@ -41,7 +41,7 @@ def save_or_update_form(request) -> str:
         raise ValueError("Missing email or formType")
 
     # 校验表单类型
-    if FormType.is_valid_form_type(form_type) is False:
+    if FormType.is_valid(form_type) is False:
         raise ValueError("Invalid form type: {}".format(form_type))
 
     # 处理字段

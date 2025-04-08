@@ -161,6 +161,7 @@ else
             ;;
         --restart)
             stop_old_processes
+            update_code
             restart_services
             ;;
         --help)
