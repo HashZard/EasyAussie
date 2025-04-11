@@ -53,6 +53,12 @@ def save_or_update_form(request) -> str:
     folder = os.path.join(UploadConfig.UPLOAD_FOLDER, email_to_folder(email))
     new_files = handle_file_uploads(request.files, folder)
 
+    # 处理空字段: 移除不保存
+    for key in list(form_data.keys()):
+        value = form_data[key]
+        if value is None or (isinstance(value, str) and value.strip() == ""):
+            form_data.pop(key)
+
     # 查询是否已有记录
     form = StandardForm.query.filter_by(email=email, form_type=form_type).first()
 
