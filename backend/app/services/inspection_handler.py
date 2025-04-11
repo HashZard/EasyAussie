@@ -8,7 +8,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
-from backend.app.models.register import RegisterInfo, get_latest_data_by_email
+from backend.app.models.register import RegisterInfo
 from backend.app.utils import cookie_utils
 from backend.config.config import GoogleTasksConfig
 
@@ -16,7 +16,11 @@ app_logger = logging.getLogger('app_logger')
 
 
 def handle(req):
-    data = req.get_json()
+    data = req.form.to_dict()
+
+    # 单独处理需要多个值的字段
+    checklist = req.form.getlist("checklist[]")
+    data["checklist"] = checklist
 
     register_info = RegisterInfo(data=data)
     register_info.save()
@@ -33,17 +37,7 @@ def reload_record():
         - success: return the latest data from database in JSON format.
         - error: return error message in JSON format.
     """
-
-    email = cookie_utils.get_email_from_cookie()
-    if not email:
-        return jsonify({"error": "Cookie中未找到邮箱"}), 400
-
-    latest_record = get_latest_data_by_email(email)
-    if latest_record:
-        return jsonify({"success": True, "data": latest_record.to_dict()}), 200
-    else:
-        return jsonify({"error": "未找到数据"}), 404
-
+    pass
 
 def authenticate_google_tasks():
     creds = None
@@ -98,7 +92,7 @@ def create_google_task(register_info: RegisterInfo):
         due_string = (appointment_datetime.astimezone(timezone.utc).isoformat(timespec="milliseconds")
                       .replace("+00:00", "Z"))
     else:
-        raise ValueError("appointment_date must be a `datetime` object")
+        raise ValueError("appointmentDate must be a `datetime` object")
 
     task = {
         "title": f"(代确认) {register_info.property_add}",

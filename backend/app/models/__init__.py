@@ -2,11 +2,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
 db = SQLAlchemy()
-migrate = None  # 初始化 Flask-Migrate
+migrate = Migrate()  # 不要传 app，先创建空的 migrate 实例
+
 
 def init_db(app):
     db.init_app(app)
-    global migrate  # 使用全局变量
-    migrate = Migrate(app, db)
-    with app.app_context():
-        db.create_all()
+    migrate.init_app(app, db)

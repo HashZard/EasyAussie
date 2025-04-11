@@ -37,33 +37,29 @@ function update_code() {
     git pull origin master || { echo "❌ 代码更新失败"; exit 1; }
 }
 
+# 数据迁移
+function run_migrations() {
+    echo ">>> 正在初始化数据库迁移系统..."
+    cd $PROJECT_PATH || exit 1
+    export FLASK_APP=backend.app:create_app
+    export FLASK_ENV=production # development/production/testing
+
+    if [ ! -d "$PROJECT_PATH/migrations" ]; then
+        echo "📦 初始化 Alembic 目录..."
+        flask db init || { echo '❌ flask db init 失败'; exit 1; }
+    fi
+
+    echo "🔄 生成迁移脚本..."
+    flask db migrate -m "Auto migration" || { echo '❌ flask db migrate 失败'; exit 1; }
+
+    echo "⏫ 执行数据库升级..."
+    flask db upgrade || { echo '❌ flask db upgrade 失败'; exit 1; }
+
+    echo "✅ 数据库迁移完成"
+}
+
 # 重新启动服务
 function restart_services() {
-    echo ">>> 运行数据库迁移..."
-    source $VENV_PATH/bin/activate  # 激活虚拟环境
-
-    export FLASK_APP=backend.app.app  # 确保 Flask 入口正确
-    export FLASK_ENV=development
-
-    # 检查是否存在 `migrations/` 目录，如果没有则初始化
-    if [ ! -d "$PROJECT_PATH/migrations" ]; then
-        echo ">>> 初始化数据库迁移..."
-        flask db init || { echo "❌ 数据库迁移初始化失败"; exit 1; }
-    fi
-
-    # 确保数据库文件存在
-    if [ ! -f "$PROJECT_PATH/backend/app.db" ]; then
-        echo ">>> 创建数据库..."
-        flask db upgrade || { echo "❌ 数据库初始化失败"; exit 1; }
-    fi
-
-    # 运行迁移
-    echo ">>> 执行数据库迁移..."
-    flask db migrate -m "Auto migration" || { echo "❌ 生成迁移失败"; exit 1; }
-    flask db upgrade || { echo "❌ 数据库迁移失败"; exit 1; }
-
-    echo "✅ 数据库迁移完成！"
-
     echo ">>> 重新启动 Flask (Gunicorn)..."
     sudo systemctl daemon-reload
     sudo systemctl start $SERVICE_NAME
@@ -157,11 +153,13 @@ else
             install_dependencies
             update_systemd_config
             prepare_runtime_environment
+            run_migrations
             restart_services
             ;;
         --restart)
             stop_old_processes
             update_code
+            run_migrations
             restart_services
             ;;
         --help)

@@ -6,6 +6,7 @@ class FormType(Enum):
     COVERLETTER = "coverletter"
     RENTAL_APPLICATION = "rentalApplication"
     AIRPORT_PICKUP = "airportPickup"
+    Test = "test"
 
     @classmethod
     def values(cls):
