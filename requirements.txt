@@ -34,3 +34,6 @@ pip~=23.2.1
 typing_extensions~=4.12.2
 Flask-Migrate~=4.1.0
 gunicorn~=21.2.0
+
+SQLAlchemy~=2.0.38
+alembic~=1.14.1

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>表单数据管理 - Easy Aussie</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/ea-card.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/js/components/layout.js" defer></script>
+</head>
+<body class="bg-gray-100 text-gray-900">
+<div id="header"></div>
+
+<main class="w-full max-w-6xl mx-auto p-6">
+    <div class="ea-card">
+        <h2 class="text-2xl font-bold mb-4 text-center">📋 提交数据管理</h2>
+
+        <form id="searchForm" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <input type="text" name="email" placeholder="邮箱" class="ea-input">
+            <select name="form_type" class="ea-input">
+                <option value="">全部表单类型</option>
+                <option value="inspection">预约看房</option>
+                <option value="coverletter">求职信</option>
+                <option value="rentalApplication">租房申请</option>
+                <option value="airportPickup">接机</option>
+            </select>
+            <button type="submit" class="ea-button">🔍 搜索</button>
+        </form>
+
+        <div class="overflow-x-auto">
+            <table class="table-auto w-full text-sm">
+                <thead>
+                <tr class="bg-gray-200 text-left">
+                    <th class="p-2">ID</th>
+                    <th class="p-2">邮箱</th>
+                    <th class="p-2">类型</th>
+                    <th class="p-2">提交时间</th>
+                    <th class="p-2">操作</th>
+                </tr>
+                </thead>
+                <tbody id="formDataTable">
+                <!-- JS 渲染数据 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<div id="footer" class="mt-12"></div>
+
+<script>
+    async function fetchFormData() {
+        const form = document.getElementById("searchForm");
+        const formData = new FormData(form);
+        const query = new URLSearchParams(formData).toString();
+
+        const res = await fetch(`/admin/forms?${query}`);
+        const data = await res.json();
+
+        const table = document.getElementById("formDataTable");
+        table.innerHTML = "";
+
+        data.results.forEach(item => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="p-2">${item.id}</td>
+                <td class="p-2">${item.email}</td>
+                <td class="p-2">${item.form_type}</td>
+                <td class="p-2">${item.created_gmt}</td>
+                <td class="p-2">
+                    <a href="/pages/admin/form-detail.html?id=${item.id}" class="text-blue-600 hover:underline">查看</a>
+                </td>
+            `;
+            table.appendChild(tr);
+        });
+    }
+
+    document.getElementById("searchForm").addEventListener("submit", e => {
+        e.preventDefault();
+        fetchFormData();
+    });
+
+    fetchFormData();  // 初始加载
+</script>
+</body>
+</html>

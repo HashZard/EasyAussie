@@ -30,9 +30,11 @@ def create_app():
     # 注册 Blueprint
     from backend.app.routes.auth import auth_bp
     from backend.app.routes.standard_form_router import standard_form
+    from backend.app.routes.admin_router import admin_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(standard_form)
+    app.register_blueprint(admin_bp)
 
     print("✅ 当前所有 app 路由:")
     for rule in app.url_map.iter_rules():

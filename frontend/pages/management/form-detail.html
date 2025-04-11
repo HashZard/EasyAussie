@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>表单详情 - Easy Aussie</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/ea-card.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/js/components/layout.js" defer></script>
+</head>
+<body class="bg-gray-100 text-gray-900">
+<div id="header"></div>
+
+<main class="w-full max-w-4xl mx-auto p-6">
+    <div class="ea-card">
+        <h2 class="text-2xl font-bold mb-4">📄 表单详情</h2>
+        <div id="detailContent" class="text-sm space-y-2">
+            <p>正在加载...</p>
+        </div>
+        <div class="mt-6 text-center">
+            <a href="/pages/admin/form-manage.html" class="ea-button">返回管理页面</a>
+        </div>
+    </div>
+</main>
+
+<div id="footer" class="mt-12"></div>
+
+<script>
+    async function loadFormDetail() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get("id");
+        if (!id) return;
+
+        const res = await fetch(`admin/forms/${id}`);
+        const data = await res.json();
+
+        const content = document.getElementById("detailContent");
+        content.innerHTML = "";
+
+        function renderField(label, value) {
+            return `<div><strong>${label}：</strong> ${value || '<span class='text-gray-400'>（空）</span>'}</div>`;
+        }
+
+        content.innerHTML += renderField("ID", data.id);
+        content.innerHTML += renderField("邮箱", data.email);
+        content.innerHTML += renderField("表单类型", data.form_type);
+        content.innerHTML += renderField("备注", data.remark);
+        content.innerHTML += renderField("提交时间", data.created_gmt);
+        content.innerHTML += renderField("更新时间", data.updated_gmt);
+
+        try {
+            const parsed = JSON.parse(data.form_data);
+            content.innerHTML += "<hr class='my-2'><div class='font-semibold text-base'>📋 表单字段：</div>";
+            for (let key in parsed) {
+                const val = Array.isArray(parsed[key]) ? parsed[key].join(", ") : parsed[key];
+                content.innerHTML += renderField(key, val);
+            }
+        } catch (e) {
+            content.innerHTML += renderField("原始表单数据", data.form_data);
+        }
+    }
+
+    loadFormDetail();
+</script>
+</body>
+</html>
