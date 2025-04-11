@@ -20,9 +20,10 @@ function stop_old_processes() {
 
 # 安装依赖（仅在 requirements.txt 更新时执行）
 function install_dependencies() {
+    source $VENV_PATH/bin/activate || { echo "❌ 激活虚拟环境失败"; exit 1; }
+
     if [ ! -f "$REQUIREMENTS_HASH_FILE" ] || ! md5sum -c "$REQUIREMENTS_HASH_FILE" &>/dev/null; then
         echo ">>> 安装或更新 Python 依赖..."
-        source $VENV_PATH/bin/activate || { echo "❌ 激活虚拟环境失败"; exit 1; }
         pip install -r $REQUIREMENTS_FILE || { echo "❌ 依赖安装失败"; exit 1; }
         md5sum $REQUIREMENTS_FILE > $REQUIREMENTS_HASH_FILE  # 更新校验值
     else
@@ -40,7 +41,8 @@ function update_code() {
 # 数据迁移
 function run_migrations() {
     echo ">>> 正在初始化数据库迁移系统..."
-    cd $PROJECT_PATH || exit 1
+    cd $PROJECT_PATH || exit
+
     export FLASK_APP=backend.app:create_app
     export FLASK_ENV=production # development/production/testing
 
