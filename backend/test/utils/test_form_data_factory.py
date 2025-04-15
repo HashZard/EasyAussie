@@ -9,7 +9,7 @@ class TestFormDataFactory:
         "email": "test@example.com",
         "phone": "+61400000000",
         "address": "Unit 101",
-        "appointmentDate": datetime.now().strftime("%Y-%m-%dT%H:%M"),
+        "appointment_date": datetime.now().strftime("%Y-%m-%dT%H:%M"),
         "checklist[]": ["1", "2"],
         "remark": "This is a test remark"
     }

@@ -1,6 +1,6 @@
 import logging
 from flask import Blueprint, request, jsonify
-from backend.app.services import standard_form_handler, inspection_handler
+from backend.app.services import standard_form_handler, inspection_handler, transfer_handler
 from backend.app.constants.form_type import FormType
 
 standard_form = Blueprint('standard_form', __name__, url_prefix='/api')
@@ -33,6 +33,8 @@ def standard_submit():
             form_type = FormType.from_str(form_type_str)
             if form_type == FormType.INSPECTION:
                 inspection_handler.handle(request)
+            elif form_type == FormType.AIRPORT_PICKUP:
+                transfer_handler.handle(request)
 
         app_logger.info(f"[SUBMIT] 表单处理成功：{action}")
         return jsonify({'status': 'success', 'action': action})
