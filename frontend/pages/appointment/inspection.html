@@ -4,10 +4,12 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>预约登记表 - Easy Aussie</title>
-    <link rel="stylesheet" href="/css/common.css"/>
-    <link rel="stylesheet" href="/css/ea-card.css"/>
     <script src="/js/components/ea-form.js" defer></script>
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet" href="/css/common.css"/>
+    <link rel="stylesheet" href="/css/ea-card.css"/>
+
 </head>
 <body class="bg-gray-100 text-gray-900">
 
@@ -23,7 +25,7 @@
         </div>
 
         <form id="standardForm" action="/api/form-submit" method="POST" class="space-y-6"
-              data-success="/pages/submit-success.html" data-fail="/pages/submit-fail.html" >
+              data-success="/pages/submit-success.html" data-fail="/pages/submit-fail.html">
             <!-- 页面标识 -->
             <input type="hidden" name="formType" value="inspection"/>
 

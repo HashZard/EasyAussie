@@ -9,12 +9,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="/js/components/layout.js" defer></script>
 </head>
-<body class="bg-gray-100 text-gray-900">
+<body class="flex flex-col min-h-screen">
 <div id="header"></div>
 
-<main class="w-full max-w-6xl mx-auto p-6">
+<main class="flex-grow p-6 max-w-5xl mx-auto">
     <div class="ea-card">
-        <h2 class="text-2xl font-bold mb-4 text-center">📋 提交数据管理</h2>
+        <div class="relative mb-6">
+            <!-- 返回按钮 -->
+            <div id="back-button"></div>
+            <!-- 页面标题 -->
+            <h2 class="text-2xl font-bold mb-4 text-center">数据管理</h2>
+        </div>
 
         <form id="searchForm" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <input type="text" name="email" placeholder="邮箱" class="ea-input">
@@ -69,7 +74,7 @@
                 <td class="p-2">${item.form_type}</td>
                 <td class="p-2">${item.created_gmt}</td>
                 <td class="p-2">
-                    <a href="/pages/admin/form-detail.html?id=${item.id}" class="text-blue-600 hover:underline">查看</a>
+                    <a href="/pages/management/form-detail.html?id=${item.id}" class="text-blue-600 hover:underline">查看</a>
                 </td>
             `;
             table.appendChild(tr);

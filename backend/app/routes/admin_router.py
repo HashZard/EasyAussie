@@ -32,9 +32,9 @@ def get_standard_forms():
     return jsonify({"results": data})
 
 
-@admin_bp.route("/forms/<int:form_id>", methods=["GET"])
-def get_form_detail(form_id):
-    form = StandardForm.query.get_or_404(form_id)
+@admin_bp.route("/forms/<int:id>", methods=["GET"])
+def get_form_detail(id):
+    form = StandardForm.query.get_or_404(id)
 
     return jsonify({
         "id": form.id,

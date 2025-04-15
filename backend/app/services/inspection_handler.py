@@ -9,7 +9,6 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
 from backend.app.models.register import RegisterInfo
-from backend.app.utils import cookie_utils
 from backend.config.config import GoogleTasksConfig
 
 app_logger = logging.getLogger('app_logger')
