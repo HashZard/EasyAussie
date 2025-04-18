@@ -9,23 +9,27 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="/js/components/layout.js" defer></script>
 </head>
-<body class="bg-gray-100 text-gray-900">
+<body class="flex flex-col min-h-screen bg-gray-100 text-gray-900">
 <div id="header"></div>
 
-<main class="w-full max-w-4xl mx-auto p-6">
-    <div class="ea-card">
+<main class="flex-grow p-6 max-w-7xl mx-auto flex gap-6">
+    <!-- 左侧菜单栏容器 -->
+    <div id="admin-sidebar"></div>
+
+    <!-- 主内容 -->
+    <div class="ea-card flex-1">
         <h2 class="text-2xl font-bold mb-4">📄 表单详情</h2>
         <div id="detailContent" class="text-sm space-y-2">
             <p>正在加载...</p>
         </div>
         <div class="mt-6 text-center">
-            <a href="/pages/management/admin.html" class="ea-button">返回管理页面</a>
+            <a href="/admin.html" class="ea-button">返回管理页面</a>
         </div>
     </div>
 </main>
 
 <div id="footer" class="mt-12"></div>
-
+<script src="/js/services/admin.js"></script>
 <script>
     async function loadFormDetail() {
         const urlParams = new URLSearchParams(window.location.search);

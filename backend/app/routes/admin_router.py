@@ -1,8 +1,17 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 
 from backend.app.models.standard_form import StandardForm
+from backend.app.models.user import User
+from backend.app.services.auth_handler import force_reset_password
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
+
+
+@admin_bp.before_request
+def check_admin_permission():
+    role = session.get("user_role")
+    if role != "admin":
+        return jsonify({"success": False, "message": "权限不足"}), 403
 
 @admin_bp.route("/forms", methods=["GET"])
 def get_standard_forms():
@@ -46,3 +55,22 @@ def get_form_detail(id):
         "created_gmt": form.created_gmt.isoformat() if form.created_gmt else None,
         "updated_gmt": form.updated_gmt.isoformat() if form.updated_gmt else None
     })
+
+@admin_bp.route("/reset-password", methods=["POST"])
+def admin_reset_password():
+    data = request.json
+
+    result = force_reset_password(data["email"], data["new_password"])
+    return jsonify(result)
+
+@admin_bp.route("/users", methods=["GET"])
+def get_user_list():
+    users = User.query.order_by(User.id.asc()).all()
+    data = [
+        {
+            "email": user.email,
+            "role": user.role.value if hasattr(user.role, "value") else user.role
+        }
+        for user in users
+    ]
+    return jsonify({"users": data})

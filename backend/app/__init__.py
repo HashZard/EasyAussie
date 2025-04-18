@@ -1,3 +1,5 @@
+import secrets
+
 from flask import Flask, request
 
 from backend.config.config import DatabaseConfig, LoggerConfig
@@ -28,7 +30,7 @@ def create_app():
     print("Database initialized.")
 
     # 注册 Blueprint
-    from backend.app.routes.auth import auth_bp
+    from backend.app.routes.auth_router import auth_bp
     from backend.app.routes.standard_form_router import standard_form
     from backend.app.routes.admin_router import admin_bp
 
@@ -39,6 +41,10 @@ def create_app():
     print("✅ 当前所有 app 路由:")
     for rule in app.url_map.iter_rules():
         print("➡", rule)
+
+    # 设置 CSRF 保护
+    app.secret_key = secrets.token_hex(32)
+
     return app
 
 

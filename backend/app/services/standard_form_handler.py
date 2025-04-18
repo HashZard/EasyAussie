@@ -4,9 +4,8 @@ import os
 
 from werkzeug.utils import secure_filename
 
-from backend.app.constants.form_type import FormType
 from backend.app.models import db
-from backend.app.models.standard_form import StandardForm
+from backend.app.models.standard_form import StandardForm, FormType
 from backend.config.config import UploadConfig
 
 

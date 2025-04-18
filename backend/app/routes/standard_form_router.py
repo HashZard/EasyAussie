@@ -1,7 +1,8 @@
 import logging
 from flask import Blueprint, request, jsonify
+
+from backend.app.models.standard_form import FormType
 from backend.app.services import standard_form_handler, inspection_handler, transfer_handler
-from backend.app.constants.form_type import FormType
 
 standard_form = Blueprint('standard_form', __name__, url_prefix='/api')
 app_logger = logging.getLogger('app_logger')

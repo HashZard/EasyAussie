@@ -12,8 +12,12 @@
 <body class="flex flex-col min-h-screen">
 <div id="header"></div>
 
-<main class="flex-grow p-6 max-w-5xl mx-auto">
-    <div class="ea-card">
+<main class="flex-grow p-6 max-w-7xl mx-auto flex gap-6">
+    <!-- 左侧菜单栏容器 -->
+    <div id="admin-sidebar"></div>
+
+    <!-- 右侧主内容 -->
+    <div class="ea-card flex-1">
         <div class="relative mb-6">
             <!-- 返回按钮 -->
             <div id="back-button"></div>
@@ -54,6 +58,7 @@
 
 <div id="footer" class="mt-12"></div>
 
+<script src="/js/services/admin.js"></script>
 <script>
     async function fetchFormData() {
         const form = document.getElementById("searchForm");
@@ -69,14 +74,14 @@
         data.results.forEach(item => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
-                <td class="p-2">${item.id}</td>
-                <td class="p-2">${item.email}</td>
-                <td class="p-2">${item.form_type}</td>
-                <td class="p-2">${item.created_gmt}</td>
-                <td class="p-2">
-                    <a href="/pages/management/form-detail.html?id=${item.id}" class="text-blue-600 hover:underline">查看</a>
-                </td>
-            `;
+        <td class="p-2">${item.id}</td>
+        <td class="p-2">${item.email}</td>
+        <td class="p-2">${item.form_type}</td>
+        <td class="p-2">${item.created_gmt}</td>
+        <td class="p-2">
+          <a href="/pages/management/form-detail.html?id=${item.id}" class="text-blue-600 hover:underline">查看</a>
+        </td>
+      `;
             table.appendChild(tr);
         });
     }
@@ -86,7 +91,7 @@
         fetchFormData();
     });
 
-    fetchFormData();  // 初始加载
+    fetchFormData();
 </script>
 </body>
 </html>

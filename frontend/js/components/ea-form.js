@@ -72,6 +72,18 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
+        // 补充逻辑: 动态插入 email 字段
+        const existing = form.querySelector("input[name='email']");
+        if (!existing) {
+            const email = getCookie("user_email");
+            if (email) {
+                const hidden = document.createElement("input");
+                hidden.type = "hidden";
+                hidden.name = "email";
+                hidden.value = email;
+                form.appendChild(hidden);
+            }
+        }
         const submitBtn = form.querySelector('button[type="submit"]');
         if (submitBtn) {
             submitBtn.disabled = true;
@@ -121,24 +133,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// 补充逻辑: 动态插入 email 字段
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("standardForm");
 
-  if (form) {
-    // 提交前动态插入 email 字段
-    form.addEventListener("submit", () => {
-      const existing = form.querySelector("input[name='email']");
-      if (!existing) {
-        const email = getCookie("user_email");
-        if (email) {
-          const hidden = document.createElement("input");
-          hidden.type = "hidden";
-          hidden.name = "email";
-          hidden.value = email;
-          form.appendChild(hidden);
-        }
-      }
-    });
-  }
-});

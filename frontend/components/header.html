@@ -1,25 +1,32 @@
 <meta charset="UTF-8">
 <nav class="bg-blue-600 text-white p-4 flex justify-between items-center">
-  <div class="text-xl font-bold">Easy Aussie</div>
+    <div class="text-xl font-bold">Easy Aussie</div>
 
-  <div class="hidden md:flex gap-6 items-center">
-    <a href="/index.html" class="hover:underline">主页</a>
-    <a href="/pages/service/service.html" class="hover:underline">服务介绍</a>
-    <a href="/pages/management/admin.html" class="hover:underline">管理后台</a>
+    <div class="hidden md:flex gap-6 items-center">
+        <a href="/index.html" class="hover:underline">主页</a>
+        <a href="/pages/service/service.html" class="hover:underline">服务介绍</a>
+        <a href="/pages/management/admin.html" class="hover:underline">管理后台</a>
 
-    <!-- 用户头像 -->
-    <div class="relative group">
-      <img
-        src="/assets/images/avatar.png"
-        class="w-8 h-8 rounded-full border border-white cursor-pointer"
-        alt="用户头像"
-      />
-      <div
-        class="absolute right-0 mt-2 w-48 bg-white text-black rounded-md shadow-md hidden group-hover:block z-10"
-      >
-        <a href="/account/profile.html" class="block px-4 py-2 hover:bg-gray-100">个人资料</a>
-        <a href="/logout" class="block px-4 py-2 hover:bg-gray-100">退出登录</a>
-      </div>
+        <!-- 用户头像下拉菜单 -->
+        <div class="relative">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="toggleUserMenu()">
+                <img
+                        src="/assets/images/avatar.png"
+                        class="w-9 h-9 rounded-full border-2 border-white hover:brightness-110 transition"
+                        alt="用户头像"
+                />
+                <svg class="w-4 h-4 fill-white transition" viewBox="0 0 20 20">
+                    <path d="M5.25 7.5L10 12.25L14.75 7.5H5.25Z"/>
+                </svg>
+            </div>
+
+            <div
+                    id="userDropdown"
+                    class="absolute right-0 mt-2 w-48 bg-white text-black rounded-md shadow-xl hidden z-10"
+            >
+                <a href="/account/profile.html" class="block px-4 py-2 hover:bg-gray-100">👤 个人资料</a>
+                <a href="#" onclick="logout()" class="block px-4 py-2 hover:bg-gray-100">🚪 退出登录</a>
+            </div>
+        </div>
     </div>
-  </div>
 </nav>
