@@ -1,8 +1,8 @@
 from flask import Blueprint, request, jsonify, session
 
-from backend.app.models.standard_form import StandardForm
-from backend.app.models.user import User
-from backend.app.services.auth_handler import force_reset_password
+from backend.app.models.auth_obj.user import User
+from backend.app.models.service_obj.standard_form import StandardForm
+from backend.app.services.auth_handler import force_reset_password, edit_page_permission
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -74,3 +74,18 @@ def get_user_list():
         for user in users
     ]
     return jsonify({"users": data})
+
+# 给某个用户授予页面访问权限
+@admin_bp.route("/permissions", methods=["POST"])
+def edit_permission_route():
+    data = request.get_json()
+    email = data.get("email")
+    page_path = data.get("page_path")
+    action = data.get("action")  # "grant" or "revoke"
+    grant_by = data.get("grant_by")  # 授权人，可选
+
+    if not email or not page_path or not action:
+        return jsonify({"success": False, "message": "缺少必要参数"}), 400
+
+    result = edit_page_permission(email, page_path, action, grant_by)
+    return jsonify(result)

@@ -1,5 +1,6 @@
 from backend.app.models import db
-from backend.app.models.user import User
+from backend.app.models.auth_obj.permission import UserPagePermission
+from backend.app.models.auth_obj.user import User
 import bcrypt
 
 
@@ -31,3 +32,37 @@ def force_reset_password(email: str, new_password: str) -> dict:
     db.session.commit()
 
     return {"success": True, "message": "密码已更新"}
+
+
+def edit_page_permission(email: str, page_path: str, action: str, grant_by: str = None) -> dict:
+    """根据 action（grant/revoke）处理页面权限"""
+
+    existing = UserPagePermission.query.filter_by(user_email=email, page_path=page_path).first()
+
+    if action == "grant":
+        if existing:
+            if not existing.is_active:
+                existing.is_active = True
+                db.session.commit()
+                return {"success": True, "message": "权限已恢复"}
+            return {"success": True, "message": "权限已存在，无需变更"}
+
+        # 新建权限
+        new_permission = UserPagePermission(
+            user_email=email,
+            page_path=page_path,
+            grant_by=grant_by
+        )
+        db.session.add(new_permission)
+        db.session.commit()
+        return {"success": True, "message": "权限授予成功"}
+
+    elif action == "revoke":
+        if existing and existing.is_active:
+            existing.is_active = False
+            db.session.commit()
+            return {"success": True, "message": "权限已撤销"}
+        return {"success": False, "message": "权限不存在或已撤销"}
+
+    else:
+        return {"success": False, "message": "非法操作"}

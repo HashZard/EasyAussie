@@ -8,28 +8,31 @@
     <link rel="stylesheet" href="/css/ea-card.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="/js/components/layout.js" defer></script>
+    <script src="/js/services/admin.js"></script>
 </head>
-<body class="flex flex-col min-h-screen">
+<body class="flex flex-col min-h-screen bg-gray-100 text-gray-900">
 <div id="header"></div>
 
 <main class="flex-grow p-6 max-w-7xl mx-auto flex gap-6">
     <!-- 左侧菜单栏容器 -->
     <div id="admin-sidebar"></div>
 
-    <!-- 右侧主内容 -->
-    <div class="ea-card flex-1">
-        <div class="relative mb-6">
-            <h2 class="text-2xl font-bold text-center">🔐 用户管理</h2>
+    <!-- 主内容 -->
+    <div class="flex-1 space-y-6">
+
+        <!-- 重置密码区域 -->
+        <div class="ea-section">
+            <div class="ea-section-title">🔁 重置用户密码</div>
+            <form id="resetForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <input type="email" name="email" placeholder="用户邮箱" required class="ea-input">
+                <input type="password" name="new_password" placeholder="新密码" required class="ea-input">
+                <button type="submit" class="ea-button">提交重置</button>
+            </form>
         </div>
 
-        <form id="resetForm" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <input type="email" name="email" placeholder="用户邮箱" required class="ea-input">
-            <input type="password" name="new_password" placeholder="新密码" required class="ea-input">
-            <button type="submit" class="ea-button">🔁 提交重置</button>
-        </form>
-
-        <h3 class="text-lg font-semibold mb-2">📋 所有用户列表</h3>
-        <div class="overflow-x-auto">
+        <!-- 用户列表区域 -->
+        <div class="ea-section overflow-x-auto">
+            <div class="ea-section-title">📋 所有用户列表</div>
             <table class="table-auto w-full text-sm">
                 <thead>
                 <tr class="bg-gray-200 text-left">
@@ -42,12 +45,16 @@
                 </tbody>
             </table>
         </div>
+
+        <div class="text-center">
+            <a href="/admin.html" class="ea-button inline-block w-auto">返回管理页面</a>
+        </div>
+
     </div>
 </main>
 
 <div id="footer" class="mt-12"></div>
 
-<script src="/js/services/admin.js"></script>
 <script>
     document.getElementById("resetForm").addEventListener("submit", async e => {
         e.preventDefault();
@@ -65,7 +72,7 @@
             alert("✅ 重置成功");
             form.reset();
         } else {
-            alert("❌ 重置失败: " + result.message);
+            alert("❌ 重置失败: " + (result.message || "未知错误"));
         }
     });
 
@@ -77,14 +84,15 @@
         data.users.forEach(user => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
-        <td class="p-2">${user.email}</td>
-        <td class="p-2">${user.role}</td>
-      `;
+                <td class="p-2">${user.email}</td>
+                <td class="p-2">${user.role}</td>
+            `;
             table.appendChild(tr);
         });
     }
 
     fetchUsers();
 </script>
+
 </body>
 </html>

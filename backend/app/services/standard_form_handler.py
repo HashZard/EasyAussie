@@ -5,7 +5,7 @@ import os
 from werkzeug.utils import secure_filename
 
 from backend.app.models import db
-from backend.app.models.standard_form import StandardForm, FormType
+from backend.app.models.service_obj.standard_form import StandardForm, FormType
 from backend.config.config import UploadConfig
 
 

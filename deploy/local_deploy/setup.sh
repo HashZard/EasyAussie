@@ -6,6 +6,48 @@ FRONTEND_PATH="$PROJECT_ROOT/frontend"
 VENV_PATH="$PROJECT_ROOT/venv"
 NGINX_CONFIG_PATH="$PROJECT_ROOT/deploy/local_deploy/nginx.conf"
 
+# === Shutdown previous Flask and Nginx processes ===
+function shutdown_services() {
+    echo "🧹 Stopping any existing services..."
+
+    # Kill Flask (port 8000)
+    FLASK_PIDS=$(lsof -ti tcp:8000)
+    if [ -n "$FLASK_PIDS" ]; then
+        echo "❌ Killing Flask process(es) on port 8000: $FLASK_PIDS"
+        for pid in $FLASK_PIDS; do
+            kill -9 "$pid"
+        done
+    else
+        echo "✅ No Flask process found on port 8000"
+    fi
+
+    # Kill Nginx (port 3000)
+    NGINX_PIDS=$(lsof -ti tcp:3000)
+    if [ -n "$NGINX_PIDS" ]; then
+        echo "❌ Killing processes on port 3000: $NGINX_PIDS"
+        for pid in $NGINX_PIDS; do
+            kill -9 "$pid"
+        done
+    else
+        echo "✅ No process using port 3000"
+    fi
+
+    # Kill nginx master in this project path
+    NGINX_MASTERS=$(ps aux | grep 'nginx: master' | grep "$PROJECT_ROOT" | awk '{print $2}')
+    if [ -n "$NGINX_MASTERS" ]; then
+        echo "❌ Killing project-specific nginx master(s): $NGINX_MASTERS"
+        echo "$NGINX_MASTERS" | xargs sudo kill -9
+    else
+        echo "✅ No nginx master process found in this project"
+    fi
+
+    # Fallback: kill all nginx
+    echo "🔪 Killing all nginx-related processes..."
+    ps aux | grep '[n]ginx' | awk '{print $2}' | xargs sudo kill -9 2>/dev/null
+
+    sleep 1
+}
+
 # ===== 创建虚拟环境（如不存在） =====
 function setup_venv() {
     if [ ! -d "$VENV_PATH" ]; then
@@ -53,13 +95,8 @@ function open_browser() {
 }
 
 # ===== 执行流程 =====
-echo "🧹 清理旧的 Flask 和 Nginx 进程..."
-# 杀掉之前的 Flask（监听 8000）
-lsof -ti tcp:8000 | xargs kill -9 2>/dev/null
-# 关闭 Nginx（如果已在运行）
-sudo nginx -s stop 2>/dev/null
-
 echo "🔧 开始本地开发环境配置"
+shutdown_services
 setup_venv
 start_flask
 start_nginx

@@ -2,7 +2,7 @@
 
 from backend.app import create_app
 from backend.app.models import db
-from backend.app.models.user import User, UserType
+from backend.app.models.auth_obj.user import User, UserType
 import bcrypt
 
 def main():

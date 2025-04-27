@@ -3,6 +3,8 @@ import random
 
 from captcha.image import ImageCaptcha
 from flask import Blueprint, request, jsonify, session, send_file, make_response
+
+from backend.app.models.auth_obj.permission import UserPagePermission
 from backend.app.services.auth_handler import register_user, verify_user
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api')
@@ -65,3 +67,15 @@ def register():
     result = register_user(email, password)
 
     return jsonify(result), 200 if result["success"] else 409
+
+# 查询某个用户已有的页面权限
+@auth_bp.route("/permissions", methods=["GET"])
+def get_user_permissions():
+    email = request.args.get("email")
+    if not email:
+        return jsonify({"error": "缺少用户邮箱参数"}), 400
+
+    permissions = UserPagePermission.query.filter_by(user_email=email, is_active=True).all()
+    allowed_pages = [p.page_path for p in permissions]
+
+    return jsonify({"allowed_pages": allowed_pages})

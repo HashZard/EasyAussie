@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>权限管理 - Easy Aussie</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/ea-card.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/js/components/layout.js" defer></script>
+    <script src="/js/services/admin.js"></script>
+</head>
+<body class="flex flex-col min-h-screen bg-gray-100 text-gray-900">
+<div id="header"></div>
+
+<main class="flex-grow p-6 max-w-7xl mx-auto flex gap-6">
+    <!-- 左侧菜单栏容器 -->
+    <div id="admin-sidebar"></div>
+
+    <!-- 主内容 -->
+    <div class="flex-1 space-y-6">
+
+        <!-- 添加权限区域 -->
+        <div class="ea-section">
+            <div class="ea-section-title">➕ 添加新权限</div>
+            <form id="addPermissionForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="email" class="ea-label">用户邮箱</label>
+                    <input id="email" name="email" type="email" required class="ea-input">
+                </div>
+                <div>
+                    <label for="page_path" class="ea-label">页面路径</label>
+                    <input id="page_path" name="page_path" type="text" required placeholder="/pages/example.html" class="ea-input">
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="ea-button">添加权限</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 权限列表区域 -->
+        <div class="ea-section">
+            <div class="ea-section-title">🔒 当前权限列表</div>
+            <div id="permissionList" class="space-y-2">
+                <p>正在加载权限数据...</p>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <a href="/admin.html" class="ea-button inline-block w-auto">返回管理页面</a>
+        </div>
+
+    </div>
+</main>
+
+<div id="footer" class="mt-12"></div>
+</body>
+</html>
