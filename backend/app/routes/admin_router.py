@@ -1,8 +1,10 @@
 from flask import Blueprint, request, jsonify, session
 
+from backend.app.models.auth_obj.permission import PagePermission
 from backend.app.models.auth_obj.user import User
 from backend.app.models.service_obj.standard_form import StandardForm
 from backend.app.services.auth_handler import force_reset_password, edit_page_permission
+from backend.app.utils.pagination_util import paginate_query
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -12,6 +14,7 @@ def check_admin_permission():
     role = session.get("user_role")
     if role != "admin":
         return jsonify({"success": False, "message": "权限不足"}), 403
+
 
 @admin_bp.route("/forms", methods=["GET"])
 def get_standard_forms():
@@ -56,6 +59,7 @@ def get_form_detail(id):
         "updated_gmt": form.updated_gmt.isoformat() if form.updated_gmt else None
     })
 
+
 @admin_bp.route("/reset-password", methods=["POST"])
 def admin_reset_password():
     data = request.json
@@ -63,17 +67,34 @@ def admin_reset_password():
     result = force_reset_password(data["email"], data["new_password"])
     return jsonify(result)
 
+
 @admin_bp.route("/users", methods=["GET"])
 def get_user_list():
     users = User.query.order_by(User.id.asc()).all()
     data = [
         {
             "email": user.email,
-            "role": user.role.value if hasattr(user.role, "value") else user.role
+            "role": user.role.value
         }
         for user in users
     ]
     return jsonify({"users": data})
+
+
+@admin_bp.route("/permissions", methods=["GET"])
+def get_permissions_route():
+    email = request.args.get("email")
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 10, type=int)
+
+    query = PagePermission.query
+    if email:
+        query = query.filter_by(email=email)
+
+    query = query.filter_by(is_active=1).order_by(PagePermission.id.asc())
+    result = paginate_query(query, page, per_page)
+    return jsonify({"success": True, **result})
+
 
 # 给某个用户授予页面访问权限
 @admin_bp.route("/permissions", methods=["POST"])
@@ -82,10 +103,10 @@ def edit_permission_route():
     email = data.get("email")
     page_path = data.get("page_path")
     action = data.get("action")  # "grant" or "revoke"
-    grant_by = data.get("grant_by")  # 授权人，可选
+    # grant_by = data.get("grant_by")  # 授权人，可选
 
     if not email or not page_path or not action:
         return jsonify({"success": False, "message": "缺少必要参数"}), 400
 
-    result = edit_page_permission(email, page_path, action, grant_by)
+    result = edit_page_permission(email, page_path, action)
     return jsonify(result)

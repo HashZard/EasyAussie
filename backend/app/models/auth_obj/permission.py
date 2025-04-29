@@ -4,10 +4,10 @@ from backend.app import db
 from backend.app.models.basemodel import BaseModel
 
 
-class UserPagePermission(BaseModel):
-    __tablename__ = 'user_page_permissions'
+class PagePermission(BaseModel):
+    __tablename__ = 'page_permissions'
 
-    user_email = db.Column(db.String(255), nullable=False, comment='用户邮箱')
+    email = db.Column(db.String(255), nullable=False, comment='用户邮箱')
     page_path = db.Column(db.String(512), nullable=False, comment='页面路径')
     # grant_by = db.Column(db.String(255), nullable=True, comment='授权人邮箱')
     is_active = db.Column(db.Boolean, default=True, nullable=False, comment='是否有效')
@@ -15,5 +15,5 @@ class UserPagePermission(BaseModel):
     notes = db.Column(db.Text, nullable=True, comment='备注')
 
     __table_args__ = (
-        db.UniqueConstraint('user_email', 'page_path', name='uniq_user_page'),
+        db.UniqueConstraint('email', 'page_path', name='uniq_user_page'),
     )

@@ -4,7 +4,7 @@ import random
 from captcha.image import ImageCaptcha
 from flask import Blueprint, request, jsonify, session, send_file, make_response
 
-from backend.app.models.auth_obj.permission import UserPagePermission
+from backend.app.models.auth_obj.permission import PagePermission
 from backend.app.services.auth_handler import register_user, verify_user
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api')
@@ -33,6 +33,8 @@ def login():
         response = make_response(jsonify({"success": True}))
         response.set_cookie("user_email", user.email, httponly=False, samesite="Lax")
         response.set_cookie("user_role", user.role.value, httponly=False, samesite="Lax")
+        session['user_role'] = user.role.value
+        session['user_email'] = user.email
         return response
     else:
         return jsonify(result), 401
@@ -75,7 +77,7 @@ def get_user_permissions():
     if not email:
         return jsonify({"error": "缺少用户邮箱参数"}), 400
 
-    permissions = UserPagePermission.query.filter_by(user_email=email, is_active=True).all()
+    permissions = PagePermission.query.filter_by(user_email=email, is_active=True).all()
     allowed_pages = [p.page_path for p in permissions]
 
     return jsonify({"allowed_pages": allowed_pages})

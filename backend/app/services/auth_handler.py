@@ -1,10 +1,10 @@
 from backend.app.models import db
-from backend.app.models.auth_obj.permission import UserPagePermission
-from backend.app.models.auth_obj.user import User
+from backend.app.models.auth_obj.permission import PagePermission
+from backend.app.models.auth_obj.user import User, UserType
 import bcrypt
 
 
-def register_user(email: str, password: str, role: str = "user") -> dict:
+def register_user(email: str, password: str, role: UserType = UserType.USER) -> dict:
     if User.query.filter_by(email=email).first():
         return {"success": False, "message": "邮箱已注册"}
 
@@ -34,10 +34,9 @@ def force_reset_password(email: str, new_password: str) -> dict:
     return {"success": True, "message": "密码已更新"}
 
 
-def edit_page_permission(email: str, page_path: str, action: str, grant_by: str = None) -> dict:
+def edit_page_permission(email: str, page_path: str, action: str) -> dict:
     """根据 action（grant/revoke）处理页面权限"""
-
-    existing = UserPagePermission.query.filter_by(user_email=email, page_path=page_path).first()
+    existing = PagePermission.query.filter_by(email=email, page_path=page_path).first()
 
     if action == "grant":
         if existing:
@@ -48,10 +47,9 @@ def edit_page_permission(email: str, page_path: str, action: str, grant_by: str 
             return {"success": True, "message": "权限已存在，无需变更"}
 
         # 新建权限
-        new_permission = UserPagePermission(
-            user_email=email,
+        new_permission = PagePermission(
+            email=email,
             page_path=page_path,
-            grant_by=grant_by
         )
         db.session.add(new_permission)
         db.session.commit()

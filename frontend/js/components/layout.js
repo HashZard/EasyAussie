@@ -18,10 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (needsPermission) {
             checkPermission(); // 只有需要权限的页面才调用
             console.log("Meta标记了需要鉴权，正在校验权限");
-        } else {
-            console.log("Meta未标记，不校验权限");
         }
-        console.log("用户已登录，执行权限校验");
     }
 
     fetch('/components/header.html')
@@ -75,9 +72,14 @@ function checkLogin(redirect = true) {
 }
 
 function logout() {
-    setCookie("user_email", "", -1); // 清除 cookie
-    alert("退出成功");
-    // window.location.href = "/pages/auth/login.html";
+    // 清空cookie
+    const cookies = document.cookie.split("; ");
+    for (const cookie of cookies) {
+        const eqPos = cookie.indexOf("=");
+        const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+        document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    }
+    window.location.href = "/index.html"; // 跳转到首页
 }
 
 function toggleUserMenu() {
