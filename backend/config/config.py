@@ -61,5 +61,22 @@ class UploadConfig:
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     print(f"📂 Upload Folder: {UPLOAD_FOLDER}")
 
+# ✅ Flask-Security-Too 配置整合
+class SecurityConfig:
+    SECRET_KEY = 'super-secret-key'  # 必须项
+    SECURITY_PASSWORD_SALT = 'salt-salt'  # 密码盐
+
+    # 启用 JSON 模式（前后端分离）
+    SECURITY_JSON = True
+    SECURITY_TOKEN_AUTHENTICATION_MODE = 'bearer'
+    SECURITY_TOKEN_AUTHENTICATION_HEADER = 'Authorization'
+    SECURITY_REGISTERABLE = True
+    SECURITY_SEND_REGISTER_EMAIL = False
+    SECURITY_LOGIN_WITHOUT_CONFIRMATION = True
+
+class AppConfig(GoogleTasksConfig, DatabaseConfig, LoggerConfig, UploadConfig, SecurityConfig):
+    ENV = APP_ENV
+    DEBUG = APP_ENV == "local"
+
 if __name__ == "__main__":
     print("地址:" + DatabaseConfig.SQLALCHEMY_DATABASE_URI)

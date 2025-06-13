@@ -1,66 +1,51 @@
+from flask import session, current_app
+from flask_security import verify_password, hash_password
 from backend.app.models import db
-from backend.app.models.auth_obj.permission import PagePermission
-from backend.app.models.auth_obj.user import User, UserType
-import bcrypt
 
+def handle_login(email, password, code):
+    if not email or not password or not code:
+        return {"success": False, "message": "请填写邮箱、密码和验证码", "status": 400}
 
-def register_user(email: str, password: str, role: UserType = UserType.USER) -> dict:
-    if User.query.filter_by(email=email).first():
-        return {"success": False, "message": "邮箱已注册"}
+    if code != session.get("captcha_code"):
+        return {"success": False, "message": "验证码错误", "status": 403}
+    session.pop("captcha_code", None)
 
-    hashed_pw = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-    new_user = User(email=email, password=hashed_pw, role=role)
-    db.session.add(new_user)
+    user = current_app.user_datastore.find_user(email=email)
+    if not user or not verify_password(password, user.password):
+        return {"success": False, "message": "账号或密码错误", "status": 401}
+
+    if not user.active:
+        return {"success": False, "message": "账号未激活", "status": 403}
+
+    token = user.get_auth_token()
+    roles = [role.name for role in user.roles]
+
+    return {
+        "success": True,
+        "message": "登录成功",
+        "token": token,
+        "user": {
+            "email": user.email,
+            "roles": roles
+        }
+    }
+
+def handle_register(email, password, code):
+    if not email or not password or not code:
+        return {"success": False, "message": "信息不完整", "status": 400}
+
+    if code != session.get("captcha_code"):
+        return {"success": False, "message": "验证码错误", "status": 403}
+    session.pop("captcha_code", None)
+
+    if current_app.user_datastore.find_user(email=email):
+        return {"success": False, "message": "用户已存在", "status": 409}
+
+    user = current_app.user_datastore.create_user(
+        email=email,
+        password=hash_password(password),
+        active=True
+    )
     db.session.commit()
+
     return {"success": True, "message": "注册成功"}
-
-
-def verify_user(email: str, password: str) -> dict:
-    user = User.query.filter_by(email=email).first()
-    if user and bcrypt.checkpw(password.encode(), user.password.encode()):
-        return {"success": True, "user": user}
-    return {"success": False, "message": "账号或密码错误"}
-
-
-def force_reset_password(email: str, new_password: str) -> dict:
-    user = User.query.filter_by(email=email).first()
-    if not user:
-        return {"success": False, "message": "用户不存在"}
-
-    hashed_pw = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
-    user.password = hashed_pw
-    db.session.commit()
-
-    return {"success": True, "message": "密码已更新"}
-
-
-def edit_page_permission(email: str, page_path: str, action: str) -> dict:
-    """根据 action（grant/revoke）处理页面权限"""
-    existing = PagePermission.query.filter_by(email=email, page_path=page_path).first()
-
-    if action == "grant":
-        if existing:
-            if not existing.is_active:
-                existing.is_active = True
-                db.session.commit()
-                return {"success": True, "message": "权限已恢复"}
-            return {"success": True, "message": "权限已存在，无需变更"}
-
-        # 新建权限
-        new_permission = PagePermission(
-            email=email,
-            page_path=page_path,
-        )
-        db.session.add(new_permission)
-        db.session.commit()
-        return {"success": True, "message": "权限授予成功"}
-
-    elif action == "revoke":
-        if existing and existing.is_active:
-            existing.is_active = False
-            db.session.commit()
-            return {"success": True, "message": "权限已撤销"}
-        return {"success": False, "message": "权限不存在或已撤销"}
-
-    else:
-        return {"success": False, "message": "非法操作"}

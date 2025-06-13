@@ -66,3 +66,16 @@ export function renderPagination(navContainer, currentPage, totalPages, onPageCh
         navContainer.appendChild(nextBtn);
     }
 }
+
+/**
+ * 获取指定 cookie 名称的值
+ * @param {string} name - cookie 的键名
+ * @returns {string|null} - 如果存在返回值，否则返回 null
+ */
+export function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    if (match) {
+        return decodeURIComponent(match[2]);
+    }
+    return null;
+}

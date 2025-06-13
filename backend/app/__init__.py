@@ -2,16 +2,21 @@ import secrets
 
 from flask import Flask, request
 
-from backend.config.config import DatabaseConfig, LoggerConfig
-from backend.app.models import db, init_db  # 现在可以安全导入 db
+from backend.config.config import AppConfig
+from backend.app.models import db, init_db
+from backend.app.models.auth_obj.user import User, Role
+from flask_security import Security, SQLAlchemySessionUserDatastore
+
+security = Security()
+user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
 
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object(DatabaseConfig)
+    app.config.from_object(AppConfig)
 
     # 初始化日志
-    loggers = setup_logger()
+    loggers = setup_logger(app.config)
     app_logger = loggers['app_logger']
 
     @app.before_request
@@ -28,6 +33,9 @@ def create_app():
     # 初始化数据库（延迟绑定）
     init_db(app)
     print("Database initialized.")
+
+    # 初始化 Flask-Security-Too
+    app.user_datastore = user_datastore
 
     # 注册 Blueprint
     from backend.app.routes.auth_router import auth_bp
@@ -52,34 +60,45 @@ import logging
 from logging.handlers import RotatingFileHandler
 
 
-def setup_logger():
+def setup_logger(config):
     loggers = {
-        'app_logger': create_logger('app_logger', LoggerConfig.APP_LOG_FILE, logging.DEBUG),
-        'db_logger': create_logger('db_logger', LoggerConfig.DB_LOG_FILE, logging.INFO)
+        'app_logger': create_logger(
+            name='app_logger',
+            filepath=config['APP_LOG_FILE'],
+            level=logging.DEBUG,
+            max_bytes=config['LOG_MAX_BYTES'],
+            backup_count=config['LOG_BACKUP_COUNT']
+        ),
+        'db_logger': create_logger(
+            name='db_logger',
+            filepath=config['DB_LOG_FILE'],
+            level=logging.INFO,
+            max_bytes=config['LOG_MAX_BYTES'],
+            backup_count=config['LOG_BACKUP_COUNT']
+        )
     }
-
     return loggers
 
 
-def create_logger(logger_name, log_file, log_level):
-    # 创建日志格式器
+def create_logger(name, filepath, level, max_bytes, backup_count):
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    logger.propagate = False
+
     formatter = logging.Formatter(
         '%(asctime)s [%(levelname)s] %(name)s [%(filename)s:%(lineno)d]: %(message)s'
     )
 
-    file_handler = RotatingFileHandler(log_file,
-                                       maxBytes=LoggerConfig.LOG_MAX_BYTES, backupCount=LoggerConfig.LOG_BACKUP_COUNT)
-    file_handler.setLevel(log_level)
+    file_handler = RotatingFileHandler(filepath, maxBytes=max_bytes, backupCount=backup_count)
     file_handler.setFormatter(formatter)
-    # 配置控制台日志
+    file_handler.setLevel(level)
+
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.DEBUG)  # 开发环境建议设置为DEBUG
     console_handler.setFormatter(formatter)
-    # 创建根日志对象
-    logger = logging.getLogger(logger_name)
-    logger.setLevel(logging.DEBUG)  # 设置全局日志等级为DEBUG
+    console_handler.setLevel(logging.DEBUG)
+
     logger.addHandler(file_handler)
     logger.addHandler(console_handler)
-    logger.propagate = False
 
     return logger
+

@@ -1,22 +1,14 @@
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify
+from flask_security import roles_required
 
-from backend.app.models.auth_obj.permission import PagePermission
 from backend.app.models.auth_obj.user import User
 from backend.app.models.service_obj.standard_form import StandardForm
-from backend.app.services.auth_handler import force_reset_password, edit_page_permission
-from backend.app.utils.pagination_util import paginate_query
+from backend.app.services.auth_handler import force_reset_password
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
-
-@admin_bp.before_request
-def check_admin_permission():
-    role = session.get("user_role")
-    if role != "admin":
-        return jsonify({"success": False, "message": "权限不足"}), 403
-
-
 @admin_bp.route("/forms", methods=["GET"])
+@roles_required('admin')
 def get_standard_forms():
     email = request.args.get("email", "").strip()
     form_type = request.args.get("form_type", "").strip()
@@ -45,6 +37,7 @@ def get_standard_forms():
 
 
 @admin_bp.route("/forms/<int:id>", methods=["GET"])
+@roles_required('admin')
 def get_form_detail(id):
     form = StandardForm.query.get_or_404(id)
 
@@ -61,6 +54,7 @@ def get_form_detail(id):
 
 
 @admin_bp.route("/reset-password", methods=["POST"])
+@roles_required('admin')
 def admin_reset_password():
     data = request.json
 
@@ -69,6 +63,7 @@ def admin_reset_password():
 
 
 @admin_bp.route("/users", methods=["GET"])
+@roles_required('admin')
 def get_user_list():
     users = User.query.order_by(User.id.asc()).all()
     data = [
@@ -79,34 +74,3 @@ def get_user_list():
         for user in users
     ]
     return jsonify({"users": data})
-
-
-@admin_bp.route("/permissions", methods=["GET"])
-def get_permissions_route():
-    email = request.args.get("email")
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 10, type=int)
-
-    query = PagePermission.query
-    if email:
-        query = query.filter_by(email=email)
-
-    query = query.filter_by(is_active=1).order_by(PagePermission.id.asc())
-    result = paginate_query(query, page, per_page)
-    return jsonify({"success": True, **result})
-
-
-# 给某个用户授予页面访问权限
-@admin_bp.route("/permissions", methods=["POST"])
-def edit_permission_route():
-    data = request.get_json()
-    email = data.get("email")
-    page_path = data.get("page_path")
-    action = data.get("action")  # "grant" or "revoke"
-    # grant_by = data.get("grant_by")  # 授权人，可选
-
-    if not email or not page_path or not action:
-        return jsonify({"success": False, "message": "缺少必要参数"}), 400
-
-    result = edit_page_permission(email, page_path, action)
-    return jsonify(result)

@@ -1,3 +1,5 @@
+import { getCookie } from '/js/components/common.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     // 白名单登录校验
     const whitelist = [
@@ -25,7 +27,20 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(res => res.text())
         .then(html => {
             document.getElementById('header').innerHTML = html;
+            initHeader();
         });
+
+    function initHeader() {
+        const adminLink = document.querySelector('#header a[href="/pages/management/admin.html"]');
+        if (!adminLink) return;
+
+        const userRole = getCookie("user_role");
+        if (userRole === "admin") {
+            adminLink.style.display = "inline";
+        } else {
+            adminLink.style.display = "none";
+        }
+    }
 
     fetch('/components/footer.html')
         .then(res => res.text())
@@ -45,7 +60,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // js/auth.js
-
 function getCookie(name) {
     const cookies = document.cookie.split(";").map(c => c.trim());
     for (let c of cookies) {
