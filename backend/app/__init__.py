@@ -1,19 +1,18 @@
-import secrets
-
 from flask import Flask, request
-
-from backend.config.config import AppConfig
-from backend.app.models import db, init_db
-from backend.app.models.auth_obj.user import User, Role
+from flask_cors import CORS
 from flask_security import Security, SQLAlchemySessionUserDatastore
 
-security = Security()
-user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
+from backend.app.models import db, init_db
+from backend.app.models.auth_obj.user import User, Role
+from backend.config.config import AppConfig
 
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(AppConfig)
+
+    # 启用跨域支持，允许携带 Cookie 或 token
+    CORS(app, supports_credentials=True)
 
     # 初始化日志
     loggers = setup_logger(app.config)
@@ -34,7 +33,15 @@ def create_app():
     init_db(app)
     print("Database initialized.")
 
+
     # 初始化 Flask-Security-Too
+    security = Security()
+    user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
+    security.init_app(app, user_datastore)
+    # 将 security 对象绑定到 app 上
+    app.security = security
+
+
     app.user_datastore = user_datastore
 
     # 注册 Blueprint
@@ -49,9 +56,6 @@ def create_app():
     print("✅ 当前所有 app 路由:")
     for rule in app.url_map.iter_rules():
         print("➡", rule)
-
-    # 设置 CSRF 保护
-    app.secret_key = secrets.token_hex(32)
 
     return app
 

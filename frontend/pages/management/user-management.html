@@ -3,96 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用户管理 - Easy Aussie</title>
+    <title>用户权限与角色管理 - Easy Aussie</title>
     <link rel="stylesheet" href="/css/common.css">
     <link rel="stylesheet" href="/css/ea-card.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="/js/components/layout.js" defer></script>
+    <script src="/js/components/user-auth.js"></script>
+<script src="/js/components/layout.js"></script>
     <script src="/js/services/admin.js"></script>
+    <script src="/js/services/permission.js" type="module"></script>
 </head>
 <body class="flex flex-col min-h-screen bg-gray-100 text-gray-900">
 <div id="header"></div>
 
 <main class="flex-grow p-6 max-w-7xl mx-auto flex gap-6">
-    <!-- 左侧菜单栏容器 -->
     <div id="admin-sidebar"></div>
 
-    <!-- 主内容 -->
     <div class="flex-1 space-y-6">
 
-        <!-- 重置密码区域 -->
+        <!-- 查询权限区域 -->
         <div class="ea-section">
-            <div class="ea-section-title">🔁 重置用户密码</div>
-            <form id="resetForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <input type="email" name="email" placeholder="用户邮箱" required class="ea-input">
-                <input type="password" name="new_password" placeholder="新密码" required class="ea-input">
-                <button type="submit" class="ea-button">提交重置</button>
+            <div class="ea-section-title">🔍 查询权限</div>
+            <form id="searchPermissionForm" class="flex flex-wrap gap-4 items-end">
+                <div>
+                    <label for="searchEmail" class="ea-label">用户邮箱</label>
+                    <input id="searchEmail" type="email" class="ea-input" placeholder="输入邮箱查询">
+                </div>
+                <button type="submit" class="ea-button">查询</button>
+                <button type="button" id="resetSearch" class="ea-button bg-gray-400 hover:bg-gray-500">重置</button>
             </form>
         </div>
 
-        <!-- 用户列表区域 -->
-        <div class="ea-section overflow-x-auto">
-            <div class="ea-section-title">📋 所有用户列表</div>
-            <table class="table-auto w-full text-sm">
-                <thead>
-                <tr class="bg-gray-200 text-left">
-                    <th class="p-2">邮箱</th>
-                    <th class="p-2">身份</th>
-                </tr>
-                </thead>
-                <tbody id="userTable">
-                <!-- JS 渲染用户数据 -->
-                </tbody>
-            </table>
+        <!-- 添加权限区域 -->
+        <div class="ea-section">
+            <div class="ea-section-title">➕ 添加页面权限</div>
+            <form id="addPermissionForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="email" class="ea-label">用户邮箱</label>
+                    <input id="email" name="email" type="email" required class="ea-input">
+                </div>
+                <div>
+                    <label for="page_path" class="ea-label">页面路径</label>
+                    <input id="page_path" name="page_path" type="text" required placeholder="/pages/example.html"
+                           class="ea-input">
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="ea-button">添加权限</button>
+                </div>
+            </form>
         </div>
 
-        <div class="text-center">
-            <a href="/admin.html" class="ea-button inline-block w-auto">返回管理页面</a>
+        <!-- 权限列表 -->
+        <div class="ea-section">
+            <div class="ea-section-title">📋 权限列表</div>
+            <div id="permissionList" class="space-y-2">
+                <p>请先查询权限</p>
+            </div>
+            <div id="paginationControls" class="flex justify-center gap-4 mt-4"></div>
+        </div>
+
+        <!-- 用户角色管理 -->
+        <div class="ea-section">
+            <div class="ea-section-title">👥 用户角色管理</div>
+            <div id="userList" class="space-y-2">
+                <p>加载中...</p>
+            </div>
+        </div>
+
+        <!-- 创建角色区域 -->
+        <div class="ea-section">
+            <div class="ea-section-title">➕ 创建新角色</div>
+            <form id="createRoleForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="role_name" class="ea-label">角色名称</label>
+                    <input id="role_name" name="role_name" type="text" required class="ea-input" placeholder="如 editor">
+                </div>
+                <div>
+                    <label for="role_description" class="ea-label">描述（可选）</label>
+                    <input id="role_description" name="role_description" type="text" class="ea-input">
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="ea-button">创建角色</button>
+                </div>
+            </form>
         </div>
 
     </div>
 </main>
 
 <div id="footer" class="mt-12"></div>
-
-<script>
-    document.getElementById("resetForm").addEventListener("submit", async e => {
-        e.preventDefault();
-        const form = e.target;
-        const res = await fetch("/admin/reset-password", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({
-                email: form.email.value,
-                new_password: form.new_password.value
-            })
-        });
-        const result = await res.json();
-        if (result.success) {
-            alert("✅ 重置成功");
-            form.reset();
-        } else {
-            alert("❌ 重置失败: " + (result.message || "未知错误"));
-        }
-    });
-
-    async function fetchUsers() {
-        const res = await fetch("/admin/users");
-        const data = await res.json();
-        const table = document.getElementById("userTable");
-        table.innerHTML = "";
-        data.users.forEach(user => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td class="p-2">${user.email}</td>
-                <td class="p-2">${user.role}</td>
-            `;
-            table.appendChild(tr);
-        });
-    }
-
-    fetchUsers();
-</script>
-
 </body>
 </html>

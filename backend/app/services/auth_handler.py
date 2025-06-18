@@ -1,5 +1,5 @@
 from flask import session, current_app
-from flask_security import verify_password, hash_password
+from flask_security import verify_password, hash_password, login_user
 from backend.app.models import db
 
 def handle_login(email, password, code):
@@ -17,6 +17,8 @@ def handle_login(email, password, code):
     if not user.active:
         return {"success": False, "message": "账号未激活", "status": 403}
 
+    # 生成 token
+    login_user(user)
     token = user.get_auth_token()
     roles = [role.name for role in user.roles]
 

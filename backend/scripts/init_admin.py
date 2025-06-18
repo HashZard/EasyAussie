@@ -14,7 +14,7 @@ if not user_datastore.find_role('admin'):
     user_datastore.create_role(name='admin', description='管理员')
 
 # 检查用户是否已存在
-admin_email = 'admin@esayaussie.com'
+admin_email = 'admin@easyaussie.com'
 admin_password = 'admin2025'
 
 if not user_datastore.find_user(email=admin_email):

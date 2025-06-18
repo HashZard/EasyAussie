@@ -5,7 +5,8 @@
     <div class="hidden md:flex gap-6 items-center">
         <a href="/index.html" class="hover:underline">主页</a>
         <a href="/pages/service/service.html" class="hover:underline">服务介绍</a>
-        <a href="/pages/management/admin.html" class="hover:underline" style="display: none;">管理后台</a>
+        <a href="/pages/management/admin.html" class="hover:underline role-required" data-role="admin"
+           style="display: none;">管理后台</a>
 
         <!-- 用户头像下拉菜单 -->
         <div class="relative">
@@ -22,10 +23,9 @@
 
             <div
                     id="userDropdown"
-                    class="absolute right-0 mt-2 w-48 bg-white text-black rounded-md shadow-xl hidden z-10"
+                    class="absolute right-0 mt-2 w-40 bg-white text-black rounded-md shadow-xl hidden z-10"
             >
-                <a href="/account/profile.html" class="block px-4 py-2 hover:bg-gray-100">👤 个人资料</a>
-                <a href="#" onclick="logout()" class="block px-4 py-2 hover:bg-gray-100">🚪 退出登录</a>
+                <a href="#" onclick="UserAuth.logout()" class="block px-4 py-2 hover:bg-gray-100">🚪 退出登录</a>
             </div>
         </div>
     </div>

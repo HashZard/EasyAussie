@@ -25,3 +25,5 @@ class User(BaseModel, UserMixin):
     active = db.Column(db.Boolean(), default=True)
     roles = db.relationship('Role', secondary='roles_users',
                             backref=db.backref('users', lazy='dynamic'))
+
+    fs_uniquifier = db.Column(db.String(64), unique=True, nullable=False, default=lambda: str(uuid.uuid4()))

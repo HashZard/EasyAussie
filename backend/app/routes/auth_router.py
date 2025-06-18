@@ -2,12 +2,14 @@
 import random
 
 from captcha.image import ImageCaptcha
-from flask import Blueprint, request, jsonify, session, send_file
+from flask import Blueprint, request, jsonify, session, send_file, g
 from flask_security import logout_user, auth_required
 
 from backend.app.services.auth_handler import handle_login, handle_register
+from backend.app.utils.auth_utils import token_required
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api')
+
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
@@ -22,7 +24,7 @@ def login():
 
 
 @auth_bp.route("/logout", methods=["POST"])
-@auth_required('token')
+@token_required
 def logout():
     logout_user()
     return jsonify({"success": True})
@@ -50,3 +52,14 @@ def register():
     result = handle_register(email, password, code)
     status = 200 if result["success"] else result.get("status", 400)
     return jsonify(result), status
+
+
+@auth_bp.route("/profile", methods=["GET"])
+@token_required
+def profile():
+    user = g.current_user
+    return jsonify({
+        "email": user.email,
+        "roles": [role.name for role in user.roles],
+        "active": user.active
+    })

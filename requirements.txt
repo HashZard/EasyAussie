@@ -1,5 +1,5 @@
 alembic==1.14.1
-bcrypt==4.3.0
+bcrypt<4.0.0
 blinker==1.8.2
 cachetools==5.5.1
 captcha==0.7.1
@@ -10,13 +10,14 @@ Flask==3.0.3
 Flask-Migrate==4.1.0
 Flask-SQLAlchemy==3.1.1
 Flask-Security-Too==5.3.1
+Flask-Cors>=3.0.10
 google-api-core==2.24.1
 google-api-python-client==2.160.0
 google-auth==2.38.0
 google-auth-httplib2==0.2.0
 google-auth-oauthlib==1.2.1
 googleapis-common-protos==1.66.0
-gunicorn==21.2.0
+gunicorn==23.0.0
 httplib2==0.22.0
 idna==3.10
 importlib_metadata==8.5.0
@@ -32,9 +33,10 @@ protobuf==5.29.3
 pyasn1==0.6.1
 pyasn1_modules==0.4.1
 pyparsing==3.1.4
-requests==2.32.3
+requests==2.32.4
 requests-oauthlib==2.0.0
 rsa==4.9
+setuptools>=65.5.1
 SQLAlchemy==2.0.40
 typing_extensions==4.12.2
 uritemplate==4.1.1

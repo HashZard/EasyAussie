@@ -2,57 +2,9 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>用户登录 - Easy Aussie</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        function setCookie(name, value, days = 1) {
-            const expires = new Date(Date.now() + days * 86400000).toUTCString();
-            document.cookie = `${name}=${value}; expires=${expires}; path=/`;
-        }
-
-        function getCookie(name) {
-            const value = document.cookie.match('(^|;)\s*' + name + '\s*=\s*([^;]+)');
-            return value ? value.pop() : '';
-        }
-
-        function getReturnUrl() {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get("next") || "/index.html";
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const loginForm = document.getElementById("loginForm");
-            const captchaImg = document.getElementById("captchaImg");
-
-            captchaImg.addEventListener("click", () => {
-                captchaImg.src = "/api/captcha?reload=" + Date.now();
-            });
-
-            loginForm.addEventListener("submit", async function (e) {
-                e.preventDefault();
-                const email = document.getElementById("email").value.trim();
-                const password = document.getElementById("password").value.trim();
-                const code = document.getElementById("code").value.trim();
-
-                const response = await fetch("/api/login", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({email, password, code})
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    alert("登录成功！即将跳转...");
-                    window.location.href = getReturnUrl();
-                } else {
-                    alert("登录失败：" + result.message);
-                    captchaImg.click(); // 自动刷新验证码
-                }
-            });
-        });
-    </script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
 <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
@@ -69,17 +21,67 @@
         <div>
             <label for="code" class="block font-medium">验证码：</label>
             <div class="flex gap-2 items-center">
-                <input type="text" id="code" name="code" maxlength="4" placeholder="请输入验证码" required
+                <input type="text" id="code" maxlength="4" placeholder="请输入验证码" required
                        class="w-full p-2 border rounded-md">
                 <img id="captchaImg" src="/api/captcha" alt="验证码" class="h-10 cursor-pointer border rounded">
             </div>
         </div>
-        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition">登录
+        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition">
+            登录
         </button>
         <div class="text-center mt-2">
             <a href="/pages/auth/register.html" class="text-sm text-blue-600 hover:underline">没有账号？点击注册</a>
         </div>
     </form>
 </div>
+
+<script>
+    function getReturnUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get("next") || "/index.html";
+    }
+
+    function saveLoginInfo(token, user) {
+        // 打印日志
+        console.log("保存登录信息:", {token, user});
+        localStorage.setItem("auth_token", token);
+        localStorage.setItem("user_info", JSON.stringify(user));
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const loginForm = document.getElementById("loginForm");
+        const captchaImg = document.getElementById("captchaImg");
+
+        captchaImg.addEventListener("click", () => {
+            captchaImg.src = "/api/captcha?reload=" + Date.now();
+        });
+
+        loginForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const code = document.getElementById("code").value.trim();
+
+            const response = await fetch("/api/login", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                credentials: "include",
+                body: JSON.stringify({email, password, code})
+            });
+
+            const result = await response.json();
+            console.log("登录结果:", result);
+
+            if (result.success) {
+                saveLoginInfo(result.token, result.user);
+                // alert("登录成功，跳转中...");
+                window.location.href = getReturnUrl();
+            } else {
+                alert("登录失败：" + (result.message || "请重试"));
+                captchaImg.click();
+            }
+        });
+    });
+</script>
 </body>
 </html>

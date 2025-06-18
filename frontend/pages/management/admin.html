@@ -10,7 +10,7 @@
     <script src="/js/components/layout.js" defer></script>
     <script src="/js/services/admin.js" defer></script>
 </head>
-<body class="flex flex-col min-h-screen bg-gray-100 text-gray-900">
+<body data-required-role="admin" class="flex flex-col min-h-screen bg-gray-100 text-gray-900">
 <div id="header"></div>
 
 <main class="flex-grow p-6 max-w-7xl mx-auto flex gap-6">
@@ -41,16 +41,16 @@
             <div class="ea-section-title">📋 表单数据列表</div>
             <table class="table-auto w-full text-sm">
                 <thead>
-                    <tr class="bg-gray-200 text-left">
-                        <th class="p-2">ID</th>
-                        <th class="p-2">邮箱</th>
-                        <th class="p-2">类型</th>
-                        <th class="p-2">提交时间</th>
-                        <th class="p-2">操作</th>
-                    </tr>
+                <tr class="bg-gray-200 text-left">
+                    <th class="p-2">ID</th>
+                    <th class="p-2">邮箱</th>
+                    <th class="p-2">类型</th>
+                    <th class="p-2">提交时间</th>
+                    <th class="p-2">操作</th>
+                </tr>
                 </thead>
                 <tbody id="formDataTable">
-                    <!-- JS 渲染数据 -->
+                <!-- JS 渲染数据 -->
                 </tbody>
             </table>
         </div>

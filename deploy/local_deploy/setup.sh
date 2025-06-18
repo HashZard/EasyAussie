@@ -88,6 +88,31 @@ function check_services() {
     curl -s http://localhost:3000/index.html >/dev/null && echo "✅ Nginx 正常运行" || echo "❌ Nginx 未响应"
 }
 
+
+# 数据迁移
+function run_migrations() {
+    echo ">>> 正在初始化数据库迁移系统..."
+    cd $PROJECT_ROOT || exit
+
+    export FLASK_APP=backend.app:create_app
+    export FLASK_ENV=production # development/production/testing
+
+    if [ ! -d "$PROJECT_ROOT/migrations" ]; then
+        echo "📦 初始化 Alembic 目录..."
+        flask db init || { echo '❌ flask db init 失败'; exit 1; }
+    else
+        echo "📦 Alembic 已存在，跳过 init"
+    fi
+
+    echo "🔄 生成迁移脚本..."
+    flask db migrate -m "Auto migration" || { echo '❌ flask db migrate 失败'; exit 1; }
+
+    echo "⏫ 执行数据库升级..."
+    flask db upgrade || { echo '❌ flask db upgrade 失败'; exit 1; }
+
+    echo "✅ 数据库迁移完成"
+}
+
 # ===== 自动打开浏览器页面 =====
 function open_browser() {
     echo "🌍 打开浏览器: http://localhost:3000/index.html"
@@ -101,5 +126,6 @@ setup_venv
 start_flask
 start_nginx
 check_services
+run_migrations
 open_browser
 echo "🎉 本地服务已全部启动！"
