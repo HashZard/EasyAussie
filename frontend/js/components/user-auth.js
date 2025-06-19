@@ -16,7 +16,7 @@ const UserAuth = (() => {
     }
 
     // 带 token 的 fetch，并自动处理未登录状态
-    async function authFetch(url, options = {}) {
+    async function authFetch(url, options = {}, allowAnonymous = false) {
         const token = localStorage.getItem("auth_token");
 
         const headers = {
@@ -33,7 +33,7 @@ const UserAuth = (() => {
 
         const res = await fetch(url, fetchOptions);
 
-        if (res.status === 401 || res.status === 403) {
+        if ((res.status === 401 || res.status === 403) && !allowAnonymous) {
             const current = encodeURIComponent(location.pathname);
             location.href = `/pages/auth/login.html?next=${current}`;
             throw new Error("未登录或无权限");
@@ -45,8 +45,19 @@ const UserAuth = (() => {
     // 拉取用户信息，并缓存
     async function fetchAndCacheUser() {
         try {
-            const res = await authFetch("/api/profile");
+            const res = await authFetch("/api/profile", {}, true); // 允许匿名
+            if (res.status === 401 || res.status === 403) {
+                clearUser();
+                return null;
+            }
+
             const user = await res.json();
+            // 防止错误结构被当成正常 user
+            if (!user || typeof user !== "object" || !Array.isArray(user.roles)) {
+                clearUser();
+                return null;
+            }
+
             localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
             return user;
         } catch (err) {

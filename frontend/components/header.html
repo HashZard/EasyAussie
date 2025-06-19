@@ -21,11 +21,27 @@
                 </svg>
             </div>
 
+            <!-- 登录后菜单 -->
             <div
-                    id="userDropdown"
-                    class="absolute right-0 mt-2 w-40 bg-white text-black rounded-md shadow-xl hidden z-10"
+                    id="userMenuLoggedIn"
+                    class="absolute right-0 mt-2 w-44 bg-white text-black rounded-md shadow-xl hidden z-10"
             >
+                <div class="px-4 py-2 text-gray-600 text-sm">👤 欢迎，用户</div>
+                <hr class="my-1"/>
+                <a href="/pages/profile/profile.html" class="block px-4 py-2 hover:bg-gray-100">📄 我的资料</a>
+                <a href="/pages/management/admin.html" class="block px-4 py-2 hover:bg-gray-100 role-required"
+                   data-role="admin"
+                   style="display: none;">🛠 管理后台</a>
+                <hr class="my-1"/>
                 <a href="#" onclick="UserAuth.logout()" class="block px-4 py-2 hover:bg-gray-100">🚪 退出登录</a>
+            </div>
+
+            <!-- 未登录菜单 -->
+            <div
+                    id="userMenuLoggedOut"
+                    class="absolute right-0 mt-2 w-44 bg-white text-black rounded-md shadow-xl hidden z-10"
+            >
+                <a href="/pages/auth/login.html" class="block px-4 py-2 hover:bg-gray-100">🔐 登录</a>
             </div>
         </div>
     </div>

@@ -101,8 +101,23 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function toggleUserMenu() {
-    const dropdown = document.getElementById("userDropdown");
-    if (dropdown) {
-        dropdown.classList.toggle("hidden");
+    const loggedIn = UserAuth.getCurrentUser(); // 你自己的登录状态判断逻辑
+    const menuIn = document.getElementById('userMenuLoggedIn');
+    const menuOut = document.getElementById('userMenuLoggedOut');
+
+    // 隐藏另一个菜单，显示当前菜单
+    if (loggedIn) {
+        menuIn.classList.toggle('hidden');
+        menuOut.classList.add('hidden');
+    } else {
+        menuOut.classList.toggle('hidden');
+        menuIn.classList.add('hidden');
     }
 }
+
+// 页面加载时根据登录状态显示正确菜单（可选）
+document.addEventListener('DOMContentLoaded', () => {
+    const loggedIn = UserAuth.getCurrentUser();
+    document.getElementById('userMenuLoggedIn').style.display = loggedIn ? 'block' : 'none';
+    document.getElementById('userMenuLoggedOut').style.display = loggedIn ? 'none' : 'block';
+});
