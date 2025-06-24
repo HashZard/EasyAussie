@@ -20,8 +20,8 @@ def create_app():
 
     @app.before_request
     def before_request():
-        app_logger.info(f"Request: {request.method} {request.path}"
-                        + f" with data: {request.get_json(silent=True)}")
+        data = request.get_json(silent=True) or request.form or request.args or None
+        app_logger.info(f"Request: {request.method} {request.path} with data: {data}")
 
     @app.after_request
     def after_request(response):
@@ -33,14 +33,12 @@ def create_app():
     init_db(app)
     print("Database initialized.")
 
-
     # 初始化 Flask-Security-Too
     security = Security()
     user_datastore = SQLAlchemySessionUserDatastore(db.session, User, Role)
     security.init_app(app, user_datastore)
     # 将 security 对象绑定到 app 上
     app.security = security
-
 
     app.user_datastore = user_datastore
 
@@ -105,4 +103,3 @@ def create_logger(name, filepath, level, max_bytes, backup_count):
     logger.addHandler(console_handler)
 
     return logger
-

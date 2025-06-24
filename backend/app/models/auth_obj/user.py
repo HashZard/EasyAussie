@@ -14,6 +14,10 @@ class RolesUsers(db.Model):
 class Role(BaseModel, RoleMixin):
     __tablename__ = 'role'
 
+    # (default): 默认角色
+    # admin: 管理员
+    # paid1: coverletter
+    # paid2: application
     name = db.Column(db.String(80), unique=True, nullable=False)
     description = db.Column(db.String(255))
 

@@ -31,68 +31,107 @@
 }
 
 .ea-section {
-  background-color: white;
-  border: 1px solid #e5e7eb;       /* border-gray-200 */
-  border-radius: 0.5rem;           /* rounded-lg */
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);  /* shadow-sm */
-  padding: 1.5rem;                 /* p-6 */
-  margin-bottom: 1.5rem;          /* spacing between sections */
+    background-color: white;
+    border: 1px solid #e5e7eb; /* border-gray-200 */
+    border-radius: 0.5rem; /* rounded-lg */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* shadow-sm */
+    padding: 1.5rem; /* p-6 */
+    margin-bottom: 1.5rem; /* spacing between sections */
 }
 
 .ea-section-title {
-  font-size: 1.25rem;              /* text-lg */
-  font-weight: 600;                /* font-bold */
-  margin-bottom: 1rem;            /* spacing below title */
-  border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 0.5rem;
+    font-size: 1.25rem; /* text-lg */
+    font-weight: 600; /* font-bold */
+    margin-bottom: 1rem; /* spacing below title */
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 0.5rem;
 }
 
 .ea-radio-option {
-  display: inline-flex;     /* 水平排列 input + label */
-  align-items: center;      /* 垂直居中 */
-  width: 6rem;              /* 固定宽度，确保对齐 */
-  margin-right: 1rem;       /* 每个选项间隔 */
+    display: inline-flex; /* 水平排列 input + label */
+    align-items: center; /* 垂直居中 */
+    width: 6rem; /* 固定宽度，确保对齐 */
+    margin-right: 1rem; /* 每个选项间隔 */
 }
 
 .ea-inline-field {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .ea-inline-label {
-  font-weight: 600;
-  min-width: 6rem; /* 统一 label 宽度 */
-  white-space: nowrap;
+    font-weight: 600;
+    min-width: 6rem; /* 统一 label 宽度 */
+    white-space: nowrap;
 }
 
 .ea-select {
-  padding: 0.5rem;
-  border: 1px solid #d1d5db; /* Tailwind border-gray-300 */
-  border-radius: 0.375rem;   /* rounded-md */
-  width: 9rem;               /* 等价于 w-36 */
+    padding: 0.5rem;
+    border: 1px solid #d1d5db; /* Tailwind border-gray-300 */
+    border-radius: 0.375rem; /* rounded-md */
+    width: 9rem; /* 等价于 w-36 */
 }
 
 .ea-select-disabled {
-  background-color: #f9fafb;   /* bg-gray-100 */
-  color: #9ca3af;              /* text-gray-400 */
+    background-color: #f9fafb; /* bg-gray-100 */
+    color: #9ca3af; /* text-gray-400 */
 }
 
 .ea-number-input {
-  padding: 0.5rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  width: 9rem;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    width: 9rem;
 }
 
 /* 移除箭头：Chrome, Safari, Edge */
 .ea-number-input::-webkit-inner-spin-button,
 .ea-number-input::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 /* 移除箭头：Firefox */
 .ea-number-input {
-  -moz-appearance: textfield;
+    -moz-appearance: textfield;
+}
+
+/* 表单容器统一布局样式 */
+.form-container {
+    background-color: white;
+    padding: 2rem; /* 相当于 Tailwind 的 p-8 */
+    border-radius: 0.5rem; /* rounded-lg */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* shadow-md */
+    width: 100%;
+    max-width: 28rem; /* max-w-md */
+    margin: auto;
+}
+
+/* 表单标题样式 */
+.form-title {
+    font-size: 1.5rem; /* text-2xl */
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1.5rem; /* mb-6 */
+}
+
+/* 验证码图片样式统一 */
+.captcha-img {
+    height: 2.5rem; /* h-10 */
+    cursor: pointer;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem; /* rounded */
+}
+
+/* 注册/登录链接提示区域 */
+.link-hint {
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+.link-hint a {
+    font-size: 0.875rem; /* text-sm */
+    color: #2563eb; /* text-blue-600 */
+    text-decoration: underline;
 }

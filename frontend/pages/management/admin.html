@@ -1,99 +1,32 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>表单数据管理 - Easy Aussie</title>
-    <link rel="stylesheet" href="/css/common.css">
-    <link rel="stylesheet" href="/css/ea-card.css">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>后台管理 - Easy Aussie</title>
+    <link rel="stylesheet" href="/css/common.css"/>
+    <link rel="stylesheet" href="/css/ea-card.css"/>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="/js/components/user-auth.js" defer></script>
     <script src="/js/components/layout.js" defer></script>
-    <script src="/js/services/admin.js" defer></script>
+    <script type="module" src="/js/components/admin-spa.js"></script>
 </head>
 <body data-required-role="admin" class="flex flex-col min-h-screen bg-gray-100 text-gray-900">
 <div id="header"></div>
 
 <main class="flex-grow p-6 max-w-7xl mx-auto flex gap-6">
-    <!-- 左侧菜单栏容器 -->
-    <div id="admin-sidebar"></div>
-
-    <!-- 主内容 -->
-    <div class="flex-1 space-y-6">
-
-        <!-- 搜索区域 -->
-        <div class="ea-section">
-            <div class="ea-section-title">🔍 筛选表单数据</div>
-            <form id="searchForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <input type="text" name="email" placeholder="邮箱" class="ea-input">
-                <select name="form_type" class="ea-select">
-                    <option value="">全部表单类型</option>
-                    <option value="inspection">预约看房</option>
-                    <option value="coverletter">求职信</option>
-                    <option value="rentalApplication">租房申请</option>
-                    <option value="airportPickup">接机</option>
-                </select>
-                <button type="submit" class="ea-button">搜索</button>
-            </form>
-        </div>
-
-        <!-- 表格区域 -->
-        <div class="ea-section overflow-x-auto">
-            <div class="ea-section-title">📋 表单数据列表</div>
-            <table class="table-auto w-full text-sm">
-                <thead>
-                <tr class="bg-gray-200 text-left">
-                    <th class="p-2">ID</th>
-                    <th class="p-2">邮箱</th>
-                    <th class="p-2">类型</th>
-                    <th class="p-2">提交时间</th>
-                    <th class="p-2">操作</th>
-                </tr>
-                </thead>
-                <tbody id="formDataTable">
-                <!-- JS 渲染数据 -->
-                </tbody>
-            </table>
-        </div>
-
+    <!-- 左侧菜单栏 -->
+    <div id="admin-sidebar">
+        <aside class="w-48 p-4 space-y-4 bg-gray-100 rounded-lg shadow">
+            <a href="/pages/management/form-list.html" class="block hover:text-blue-600">表单管理</a>
+            <a href="/pages/management/user-management.html" class="block hover:text-blue-600">重置密码</a>
+        </aside>
     </div>
+
+    <!-- SPA 主内容容器 -->
+    <div id="admin-content" class="flex-1 space-y-6 max-w-5xl w-full"></div>
 </main>
 
 <div id="footer" class="mt-12"></div>
-
-<script>
-    async function fetchFormData() {
-        const form = document.getElementById("searchForm");
-        const formData = new FormData(form);
-        const query = new URLSearchParams(formData).toString();
-
-        const res = await fetch(`/admin/forms?${query}`);
-        const data = await res.json();
-
-        const table = document.getElementById("formDataTable");
-        table.innerHTML = "";
-
-        data.results.forEach(item => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td class="p-2">${item.id}</td>
-                <td class="p-2">${item.email}</td>
-                <td class="p-2">${item.form_type}</td>
-                <td class="p-2">${item.created_gmt}</td>
-                <td class="p-2">
-                    <a href="/pages/management/form-detail.html?id=${item.id}" class="text-blue-600 hover:underline">查看</a>
-                </td>
-            `;
-            table.appendChild(tr);
-        });
-    }
-
-    document.getElementById("searchForm").addEventListener("submit", e => {
-        e.preventDefault();
-        fetchFormData();
-    });
-
-    fetchFormData();
-</script>
 </body>
 </html>

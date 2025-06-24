@@ -1,95 +1,68 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用户权限与角色管理 - Easy Aussie</title>
-    <link rel="stylesheet" href="/css/common.css">
-    <link rel="stylesheet" href="/css/ea-card.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="/js/components/user-auth.js"></script>
-<script src="/js/components/layout.js"></script>
-    <script src="/js/services/admin.js"></script>
-    <script src="/js/services/permission.js" type="module"></script>
-</head>
-<body class="flex flex-col min-h-screen bg-gray-100 text-gray-900">
-<div id="header"></div>
-
-<main class="flex-grow p-6 max-w-7xl mx-auto flex gap-6">
-    <div id="admin-sidebar"></div>
-
-    <div class="flex-1 space-y-6">
-
-        <!-- 查询权限区域 -->
-        <div class="ea-section">
-            <div class="ea-section-title">🔍 查询权限</div>
-            <form id="searchPermissionForm" class="flex flex-wrap gap-4 items-end">
-                <div>
-                    <label for="searchEmail" class="ea-label">用户邮箱</label>
-                    <input id="searchEmail" type="email" class="ea-input" placeholder="输入邮箱查询">
-                </div>
-                <button type="submit" class="ea-button">查询</button>
-                <button type="button" id="resetSearch" class="ea-button bg-gray-400 hover:bg-gray-500">重置</button>
-            </form>
-        </div>
-
-        <!-- 添加权限区域 -->
-        <div class="ea-section">
-            <div class="ea-section-title">➕ 添加页面权限</div>
-            <form id="addPermissionForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label for="email" class="ea-label">用户邮箱</label>
-                    <input id="email" name="email" type="email" required class="ea-input">
-                </div>
-                <div>
-                    <label for="page_path" class="ea-label">页面路径</label>
-                    <input id="page_path" name="page_path" type="text" required placeholder="/pages/example.html"
-                           class="ea-input">
-                </div>
-                <div class="flex items-end">
-                    <button type="submit" class="ea-button">添加权限</button>
-                </div>
-            </form>
-        </div>
-
-        <!-- 权限列表 -->
-        <div class="ea-section">
-            <div class="ea-section-title">📋 权限列表</div>
-            <div id="permissionList" class="space-y-2">
-                <p>请先查询权限</p>
+<div class="w-full" style="max-width: 1000px; margin: 0 auto;">
+    <!-- 查询权限区域 -->
+    <div class="ea-section">
+        <div class="ea-section-title">🔍 查询权限</div>
+        <form id="searchPermissionForm" class="flex flex-wrap gap-4 items-end">
+            <div>
+                <label for="searchEmail" class="ea-label">用户邮箱</label>
+                <input id="searchEmail" type="email" class="ea-input" placeholder="输入邮箱查询"/>
             </div>
-            <div id="paginationControls" class="flex justify-center gap-4 mt-4"></div>
-        </div>
-
-        <!-- 用户角色管理 -->
-        <div class="ea-section">
-            <div class="ea-section-title">👥 用户角色管理</div>
-            <div id="userList" class="space-y-2">
-                <p>加载中...</p>
-            </div>
-        </div>
-
-        <!-- 创建角色区域 -->
-        <div class="ea-section">
-            <div class="ea-section-title">➕ 创建新角色</div>
-            <form id="createRoleForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label for="role_name" class="ea-label">角色名称</label>
-                    <input id="role_name" name="role_name" type="text" required class="ea-input" placeholder="如 editor">
-                </div>
-                <div>
-                    <label for="role_description" class="ea-label">描述（可选）</label>
-                    <input id="role_description" name="role_description" type="text" class="ea-input">
-                </div>
-                <div class="flex items-end">
-                    <button type="submit" class="ea-button">创建角色</button>
-                </div>
-            </form>
-        </div>
-
+            <button type="submit" class="ea-button">查询</button>
+            <button type="button" id="resetSearch" class="ea-button bg-gray-400 hover:bg-gray-500">重置</button>
+        </form>
     </div>
-</main>
 
-<div id="footer" class="mt-12"></div>
-</body>
-</html>
+    <!-- 添加权限区域 -->
+    <div class="ea-section">
+        <div class="ea-section-title">➕ 添加页面权限</div>
+        <form id="addPermissionForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label for="email" class="ea-label">用户邮箱</label>
+                <input id="email" name="email" type="email" required class="ea-input"/>
+            </div>
+            <div>
+                <label for="page_path" class="ea-label">页面路径</label>
+                <input id="page_path" name="page_path" type="text" required placeholder="/pages/example.html"
+                       class="ea-input"/>
+            </div>
+            <div class="flex items-end">
+                <button type="submit" class="ea-button">添加权限</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 权限列表 -->
+    <div class="ea-section">
+        <div class="ea-section-title">📋 权限列表</div>
+        <div id="permissionList" class="space-y-2">
+            <p>请先查询权限</p>
+        </div>
+        <div id="paginationControls" class="flex justify-center gap-4 mt-4"></div>
+    </div>
+
+    <!-- 用户角色管理 -->
+    <div class="ea-section">
+        <div class="ea-section-title">👥 用户角色管理</div>
+        <div id="userList" class="space-y-2">
+            <p>加载中...</p>
+        </div>
+    </div>
+
+    <!-- 创建角色区域 -->
+    <div class="ea-section">
+        <div class="ea-section-title">➕ 创建新角色</div>
+        <form id="createRoleForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label for="role_name" class="ea-label">角色名称</label>
+                <input id="role_name" name="role_name" type="text" required class="ea-input" placeholder="如 editor"/>
+            </div>
+            <div>
+                <label for="role_description" class="ea-label">描述（可选）</label>
+                <input id="role_description" name="role_description" type="text" class="ea-input"/>
+            </div>
+            <div class="flex items-end">
+                <button type="submit" class="ea-button">创建角色</button>
+            </div>
+        </form>
+    </div>
+</div>

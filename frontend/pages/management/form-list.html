@@ -1,0 +1,36 @@
+<div class="w-full" style="max-width: 1000px; margin: 0 auto;">
+    <!-- 搜索区域 -->
+    <div class="ea-section">
+        <div class="ea-section-title">🔍 筛选表单数据</div>
+        <form id="searchForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <input type="text" name="email" placeholder="邮箱" class="ea-input"/>
+            <select name="form_type" class="ea-select">
+                <option value="">全部表单类型</option>
+                <option value="inspection">预约看房</option>
+                <option value="coverletter">求职信</option>
+                <option value="rentalApplication">租房申请</option>
+                <option value="airportPickup">接机</option>
+            </select>
+            <button type="submit" class="ea-button">搜索</button>
+        </form>
+    </div>
+
+    <!-- 表格区域 -->
+    <div class="ea-section overflow-x-auto">
+        <div class="ea-section-title">📋 表单数据列表</div>
+        <table class="table-auto w-full text-sm">
+            <thead>
+            <tr class="bg-gray-200 text-left">
+                <th class="p-2">ID</th>
+                <th class="p-2">邮箱</th>
+                <th class="p-2">类型</th>
+                <th class="p-2">提交时间</th>
+                <th class="p-2">操作</th>
+            </tr>
+            </thead>
+            <tbody id="formDataTable">
+            <!-- JS 渲染数据 -->
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -33,7 +33,7 @@ class RegisterInfo(BaseModel):
         else:
             self.checklist = "[]"
 
-        date_str = data.get("appointment_date")
+        date_str = data.get("appointmentDate")
         if date_str:
             try:
                 self.appointment_date = datetime.strptime(date_str, "%Y-%m-%dT%H:%M")
