@@ -3,6 +3,12 @@
 const UserAuth = (() => {
     const STORAGE_KEY = "currentUser";
 
+    // 缓存中获取email
+    function getCurrentEmail() {
+        const user = getCurrentUser();
+        return user ? user.email : null;
+    }
+
     // 获取缓存中的用户
     function getCurrentUser() {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -22,7 +28,7 @@ const UserAuth = (() => {
         const headers = {
             ...options.headers,
             Authorization: token ? `Bearer ${token}` : undefined,
-            "Content-Type": "application/json",
+            // "Content-Type": "application/json",
         };
 
         const fetchOptions = {
@@ -108,6 +114,8 @@ const UserAuth = (() => {
 
     return {
         getCurrentUser,
+        getCurrentEmail,
+        authFetch,
         hasRole,
         fetchAndCacheUser,
         getUserOrFetch,

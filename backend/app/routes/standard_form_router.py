@@ -1,23 +1,24 @@
 import logging
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, g
 
 from backend.app.models.service_obj.standard_form import FormType
 from backend.app.services import standard_form_handler, inspection_handler, transfer_handler
+from backend.app.utils.auth_utils import token_required
 
 standard_form = Blueprint('standard_form', __name__, url_prefix='/api')
 app_logger = logging.getLogger('app_logger')
 
 
 @standard_form.route('/form-submit', methods=['POST'])
+@token_required
 def standard_submit():
     form_type_str = request.form.get('formType')  # camelCase，不再做转换
-    email = request.form.get("email")
 
-    if not form_type_str or not email:
+    if not form_type_str:
         app_logger.error("[SUBMIT] 提交失败：缺少 formType 或 email")
         return jsonify({'error': 'Invalid form type or email'}), 400
 
-    app_logger.info(f"[SUBMIT] 表单类型: {form_type_str} | 用户邮箱: {email}")
+    app_logger.info(f"[SUBMIT] 表单类型: {form_type_str} | 用户邮箱: {g.current_user.email}")
 
     if request.files:
         file_list = [f.filename for f in request.files.values()]
@@ -41,4 +42,24 @@ def standard_submit():
         return jsonify({'status': 'success', 'action': action})
     except Exception as e:
         app_logger.exception(f"[SUBMIT] 表单保存失败: {e}")
+        return jsonify({'error': 'Server error'}), 500
+
+
+@standard_form.route('/form-latest', methods=['GET'])
+@token_required
+def get_latest_form():
+    form_type = request.args.get('type')
+    email = g.current_user.email
+
+    if not form_type or not FormType.is_valid(form_type):
+        app_logger.error("[LATEST] 获取失败：无效的表单类型")
+        return jsonify({'error': 'Invalid form type'}), 400
+
+    try:
+        latest_form = standard_form_handler.get_latest_form(form_type, email)
+        if latest_form:
+            return jsonify({'status': 'success', 'data': latest_form.form_data})
+        return jsonify({'status': 'success', 'data': None})
+    except Exception as e:
+        app_logger.exception(f"[LATEST] 获取最新记录失败: {e}")
         return jsonify({'error': 'Server error'}), 500

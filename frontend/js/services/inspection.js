@@ -33,21 +33,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // 自动填充历史数据
 async function preloadLatestInspectionData() {
-    const email = getCookie?.("user_email");
+    const email = UserAuth.getCurrentEmail();
     if (!email) return;
 
     try {
-        const res = await fetch("/inspect/latest");
+        const res = await UserAuth.authFetch("/api/form-latest?type=inspection", {
+            method: "GET"
+        });
+
         if (res.ok) {
             const data = await res.json();
-            if (data.name) document.getElementById("name").value = data.name;
-            if (data.email) document.getElementById("email").value = data.email;
-            if (data.phone) document.getElementById("phone").value = data.phone;
+            console.log("预加载数据：", data);
+            const formData = JSON.parse(data.data);
+            console.log("解析后的表单数据：", formData);
+            if (formData.name) document.getElementById("name").value = formData.name;
+            if (formData.email) document.getElementById("email").value = formData.email;
+            if (formData.phone) document.getElementById("phone").value = formData.phone;
 
-            if (Array.isArray(data.checklist)) {
+            if (Array.isArray(formData.checklist)) {
                 const container = document.getElementById("checklist-container");
                 container.innerHTML = '';
-                data.checklist.slice(0, 5).forEach(text => {
+                formData.checklist.slice(0, 5).forEach(text => {
                     const div = document.createElement("div");
                     div.className = "flex items-center mb-2";
                     const input = document.createElement("input");

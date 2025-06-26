@@ -114,10 +114,3 @@ function toggleUserMenu() {
         menuIn.classList.add('hidden');
     }
 }
-
-// 页面加载时根据登录状态显示正确菜单（可选）
-document.addEventListener('DOMContentLoaded', () => {
-    const loggedIn = UserAuth.getCurrentUser();
-    document.getElementById('userMenuLoggedIn').style.display = loggedIn ? 'block' : 'none';
-    document.getElementById('userMenuLoggedOut').style.display = loggedIn ? 'none' : 'block';
-});

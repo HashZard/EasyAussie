@@ -1,12 +1,6 @@
-// 读取 Cookie 中的邮箱
-function getCookie(name) {
-    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-    return match ? decodeURIComponent(match[2]) : null;
-}
-
 // 自动填入邮箱
 window.addEventListener('DOMContentLoaded', () => {
-    const email = checkLogin?.();
+    const email = UserAuth.getCurrentEmail();
     const emailInput = document.querySelector('input[name="email"]');
     if (email && emailInput) {
         emailInput.value = email;
@@ -57,34 +51,34 @@ function toggleInlineSection(id, show) {
 
 // 是否可选选项,false禁用and重置
 function toggleSelectBox(enable, selectId) {
-  const select = document.getElementById(selectId);
-  if (!select) return;
-  if (enable) {
-    select.removeAttribute('disabled');
-    select.classList.remove('ea-select-disabled');
-  } else {
-    select.value = '';
-    select.setAttribute('disabled', true);
-    select.classList.add('ea-select-disabled');
-  }
+    const select = document.getElementById(selectId);
+    if (!select) return;
+    if (enable) {
+        select.removeAttribute('disabled');
+        select.classList.remove('ea-select-disabled');
+    } else {
+        select.value = '';
+        select.setAttribute('disabled', true);
+        select.classList.add('ea-select-disabled');
+    }
 }
 
 function toggleSelectByNames(enable, names) {
-  if (!Array.isArray(names)) return;
+    if (!Array.isArray(names)) return;
 
-  names.forEach(name => {
-    const elements = document.querySelectorAll(`[name="${name}"]`);
-    elements.forEach(el => {
-      if (enable) {
-        el.removeAttribute('disabled');
-        el.classList.remove('ea-select-disabled');
-      } else {
-        el.value = '';
-        el.setAttribute('disabled', true);
-        el.classList.add('ea-select-disabled');
-      }
+    names.forEach(name => {
+        const elements = document.querySelectorAll(`[name="${name}"]`);
+        elements.forEach(el => {
+            if (enable) {
+                el.removeAttribute('disabled');
+                el.classList.remove('ea-select-disabled');
+            } else {
+                el.value = '';
+                el.setAttribute('disabled', true);
+                el.classList.add('ea-select-disabled');
+            }
+        });
     });
-  });
 }
 
 // 初始化：默认选择“学生”

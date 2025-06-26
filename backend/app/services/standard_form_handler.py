@@ -2,6 +2,7 @@ import hashlib
 import json
 import os
 
+from flask import g
 from werkzeug.utils import secure_filename
 
 from backend.app.models import db
@@ -32,7 +33,7 @@ def handle_file_uploads(file_dict: dict, folder: str) -> dict:
 
 
 def save_or_update_form(request) -> str:
-    email = request.form.get('email')
+    email = g.current_user.email
     form_type = request.form.get('formType')
     remark = request.form.get('remark')
 
@@ -45,6 +46,9 @@ def save_or_update_form(request) -> str:
 
     # 处理字段
     form_data = request.form.to_dict(flat=False)
+    for key, value in form_data.items():
+        if isinstance(value, list) and len(value) == 1:
+            form_data[key] = value[0]
     form_data.pop('formType', None)
     form_data.pop('remark', None)
 
@@ -82,3 +86,21 @@ def save_or_update_form(request) -> str:
         db.session.add(form)
         db.session.commit()
         return "created"
+
+
+def get_latest_form(form_type: str, email: str) -> StandardForm | None:
+    """获取指定类型的最新表单记录
+
+    Args:
+        form_type: 表单类型
+        email: 用户邮箱
+
+    Returns:
+        最新的表单记录或None
+    """
+    return (
+        StandardForm.query
+        .filter_by(form_type=form_type, email=email)
+        .order_by(StandardForm.created_gmt.desc())
+        .first()
+    )

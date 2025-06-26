@@ -1,68 +1,109 @@
-<div class="w-full" style="max-width: 1000px; margin: 0 auto;">
-    <!-- 查询权限区域 -->
-    <div class="ea-section">
-        <div class="ea-section-title">🔍 查询权限</div>
-        <form id="searchPermissionForm" class="flex flex-wrap gap-4 items-end">
-            <div>
-                <label for="searchEmail" class="ea-label">用户邮箱</label>
-                <input id="searchEmail" type="email" class="ea-input" placeholder="输入邮箱查询"/>
+<div class="space-y-6">
+    <!-- 上半部分：用户列表和搜索 -->
+    <div class="bg-white rounded-lg shadow-sm">
+        <!-- 标题和搜索区 -->
+        <div class="p-6 border-b">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800">👥 用户管理</h2>
+                    <p class="text-sm text-gray-500 mt-1">管理系统用户、角色和权限</p>
+                </div>
+                <form id="searchForm" class="flex w-96 gap-3">
+                    <input type="text" name="email"
+                           class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-1"
+                           placeholder="搜索用户邮箱..."/>
+                    <button type="submit"
+                            class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+                        搜索
+                    </button>
+                </form>
             </div>
-            <button type="submit" class="ea-button">查询</button>
-            <button type="button" id="resetSearch" class="ea-button bg-gray-400 hover:bg-gray-500">重置</button>
-        </form>
-    </div>
-
-    <!-- 添加权限区域 -->
-    <div class="ea-section">
-        <div class="ea-section-title">➕ 添加页面权限</div>
-        <form id="addPermissionForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-                <label for="email" class="ea-label">用户邮箱</label>
-                <input id="email" name="email" type="email" required class="ea-input"/>
-            </div>
-            <div>
-                <label for="page_path" class="ea-label">页面路径</label>
-                <input id="page_path" name="page_path" type="text" required placeholder="/pages/example.html"
-                       class="ea-input"/>
-            </div>
-            <div class="flex items-end">
-                <button type="submit" class="ea-button">添加权限</button>
-            </div>
-        </form>
-    </div>
-
-    <!-- 权限列表 -->
-    <div class="ea-section">
-        <div class="ea-section-title">📋 权限列表</div>
-        <div id="permissionList" class="space-y-2">
-            <p>请先查询权限</p>
         </div>
-        <div id="paginationControls" class="flex justify-center gap-4 mt-4"></div>
-    </div>
 
-    <!-- 用户角色管理 -->
-    <div class="ea-section">
-        <div class="ea-section-title">👥 用户角色管理</div>
-        <div id="userList" class="space-y-2">
-            <p>加载中...</p>
+        <!-- 用户列表 -->
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 text-sm text-gray-600">
+                <tr>
+                    <th class="px-6 py-3 text-left">邮箱</th>
+                    <th class="px-6 py-3 text-left">角色</th>
+                    <th class="px-6 py-3 text-left">状态</th>
+                    <th class="px-6 py-3 text-left">操作</th>
+                </tr>
+                </thead>
+                <tbody id="userList" class="divide-y divide-gray-200">
+                <!-- 用户列表将通过 JS 动态加载 -->
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <!-- 创建角色区域 -->
-    <div class="ea-section">
-        <div class="ea-section-title">➕ 创建新角色</div>
-        <form id="createRoleForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-                <label for="role_name" class="ea-label">角色名称</label>
-                <input id="role_name" name="role_name" type="text" required class="ea-input" placeholder="如 editor"/>
+    <!-- 下半部分：管理面板 -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+        <!-- 管理面板标签页 -->
+        <div class="border-b mb-6">
+            <div class="flex gap-6">
+                <button data-panel="role" class="px-4 py-2 text-blue-600 border-b-2 border-blue-600">角色管理</button>
             </div>
-            <div>
-                <label for="role_description" class="ea-label">描述（可选）</label>
-                <input id="role_description" name="role_description" type="text" class="ea-input"/>
+        </div>
+
+        <!-- 角色管理面板 -->
+        <div id="rolePanel" class="space-y-8">
+            <!-- 创建角色 -->
+            <div class="max-w-2xl">
+                <h3 class="text-base font-medium mb-4">创建新角色</h3>
+                <form id="createRoleForm">
+                    <div class="flex gap-3 mb-4">
+                        <input type="text" name="name" required
+                               class="w-40 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-1"
+                               placeholder="角色名称"/>
+                        <input type="text" name="description"
+                               class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-1"
+                               placeholder="角色描述"/>
+                        <button type="submit"
+                                class="bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600">
+                            创建
+                        </button>
+                    </div>
+                </form>
             </div>
-            <div class="flex items-end">
-                <button type="submit" class="ea-button">创建角色</button>
+
+            <!-- 分配角色 -->
+            <div class="max-w-2xl">
+                <h3 class="text-base font-medium mb-4">角色分配</h3>
+                <form id="assignRoleForm" class="space-y-4">
+                    <!-- 输入区域 -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="user-email"
+                                   class="block text-sm font-medium text-gray-700 mb-1">用户邮箱</label>
+                            <input type="email" id="user-email" name="email" required
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-1"
+                                   placeholder="输入用户邮箱"/>
+                        </div>
+                        <div>
+                            <label for="user-role" class="block text-sm font-medium text-gray-700 mb-1">选择角色</label>
+                            <select id="user-role" name="role" required
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-1">
+                                <option value="">请选择角色</option>
+                                <option value="admin">管理员</option>
+                                <option value="editor">编辑</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- 按钮区域 -->
+                    <div class="flex gap-3">
+                        <button type="submit" name="action" value="assign"
+                                class="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600">
+                            添加角色
+                        </button>
+                        <button type="submit" name="action" value="remove"
+                                class="bg-red-500 text-white px-6 py-2 rounded-md hover:bg-red-600">
+                            移除角色
+                        </button>
+                    </div>
+                </form>
             </div>
-        </form>
+        </div>
     </div>
 </div>

@@ -11,20 +11,30 @@
     <script src="/js/components/layout.js" defer></script>
     <script type="module" src="/js/components/admin-spa.js"></script>
 </head>
-<body data-required-role="admin" class="flex flex-col min-h-screen bg-gray-100 text-gray-900">
+<body data-required-role="admin" class="min-h-screen bg-gray-100 text-gray-900">
 <div id="header"></div>
 
-<main class="flex-grow p-6 max-w-7xl mx-auto flex gap-6">
-    <!-- 左侧菜单栏 -->
-    <div id="admin-sidebar">
-        <aside class="w-48 p-4 space-y-4 bg-gray-100 rounded-lg shadow">
-            <a href="/pages/management/form-list.html" class="block hover:text-blue-600">表单管理</a>
-            <a href="/pages/management/user-management.html" class="block hover:text-blue-600">重置密码</a>
-        </aside>
-    </div>
+<main class="max-w-7xl mx-auto px-6 py-6">
+    <div class="flex">
+        <!-- 侧边栏 -->
+        <div id="admin-sidebar" class="w-52 mr-6">
+            <aside class="bg-white p-4 rounded-lg shadow-sm space-y-4">
+                <a href="/pages/management/form-list.html"
+                   class="block px-4 py-2 rounded hover:bg-blue-50 hover:text-blue-600">
+                    表单管理
+                </a>
+                <a href="/pages/management/user-management.html"
+                   class="block px-4 py-2 rounded hover:bg-blue-50 hover:text-blue-600">
+                    用户管理
+                </a>
+            </aside>
+        </div>
 
-    <!-- SPA 主内容容器 -->
-    <div id="admin-content" class="flex-1 space-y-6 max-w-5xl w-full"></div>
+        <!-- 主内容区域 -->
+        <div id="admin-content" class="flex-1 min-w-0 bg-white rounded-lg shadow-sm p-6">
+            <!-- 内容将通过 admin-spa.js 动态加载插入 -->
+        </div>
+    </div>
 </main>
 
 <div id="footer" class="mt-12"></div>

@@ -3,7 +3,7 @@ import random
 
 from captcha.image import ImageCaptcha
 from flask import Blueprint, request, jsonify, session, send_file, g
-from flask_security import logout_user, auth_required
+from flask_security import logout_user
 
 from backend.app.services.auth_handler import handle_login, handle_register
 from backend.app.utils.auth_utils import token_required

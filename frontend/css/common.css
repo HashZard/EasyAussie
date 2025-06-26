@@ -16,6 +16,16 @@
     display: block;
 }
 
+.ea-textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    outline: none;
+    min-height: 6rem;
+    resize: vertical;
+}
+
 .ea-button {
     width: 100%;
     background-color: #3b82f6;
@@ -45,6 +55,45 @@
     margin-bottom: 1rem; /* spacing below title */
     border-bottom: 1px solid #e5e7eb;
     padding-bottom: 0.5rem;
+}
+
+/* ✅ 页面通用包裹容器（用于后台页面） */
+.ea-admin-wrapper {
+    display: block;
+    width: 100%;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    box-sizing: border-box;
+}
+
+/* ✅ 搜索/表单区域常用表单行：横向排列 + 间距 */
+.ea-form-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 1rem; /* Tailwind gap-4 */
+}
+
+/* ✅ 表单项内联布局（label + input） */
+.ea-inline-field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ✅ 内联 label 统一宽度（可配合 .ea-inline-field 使用） */
+.ea-inline-label {
+    font-weight: 600;
+    min-width: 8rem;
+    white-space: nowrap;
+}
+
+/* ✅ 全宽按钮 */
+.ea-button-full {
+    width: 100%;
 }
 
 .ea-radio-option {

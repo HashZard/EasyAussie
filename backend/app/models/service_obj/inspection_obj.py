@@ -15,15 +15,17 @@ class RegisterInfo(BaseModel):
         "email": Column(String(128), nullable=True),
         "phone": Column(String(32), nullable=True),
         "checklist": Column(Text, nullable=True),
+        "remarks": Column(Text, nullable=True),
     }
 
     def __init__(self, data):
         super().__init__()
         self.publisher_id = data.get("publisher_id")
-        self.property_add = data.get("property_add")
+        self.property_add = data.get("address")
         self.name = data.get("name")
         self.email = data.get("email")
         self.phone = data.get("phone")
+        self.remarks = data.get("remarks", "")
 
         checklist = data.get("checklist")
         if isinstance(checklist, list):
@@ -53,6 +55,7 @@ class RegisterInfo(BaseModel):
             "email": self.email,
             "phone": self.phone,
             "checklist": json.loads(self.checklist) if self.checklist else [],
+            "remarks": self.remarks,
             "created_gmt": self.created_gmt.isoformat() if self.created_gmt else None,
             "updated_gmt": self.updated_gmt.isoformat() if self.updated_gmt else None,
         }

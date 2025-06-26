@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const failUrl = form.dataset.fail;
 
         try {
-            const res = await fetch(actionUrl, {
+            const res = await UserAuth.authFetch(actionUrl, {
                 method: 'POST',
                 body: formData
             });

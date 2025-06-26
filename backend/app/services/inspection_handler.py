@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import datetime, timezone
 
@@ -61,12 +62,29 @@ def create_task_body(register_info: RegisterInfo):
 
     return {
         "title": f"(代确认) {register_info.property_add}",
-        "notes": f"Time: {register_info.appointment_date}\n"
+        "notes": f"Time: {register_info.appointment_date}\n\n"
                  f"Name: {register_info.name}\n"
                  f"Email: {register_info.email}\n"
-                 f"Phone: {register_info.phone}\n"
-                 f"Notes: {register_info.checklist}",
+                 f"Phone: {register_info.phone}\n\n"
+                 f"{format_checklist(register_info.checklist)}\n\n"
+                 f"Remarks: {register_info.remarks}",
         # Google Tasks 需要 ISO 8601 格式的 UTC 时间：2025-02-23T12:00:00.000Z
         # 只保留日期部分,去掉时间信息
         "due": due_string,
     }
+
+
+def format_checklist(checklist):
+    """格式化检查清单为编号列表"""
+    if not checklist:
+        return "无检查项"
+
+    # 如果 checklist 是字符串（比如来自数据库或表单）
+    if isinstance(checklist, str):
+        try:
+            checklist = json.loads(checklist)
+        except json.JSONDecodeError:
+            return "❌ 无法解析检查项"
+
+    formatted_items = [f"{i + 1}. {item}" for i, item in enumerate(checklist)]
+    return "CheckList:\n" + "\n".join(formatted_items)

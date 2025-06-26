@@ -1,9 +1,10 @@
-<div class="w-full" style="max-width: 1000px; margin: 0 auto;">
-    <!-- 搜索区域 -->
+<div class="ea-admin-wrapper">
+    <div class="text-xl font-bold text-gray-800 border-b pb-2 mb-6">📋 表单管理</div>
+
     <div class="ea-section">
         <div class="ea-section-title">🔍 筛选表单数据</div>
-        <form id="searchForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <input type="text" name="email" placeholder="邮箱" class="ea-input"/>
+        <form id="searchForm" class="ea-form-row">
+            <input type="email" name="email" placeholder="邮箱" class="ea-input"/>
             <select name="form_type" class="ea-select">
                 <option value="">全部表单类型</option>
                 <option value="inspection">预约看房</option>
@@ -15,7 +16,6 @@
         </form>
     </div>
 
-    <!-- 表格区域 -->
     <div class="ea-section overflow-x-auto">
         <div class="ea-section-title">📋 表单数据列表</div>
         <table class="table-auto w-full text-sm">
