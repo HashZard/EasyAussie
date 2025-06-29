@@ -10,39 +10,38 @@
 
         <!-- 用户头像下拉菜单 -->
         <div class="relative">
-            <div class="flex items-center gap-2 cursor-pointer" onclick="toggleUserMenu()">
+            <!-- 登录状态显示头像和文字 -->
+            <div id="userAvatarSection"
+                 class="hidden px-4 py-2 bg-white rounded-full hover:bg-blue-50 transition flex items-center gap-2 cursor-pointer"
+                 onclick="toggleUserMenu()">
                 <img
                         src="/assets/images/avatar.png"
-                        class="w-9 h-9 rounded-full border-2 border-white hover:brightness-110 transition"
+                        class="w-6 h-6 rounded-full"
                         alt="用户头像"
                 />
-                <svg class="w-4 h-4 fill-white transition" viewBox="0 0 20 20">
+                <svg class="w-4 h-4 fill-blue-600 transition" viewBox="0 0 20 20">
                     <path d="M5.25 7.5L10 12.25L14.75 7.5H5.25Z"/>
                 </svg>
             </div>
 
             <!-- 登录后菜单 -->
-            <div
-                    id="userMenuLoggedIn"
-                    class="absolute right-0 mt-2 w-44 bg-white text-black rounded-md shadow-xl hidden z-10"
-            >
-                <div class="px-4 py-2 text-gray-600 text-sm">👤 欢迎，用户</div>
+            <div id="userMenuLoggedIn"
+                 class="absolute top-full right-0 mt-2 w-44 bg-white text-black rounded-md shadow-xl hidden z-10">
+                <div class="px-4 py-2 text-gray-600 text-sm">👤 欢迎，<span class="user-email"></span></div>
                 <hr class="my-1"/>
                 <a href="/pages/profile/profile.html" class="block px-4 py-2 hover:bg-gray-100">📄 我的资料</a>
                 <a href="/pages/management/admin.html" class="block px-4 py-2 hover:bg-gray-100 role-required"
-                   data-role="admin"
-                   style="display: none;">🛠 管理后台</a>
+                   data-role="admin">🛠 管理后台</a>
                 <hr class="my-1"/>
                 <a href="#" onclick="UserAuth.logout()" class="block px-4 py-2 hover:bg-gray-100">🚪 退出登录</a>
             </div>
 
-            <!-- 未登录菜单 -->
-            <div
-                    id="userMenuLoggedOut"
-                    class="absolute right-0 mt-2 w-44 bg-white text-black rounded-md shadow-xl hidden z-10"
-            >
-                <a href="/pages/auth/login.html" class="block px-4 py-2 hover:bg-gray-100">🔐 登录</a>
-            </div>
+            <!-- 未登录状态显示登录按钮 -->
+            <a id="loginButton"
+               href="/pages/auth/login.html"
+               class="hidden px-4 py-2 bg-white text-blue-600 rounded-full hover:bg-blue-50 transition">
+                登录
+            </a>
         </div>
     </div>
 </nav>

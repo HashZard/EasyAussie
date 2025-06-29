@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loadBackButton()
         ]).then(() => {
             applyUserPermissions(user); // 等所有组件加载完成后统一处理权限
+            updateHeaderStatus(user); // 添加这一行
         });
     });
 
@@ -38,6 +39,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     backBtnContainer.innerHTML = html;
                 }
             });
+    }
+
+    function updateHeaderStatus(user) {
+        const avatarSection = document.getElementById('userAvatarSection');
+        const loginButton = document.getElementById('loginButton');
+
+        if (!avatarSection || !loginButton) return;
+
+        if (user) {
+            avatarSection.classList.remove('hidden');
+            loginButton.classList.add('hidden');
+        } else {
+            avatarSection.classList.add('hidden');
+            loginButton.classList.remove('hidden');
+        }
     }
 
     /**
@@ -101,16 +117,20 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function toggleUserMenu() {
-    const loggedIn = UserAuth.getCurrentUser(); // 你自己的登录状态判断逻辑
-    const menuIn = document.getElementById('userMenuLoggedIn');
-    const menuOut = document.getElementById('userMenuLoggedOut');
+    const user = UserAuth.getCurrentUser();
+    if (!user) return;
 
-    // 隐藏另一个菜单，显示当前菜单
-    if (loggedIn) {
+    const menuIn = document.getElementById('userMenuLoggedIn');
+    if (menuIn) {
         menuIn.classList.toggle('hidden');
-        menuOut.classList.add('hidden');
-    } else {
-        menuOut.classList.toggle('hidden');
-        menuIn.classList.add('hidden');
+
+        // 点击外部关闭菜单
+        const closeMenu = (e) => {
+            if (!menuIn.contains(e.target) && !e.target.closest('#userAvatarSection')) {
+                menuIn.classList.add('hidden');
+                document.removeEventListener('click', closeMenu);
+            }
+        };
+        document.addEventListener('click', closeMenu);
     }
 }

@@ -50,10 +50,10 @@ async function preloadLatestInspectionData() {
             if (formData.email) document.getElementById("email").value = formData.email;
             if (formData.phone) document.getElementById("phone").value = formData.phone;
 
-            if (Array.isArray(formData.checklist)) {
+            if (Array.isArray(formData['checklist[]'])) {
                 const container = document.getElementById("checklist-container");
                 container.innerHTML = '';
-                formData.checklist.slice(0, 5).forEach(text => {
+                formData['checklist[]'].slice(0, 5).forEach(text => {
                     const div = document.createElement("div");
                     div.className = "flex items-center mb-2";
                     const input = document.createElement("input");
