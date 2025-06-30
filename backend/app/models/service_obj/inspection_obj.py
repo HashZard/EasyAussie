@@ -11,6 +11,7 @@ class RegisterInfo(BaseModel):
         "publisher_id": Column(Integer, nullable=True),
         "property_add": Column(String(255), nullable=False),
         "appointment_date": Column(DateTime, nullable=True),
+        "wxid": Column(String(128), nullable=True),
         "name": Column(String(128), nullable=True),
         "email": Column(String(128), nullable=True),
         "phone": Column(String(32), nullable=True),
@@ -22,6 +23,7 @@ class RegisterInfo(BaseModel):
         super().__init__()
         self.publisher_id = data.get("publisher_id")
         self.property_add = data.get("address")
+        self.wxid = data.get("wxid", "")
         self.name = data.get("name")
         self.email = data.get("email")
         self.phone = data.get("phone")
@@ -51,6 +53,7 @@ class RegisterInfo(BaseModel):
             "publisher_id": self.publisher_id,
             "property_add": self.property_add,
             "appointment_date": self.appointment_date.isoformat() if self.appointment_date else None,
+            "wxid": self.wxid,
             "name": self.name,
             "email": self.email,
             "phone": self.phone,

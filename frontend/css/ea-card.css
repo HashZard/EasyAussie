@@ -8,6 +8,10 @@
     transition: all 0.2s ease;
 }
 
+.ea-card > div {
+    gap: 2rem; /* 增加内容与按钮的间距 */
+}
+
 .ea-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
@@ -47,6 +51,8 @@
     border: 1px solid #2563eb;
     border-radius: 9999px;
     transition: all 0.2s ease;
+    white-space: nowrap; /* 防止按钮文字换行 */
+    margin-left: 2rem; /* 额外的左侧间距 */
 }
 
 .ea-card-action:hover {

@@ -62,7 +62,8 @@ def create_task_body(register_info: RegisterInfo):
 
     return {
         "title": f"(代确认) {register_info.property_add}",
-        "notes": f"Time: {register_info.appointment_date}\n\n"
+        "notes": f"WX: {register_info.wxid}\n"
+                 f"Time: {register_info.appointment_date}\n\n"
                  f"Name: {register_info.name}\n"
                  f"Email: {register_info.email}\n"
                  f"Phone: {register_info.phone}\n\n"
