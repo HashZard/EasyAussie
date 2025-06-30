@@ -47,7 +47,7 @@ def save_or_update_form(request) -> str:
     # 处理字段
     form_data = request.form.to_dict(flat=False)
     for key, value in form_data.items():
-        if isinstance(value, list) and len(value) == 1:
+        if not key.endswith("[]") and isinstance(value, list) and len(value) == 1:
             form_data[key] = value[0]
     form_data.pop('formType', None)
     form_data.pop('remark', None)
