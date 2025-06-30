@@ -82,14 +82,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const body = document.querySelector("body");
         const requiredRole = body?.dataset.requiredRole;
 
-        // 1 登录校验
+        // 1 登录校验,应用本js的必须登录
         if (!user) {
-            if (requiredRole) {
-                alert("请先登录以访问本页面");
-                window.location.href = "/pages/auth/login.html";
-            }
-            // 如果页面不要求权限，则允许继续显示
-            return;
+            alert("请先登录以访问本页面");
+            window.location.href = "/pages/auth/login.html";
         }
 
         // 2 页面访问权限控制（按角色）
