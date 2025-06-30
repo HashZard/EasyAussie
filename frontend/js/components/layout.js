@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ROUTES: {
                 PUBLIC: [
                     '/index.html',
-                    '/pages/service.html',
+                    '/pages/service/service.html',
                     '/',
                 ],
                 LOGIN: '/pages/auth/login.html',
