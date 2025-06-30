@@ -31,12 +31,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 加载返回按钮
     function loadBackButton() {
-        fetch('/components/back-button.html')
+        return fetch('/components/back-button.html')
             .then(res => res.text())
             .then(html => {
                 const backBtnContainer = document.getElementById("back-button");
                 if (backBtnContainer) {
                     backBtnContainer.innerHTML = html;
+
+                    // 获取返回按钮并添加事件监听器
+                    const backBtn = backBtnContainer.querySelector('button');
+                    if (backBtn) {
+                        backBtn.onclick = () => {
+                            if (document.referrer) {
+                                window.history.back();
+                            } else {
+                                window.location.href = '/index.html';
+                            }
+                        };
+                    }
                 }
             });
     }
@@ -77,38 +89,73 @@ document.addEventListener('DOMContentLoaded', () => {
      * 参数：
      * @param {Object|null} user - 当前用户对象（通过 getUserOrFetch() 获取），未登录时为 null。
      */
+        // 权限配置
+    const AUTH_CONFIG = {
+            ROUTES: {
+                PUBLIC: [
+                    '/index.html',
+                    '/pages/service.html',
+                    '/',
+                ],
+                LOGIN: '/pages/auth/login.html',
+                FORBIDDEN: '/index.html'
+            },
+            MESSAGES: {
+                LOGIN_REQUIRED: '请先登录以访问本页面',
+                ACCESS_DENIED: '无权限访问本页'
+            }
+        };
+
     function applyUserPermissions(user) {
-        // 页面访问权限控制
+        // 基础配置
         const body = document.querySelector("body");
         const requiredRole = body?.dataset.requiredRole;
+        const currentPath = window.location.pathname.toLowerCase();
 
-        // 1 登录校验,应用本js的必须登录
-        if (!user) {
-            alert("请先登录以访问本页面");
-            window.location.href = "/pages/auth/login.html";
+        // 权限检查
+        try {
+            checkRouteAccess(user, currentPath);
+            checkRoleAccess(user, requiredRole);
+            updateElementVisibility(user);
+        } catch (error) {
+            handleAuthError(error);
         }
+    }
 
-        // 2 页面访问权限控制（按角色）
-        if (requiredRole && !user.roles.includes(requiredRole)) {
-            alert("无权限访问本页");
-            window.location.href = "/index.html";
-            return;
+    // 路由访问检查
+    function checkRouteAccess(user, currentPath) {
+        const isPublicRoute = AUTH_CONFIG.ROUTES.PUBLIC.some(route =>
+            currentPath.endsWith(route)
+        );
+
+        if (!isPublicRoute && !user) {
+            throw {type: 'login', redirect: AUTH_CONFIG.ROUTES.LOGIN};
         }
+    }
 
-        // 3 元素级别权限控制（控制显示/隐藏）
+    // 角色权限检查
+    function checkRoleAccess(user, requiredRole) {
+        if (requiredRole && user && !user.roles.includes(requiredRole)) {
+            throw {type: 'role', redirect: AUTH_CONFIG.ROUTES.FORBIDDEN};
+        }
+    }
+
+    // 元素可见性控制
+    function updateElementVisibility(user) {
         document.querySelectorAll(".role-required").forEach(el => {
             const role = el.dataset.role;
-            if (!user.roles.includes(role)) {
-                el.style.display = "none";
-            } else {
-                el.style.display = ""; // 确保显示出来
-            }
+            el.style.display = user?.roles.includes(role) ? "" : "none";
         });
+    }
 
-        // 4 自动填充用户信息
-        document.querySelectorAll(".user-email").forEach(el => {
-            el.textContent = user?.email || "游客";
-        });
+    // 错误处理
+    function handleAuthError(error) {
+        const message = error.type === 'login'
+            ? AUTH_CONFIG.MESSAGES.LOGIN_REQUIRED
+            : AUTH_CONFIG.MESSAGES.ACCESS_DENIED;
+
+        alert(message);
+        window.location.href = error.redirect;
     }
 });
 
@@ -130,3 +177,32 @@ function toggleUserMenu() {
         document.addEventListener('click', closeMenu);
     }
 }
+
+function toggleMobileMenu() {
+    const mobileMenu = document.getElementById('mobileMenu');
+    mobileMenu.classList.toggle('hidden');
+    document.body.classList.toggle('overflow-hidden');
+
+    // 更新移动端用户区域
+    const mobileUserSection = document.getElementById('mobileUserSection');
+    const user = UserAuth.getCurrentUser();
+
+    if (user) {
+        mobileUserSection.innerHTML = `
+            <div class="border-t border-blue-500 pt-4 mt-4">
+                <div class="text-sm mb-2">👤 ${user.email}</div>
+                <a href="/pages/profile/profile.html" class="block hover:bg-blue-500 p-2 rounded">📄 我的资料</a>
+                <a href="#" onclick="UserAuth.logout()" class="block hover:bg-blue-500 p-2 rounded">🚪 退出登录</a>
+            </div>
+        `;
+    } else {
+        mobileUserSection.innerHTML = `
+            <div class="border-t border-blue-500 pt-4 mt-4">
+                <a href="/pages/auth/login.html" class="block hover:bg-blue-500 p-2 rounded">登录</a>
+            </div>
+        `;
+    }
+}
+
+// 将 toggleMobileMenu 添加到 window 对象，使其全局可用
+window.toggleMobileMenu = toggleMobileMenu;

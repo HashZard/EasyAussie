@@ -43,9 +43,8 @@ async function preloadLatestInspectionData() {
 
         if (res.ok) {
             const data = await res.json();
-            console.log("预加载数据：", data);
             const formData = JSON.parse(data.data);
-            console.log("解析后的表单数据：", formData);
+
             if (formData.wxid) document.getElementById("wxid").value = formData.name;
             if (formData.name) document.getElementById("name").value = formData.name;
             if (formData.email) document.getElementById("email").value = formData.email;
