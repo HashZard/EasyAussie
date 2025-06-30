@@ -17,7 +17,81 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(res => res.text())
             .then(html => {
                 document.getElementById('header').innerHTML = html;
+                registerHeaderMenu(); // 加载完成后注册功能
             });
+    }
+
+    function registerHeaderMenu() {
+        // User menu toggle for desktop view
+        window.toggleUserMenu = function () {
+            const user = UserAuth.getCurrentUser();
+            if (!user) return;
+
+            const menu = document.getElementById('userMenuLoggedIn');
+            const avatar = document.getElementById('userAvatarSection');
+            if (!menu || !avatar) return;
+
+            // Update email display
+            const emailDiv = menu.querySelector('.text-sm');
+            if (emailDiv) {
+                emailDiv.innerHTML = `
+                <div class="block px-4 py-2 text-gray-600 font-medium">
+                    <span class="text-blue-600">${user.email}</span>
+                </div>`;
+            }
+
+            // Toggle menu visibility
+            menu.classList.toggle('hidden');
+
+            // Close menu when clicking outside
+            const closeMenu = (e) => {
+                if (!menu.contains(e.target) && !avatar.contains(e.target)) {
+                    menu.classList.add('hidden');
+                    document.removeEventListener('click', closeMenu);
+                }
+            };
+
+            document.removeEventListener('click', closeMenu);
+            setTimeout(() => document.addEventListener('click', closeMenu), 0);
+        };
+
+        // Mobile menu toggle and content update
+        window.toggleMobileMenu = function () {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileUserSection = document.getElementById('mobileUserSection');
+            const user = UserAuth.getCurrentUser();
+
+            if (!mobileMenu || !mobileUserSection) return;
+
+            mobileMenu.classList.toggle('hidden');
+            document.body.classList.toggle('overflow-hidden');
+
+            if (user) {
+                mobileUserSection.innerHTML = `
+                <div class="border-t border-blue-500 pt-4 mt-4">
+                    <div class="block px-4 py-2 text-sm text-white font-medium border-b border-blue-500">
+                        ${user.email}
+                    </div>
+                    <a href="/pages/profile/profile.html" 
+                       class="block px-4 py-3 text-white hover:bg-blue-500 transition-colors">
+                        个人中心
+                    </a>
+                    <a href="#" 
+                       onclick="UserAuth.logout()" 
+                       class="block px-4 py-3 text-white hover:bg-blue-500 transition-colors">
+                        退出登录
+                    </a>
+                </div>`;
+            } else {
+                mobileUserSection.innerHTML = `
+                <div class="border-t border-blue-500 pt-4 mt-4">
+                    <a href="/pages/auth/login.html" 
+                       class="block px-4 py-3 text-white hover:bg-blue-500 transition-colors">
+                        登录账号
+                    </a>
+                </div>`;
+            }
+        };
     }
 
     // 加载 Footer
@@ -158,51 +232,3 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = error.redirect;
     }
 });
-
-function toggleUserMenu() {
-    const user = UserAuth.getCurrentUser();
-    if (!user) return;
-
-    const menuIn = document.getElementById('userMenuLoggedIn');
-    if (menuIn) {
-        menuIn.classList.toggle('hidden');
-
-        // 点击外部关闭菜单
-        const closeMenu = (e) => {
-            if (!menuIn.contains(e.target) && !e.target.closest('#userAvatarSection')) {
-                menuIn.classList.add('hidden');
-                document.removeEventListener('click', closeMenu);
-            }
-        };
-        document.addEventListener('click', closeMenu);
-    }
-}
-
-function toggleMobileMenu() {
-    const mobileMenu = document.getElementById('mobileMenu');
-    mobileMenu.classList.toggle('hidden');
-    document.body.classList.toggle('overflow-hidden');
-
-    // 更新移动端用户区域
-    const mobileUserSection = document.getElementById('mobileUserSection');
-    const user = UserAuth.getCurrentUser();
-
-    if (user) {
-        mobileUserSection.innerHTML = `
-            <div class="border-t border-blue-500 pt-4 mt-4">
-                <div class="text-sm mb-2">👤 ${user.email}</div>
-                <a href="/pages/profile/profile.html" class="block hover:bg-blue-500 p-2 rounded">📄 我的资料</a>
-                <a href="#" onclick="UserAuth.logout()" class="block hover:bg-blue-500 p-2 rounded">🚪 退出登录</a>
-            </div>
-        `;
-    } else {
-        mobileUserSection.innerHTML = `
-            <div class="border-t border-blue-500 pt-4 mt-4">
-                <a href="/pages/auth/login.html" class="block hover:bg-blue-500 p-2 rounded">登录</a>
-            </div>
-        `;
-    }
-}
-
-// 将 toggleMobileMenu 添加到 window 对象，使其全局可用
-window.toggleMobileMenu = toggleMobileMenu;

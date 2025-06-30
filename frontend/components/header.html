@@ -5,7 +5,7 @@
         <div class="text-xl font-bold">Easy Aussie</div>
 
         <!-- Mobile Menu Button -->
-        <button id="mobileMenuBtn" class="md:hidden" onclick="toggleMobileMenu()">
+        <button id="mobileMenuBtn" class="md:hidden" onclick="window.toggleMobileMenu()">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
@@ -22,7 +22,7 @@
             <div class="relative">
                 <div id="userAvatarSection"
                      class="hidden px-4 py-2 bg-white rounded-full hover:bg-blue-50 transition flex items-center gap-2 cursor-pointer"
-                     onclick="toggleUserMenu()">
+                     onclick="window.toggleUserMenu()">
                     <img src="/assets/images/avatar.png" class="w-6 h-6 rounded-full" alt="用户头像"/>
                     <svg class="w-4 h-4 fill-blue-600 transition" viewBox="0 0 20 20">
                         <path d="M5.25 7.5L10 12.25L14.75 7.5H5.25Z"/>
@@ -30,6 +30,17 @@
                 </div>
                 <a id="loginButton" href="/pages/auth/login.html"
                    class="hidden px-4 py-2 bg-white text-blue-600 rounded-full hover:bg-blue-50 transition">登录</a>
+
+                <!-- 添加菜单容器 -->
+                <div id="userMenuLoggedIn" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg hidden z-50">
+                    <div class="p-4">
+                        <div class="text-sm text-gray-600 mb-2"><!-- 用户邮箱将通过 JS 填充 --></div>
+                        <a href="/pages/profile/profile.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">📄
+                            我的资料</a>
+                        <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-blue-50" onclick="UserAuth.logout()">🚪
+                            退出登录</a>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -38,7 +49,7 @@
             <div class="flex flex-col h-full">
                 <div class="p-4 flex justify-between items-center border-b border-blue-500">
                     <div class="text-xl font-bold">Easy Aussie</div>
-                    <button onclick="toggleMobileMenu()">
+                    <button onclick="window.toggleMobileMenu()">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                                   d="M6 18L18 6M6 6l12 12"/>

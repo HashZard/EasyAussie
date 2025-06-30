@@ -54,16 +54,25 @@ async function preloadLatestInspectionData() {
                 const container = document.getElementById("checklist-container");
                 container.innerHTML = '';
                 formData['checklist[]'].slice(0, 5).forEach(text => {
-                    const div = document.createElement("div");
-                    div.className = "flex items-center mb-2";
+                    const item = document.createElement("div");
+                    item.className = "flex items-center mb-2";
+
                     const input = document.createElement("input");
                     input.type = "text";
                     input.name = "checklist[]";
                     input.className = "flex-grow ea-input";
                     input.value = text;
-                    div.appendChild(input);
-                    container.appendChild(div);
+
+                    const remove = document.createElement("button");
+                    remove.textContent = "移除";
+                    remove.className = "ml-2 px-3 py-1 text-sm rounded bg-red-100 text-red-600 hover:bg-red-200 transition whitespace-nowrap";
+                    remove.addEventListener("click", () => item.remove());
+
+                    item.appendChild(input);
+                    item.appendChild(remove);
+                    container.appendChild(item);
                 });
+
             }
         }
     } catch (err) {
