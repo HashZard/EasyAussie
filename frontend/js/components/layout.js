@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="block px-4 py-2 text-sm text-white font-medium border-b border-blue-500">
                         ${user.email}
                     </div>
-                    <a href="/pages/profile/profile.html" 
+                    <a href="/pages/management/profile.html" 
                        class="block px-4 py-3 text-white hover:bg-blue-500 transition-colors">
                         个人中心
                     </a>
@@ -169,6 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 PUBLIC: [
                     '/index.html',
                     '/pages/service/service.html',
+                    '/pages/service/airport-pickup.html',
                     '/',
                 ],
                 LOGIN: '/pages/auth/login.html',

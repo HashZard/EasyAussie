@@ -1,26 +1,77 @@
 <div class="space-y-6">
-    <!-- 上半部分：用户列表和搜索 -->
-    <div class="bg-white rounded-lg shadow-sm">
-        <!-- 标题和搜索区 -->
-        <div class="p-6 border-b">
-            <div class="flex items-center justify-between mb-4">
-                <div>
-                    <h2 class="text-xl font-bold text-gray-800">👥 用户管理</h2>
-                    <p class="text-sm text-gray-500 mt-1">管理系统用户、角色和权限</p>
+    <!-- 页面头部 -->
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h2 class="text-xl font-bold text-gray-800">👥 用户管理</h2>
+        </div>
+        <div class="flex gap-4">
+            <button id="refreshBtn" class="ea-button-secondary">
+                <span class="material-icons mr-1 text-sm">refresh</span>
+                刷新
+            </button>
+        </div>
+    </div>
+
+    <!-- 搜索筛选区 -->
+    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+        <form id="searchForm" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="relative p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition duration-150">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <span class="material-icons text-gray-500 text-sm align-middle mr-1">mail</span>
+                        邮箱搜索
+                    </label>
+                    <input type="email" name="email"
+                           class="w-full rounded-md border-gray-300 bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500
+                              shadow-sm hover:border-gray-400 transition duration-150"
+                           placeholder="输入用户邮箱"/>
                 </div>
-                <form id="searchForm" class="flex w-96 gap-3">
-                    <input type="text" name="email"
-                           class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-1"
-                           placeholder="搜索用户邮箱..."/>
-                    <button type="submit"
-                            class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+                <div class="relative p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition duration-150">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <span class="material-icons text-gray-500 text-sm align-middle mr-1">badge</span>
+                        用户角色
+                    </label>
+                    <select name="role"
+                            class="w-full rounded-md border-gray-300 bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500
+                               shadow-sm hover:border-gray-400 transition duration-150">
+                        <option value="">全部角色</option>
+                        <option value="admin">管理员</option>
+                        <option value="editor">编辑</option>
+                        <option value="user">普通用户</option>
+                    </select>
+                </div>
+                <div class="relative p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition duration-150">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <span class="material-icons text-gray-500 text-sm align-middle mr-1">verified_user</span>
+                        账号状态
+                    </label>
+                    <select name="status"
+                            class="w-full rounded-md border-gray-300 bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500
+                               shadow-sm hover:border-gray-400 transition duration-150">
+                        <option value="">全部状态</option>
+                        <option value="active">正常</option>
+                        <option value="inactive">禁用</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4 mt-4">
+                <div class="flex-1"></div>
+                <div class="flex gap-3">
+                    <button type="reset" class="ea-button-secondary min-w-[80px]">
+                        <span class="material-icons mr-1 text-sm">refresh</span>
+                        重置
+                    </button>
+                    <button type="submit" class="ea-button min-w-[80px]">
+                        <span class="material-icons mr-1 text-sm">search</span>
                         搜索
                     </button>
-                </form>
+                </div>
             </div>
-        </div>
+        </form>
+    </div>
 
-        <!-- 用户列表 -->
+    <!-- 用户列表 -->
+    <div class="bg-white rounded-lg shadow-sm">
         <div class="overflow-x-auto">
             <table class="w-full">
                 <thead class="bg-gray-50 text-sm text-gray-600">
@@ -28,82 +79,34 @@
                     <th class="px-6 py-3 text-left">邮箱</th>
                     <th class="px-6 py-3 text-left">角色</th>
                     <th class="px-6 py-3 text-left">状态</th>
+                    <th class="px-6 py-3 text-left">注册时间</th>
                     <th class="px-6 py-3 text-left">操作</th>
                 </tr>
                 </thead>
                 <tbody id="userList" class="divide-y divide-gray-200">
-                <!-- 用户列表将通过 JS 动态加载 -->
+                <!-- JS动态渲染数据 -->
                 </tbody>
             </table>
         </div>
-    </div>
 
-    <!-- 下半部分：管理面板 -->
-    <div class="bg-white rounded-lg shadow-sm p-6">
-        <!-- 管理面板标签页 -->
-        <div class="border-b mb-6">
-            <div class="flex gap-6">
-                <button data-panel="role" class="px-4 py-2 text-blue-600 border-b-2 border-blue-600">角色管理</button>
+        <!-- 分页控制器 -->
+        <div class="flex items-center justify-between px-6 py-4 border-t">
+            <div class="text-sm text-gray-500">
+                共 <span id="totalCount">0</span> 条数据
             </div>
-        </div>
-
-        <!-- 角色管理面板 -->
-        <div id="rolePanel" class="space-y-8">
-            <!-- 创建角色 -->
-            <div class="max-w-2xl">
-                <h3 class="text-base font-medium mb-4">创建新角色</h3>
-                <form id="createRoleForm">
-                    <div class="flex gap-3 mb-4">
-                        <input type="text" name="name" required
-                               class="w-40 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-1"
-                               placeholder="角色名称"/>
-                        <input type="text" name="description"
-                               class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-1"
-                               placeholder="角色描述"/>
-                        <button type="submit"
-                                class="bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600">
-                            创建
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- 分配角色 -->
-            <div class="max-w-2xl">
-                <h3 class="text-base font-medium mb-4">角色分配</h3>
-                <form id="assignRoleForm" class="space-y-4">
-                    <!-- 输入区域 -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="user-email"
-                                   class="block text-sm font-medium text-gray-700 mb-1">用户邮箱</label>
-                            <input type="email" id="user-email" name="email" required
-                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-1"
-                                   placeholder="输入用户邮箱"/>
-                        </div>
-                        <div>
-                            <label for="user-role" class="block text-sm font-medium text-gray-700 mb-1">选择角色</label>
-                            <select id="user-role" name="role" required
-                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-1">
-                                <option value="">请选择角色</option>
-                                <option value="admin">管理员</option>
-                                <option value="editor">编辑</option>
-                            </select>
-                        </div>
-                    </div>
-                    <!-- 按钮区域 -->
-                    <div class="flex gap-3">
-                        <button type="submit" name="action" value="assign"
-                                class="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600">
-                            添加角色
-                        </button>
-                        <button type="submit" name="action" value="remove"
-                                class="bg-red-500 text-white px-6 py-2 rounded-md hover:bg-red-600">
-                            移除角色
-                        </button>
-                    </div>
-                </form>
+            <div class="flex items-center gap-2" id="pagination">
+                <!-- JS动态渲染分页 -->
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .ea-button {
+        @apply bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 flex items-center justify-center;
+    }
+
+    .ea-button-secondary {
+        @apply bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 flex items-center justify-center;
+    }
+</style>

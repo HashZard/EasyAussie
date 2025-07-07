@@ -1,36 +1,116 @@
-<div class="ea-admin-wrapper">
-    <div class="text-xl font-bold text-gray-800 border-b pb-2 mb-6">📋 表单管理</div>
+<div class="space-y-6">
+    <!-- 页面头部 -->
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h2 class="text-xl font-bold text-gray-800">📋 表单管理</h2>
+        </div>
+        <div class="flex gap-4">
+            <button id="exportBtn" class="ea-button-secondary">
+                <span class="material-icons mr-1 text-sm">download</span>
+                导出数据
+            </button>
+            <button id="refreshBtn" class="ea-button-secondary">
+                <span class="material-icons mr-1 text-sm">refresh</span>
+                刷新
+            </button>
+        </div>
+    </div>
 
-    <div class="ea-section">
-        <div class="ea-section-title">🔍 筛选表单数据</div>
-        <form id="searchForm" class="ea-form-row">
-            <input type="email" name="email" placeholder="邮箱" class="ea-input"/>
-            <select name="form_type" class="ea-select">
-                <option value="">全部表单类型</option>
-                <option value="inspection">预约看房</option>
-                <option value="coverletter">求职信</option>
-                <option value="rentalApplication">租房申请</option>
-                <option value="airportPickup">接机</option>
-            </select>
-            <button type="submit" class="ea-button">搜索</button>
+    <!-- 搜索筛选区 -->
+    <!-- 搜索筛选区 -->
+    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+        <form id="searchForm" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="relative p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition duration-150">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <span class="material-icons text-gray-500 text-sm align-middle mr-1">mail</span>
+                        邮箱搜索
+                    </label>
+                    <input type="email" name="email"
+                           class="w-full rounded-md border-gray-300 bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500
+                              shadow-sm hover:border-gray-400 transition duration-150"
+                           placeholder="输入用户邮箱"/>
+                </div>
+                <div class="relative p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition duration-150">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <span class="material-icons text-gray-500 text-sm align-middle mr-1">list_alt</span>
+                        表单类型
+                    </label>
+                    <select name="form_type"
+                            class="w-full rounded-md border-gray-300 bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500
+                               shadow-sm hover:border-gray-400 transition duration-150">
+                        <option value="">全部类型</option>
+                        <option value="inspection">预约看房</option>
+                        <option value="coverletter">求职信</option>
+                        <option value="rentalApplication">租房申请</option>
+                        <option value="airportPickup">接机服务</option>
+                    </select>
+                </div>
+                <div class="relative p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition duration-150">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <span class="material-icons text-gray-500 text-sm align-middle mr-1">calendar_today</span>
+                        提交时间
+                    </label>
+                    <input type="date" name="date"
+                           class="w-full rounded-md border-gray-300 bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500
+                              shadow-sm hover:border-gray-400 transition duration-150"/>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4 mt-4">
+                <div class="flex-1"></div>
+                <div class="flex gap-3">
+                    <button type="reset" class="ea-button-secondary min-w-[80px]">
+                        <span class="material-icons mr-1 text-sm">refresh</span>
+                        重置
+                    </button>
+                    <button type="submit" class="ea-button min-w-[80px]">
+                        <span class="material-icons mr-1 text-sm">search</span>
+                        搜索
+                    </button>
+                </div>
+            </div>
         </form>
     </div>
+    <!-- 数据表格区 -->
+    <div class="bg-white rounded-lg shadow-sm">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50 text-sm text-gray-600">
+                <tr>
+                    <th class="px-6 py-3 text-left">ID</th>
+                    <th class="px-6 py-3 text-left">用户邮箱</th>
+                    <th class="px-6 py-3 text-left">表单类型</th>
+                    <th class="px-6 py-3 text-left">提交时间</th>
+                    <th class="px-6 py-3 text-left">状态</th>
+                    <th class="px-6 py-3 text-left">操作</th>
+                </tr>
+                </thead>
+                <tbody id="formDataTable" class="divide-y divide-gray-200">
+                <!-- JS 动态渲染数据 -->
+                </tbody>
+            </table>
+        </div>
 
-    <div class="ea-section overflow-x-auto">
-        <div class="ea-section-title">📋 表单数据列表</div>
-        <table class="table-auto w-full text-sm">
-            <thead>
-            <tr class="bg-gray-200 text-left">
-                <th class="p-2">ID</th>
-                <th class="p-2">邮箱</th>
-                <th class="p-2">类型</th>
-                <th class="p-2">提交时间</th>
-                <th class="p-2">操作</th>
-            </tr>
-            </thead>
-            <tbody id="formDataTable">
-            <!-- JS 渲染数据 -->
-            </tbody>
-        </table>
+        <!-- 分页控制器 -->
+        <div class="flex items-center justify-between px-6 py-4 border-t">
+            <div class="text-sm text-gray-500">
+                共 <span id="totalCount">0</span> 条数据
+            </div>
+            <div class="flex items-center gap-2" id="pagination">
+                <!-- JS 动态渲染分页 -->
+            </div>
+        </div>
     </div>
 </div>
+
+<style>
+    .ea-button {
+        @apply bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 flex items-center justify-center;
+    }
+
+    .ea-button-secondary {
+        @apply bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 flex items-center justify-center;
+    }
+</style>
+
+<script src="/js/administration/form-list.js"></script>
