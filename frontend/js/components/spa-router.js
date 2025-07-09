@@ -16,6 +16,8 @@ class SpaRouter {
             link.addEventListener("click", (e) => {
                 e.preventDefault();
                 const view = link.getAttribute("data-view");
+                console.log('👉 nav clicked, loading view:', view);  // ✅ 加这一行
+
                 this.loadView(view);
 
                 // 更新激活状态
@@ -44,12 +46,37 @@ class SpaRouter {
 
             // 更新浏览器历史
             if (pushState) {
-                window.history.pushState({ view }, '', `#${view}`);
+                window.history.pushState({view}, '', `#${view}`);
             }
 
-            // 触发视图加载完成事件
-            const event = new CustomEvent('viewLoaded', { detail: { view } });
-            this.container.dispatchEvent(event);
+            // ✅ Step 1: 移除旧 JS 脚本（避免重复执行）
+            const oldScript = document.getElementById('spa-view-script');
+            if (oldScript) oldScript.remove();
+
+            // ✅ Step 2: 动态加载新页面的 JS 脚本（按模块加载）
+            const script = document.createElement('script');
+            script.type = 'module';
+            script.id = 'spa-view-script';
+            script.src = `/js/management/${view}.js`;  // ⚠️ 路径与你页面结构保持一致
+            document.body.appendChild(script);
+
+            // ✅ Step 3: 派发视图加载完成事件（可用于全局监听）
+            console.log('🚩 about to dispatch viewLoaded event:', view);
+
+            script.onload = () => {
+                console.log('📦 Script loaded, dispatching viewLoaded for:', view);
+
+                const event = new CustomEvent('viewLoaded', {
+                    detail: {view},
+                    bubbles: true
+                });
+                document.dispatchEvent(event);
+            };
+
+            document.body.appendChild(script);
+
+            console.log('✅ dispatched viewLoaded event');
+
         } catch (error) {
             console.error('Error:', error);
             this.container.innerHTML = '<div class="p-4">加载失败，请稍后重试</div>';

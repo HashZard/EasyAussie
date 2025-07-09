@@ -63,3 +63,49 @@ def get_latest_form():
     except Exception as e:
         app_logger.exception(f"[LATEST] 获取最新记录失败: {e}")
         return jsonify({'error': 'Server error'}), 500
+
+
+@standard_form.route('/form-query', methods=['GET'])
+@token_required
+def query_forms():
+    # 获取查询参数
+    form_type = request.args.get('type')
+    status = request.args.get('status')
+    email = g.current_user.email
+
+    app_logger.info(f"[QUERY] 查询表单 | 用户: {email} | 类型: {form_type} | 状态: {status}")
+
+    try:
+        # 构建查询条件
+        query_params = {'email': email}
+
+        if form_type and FormType.is_valid(form_type):
+            query_params['form_type'] = form_type
+
+        if status:
+            query_params['status'] = status
+
+        # 调用 handler 执行查询
+        forms = standard_form_handler.query_forms(query_params)
+
+        # 转换为前端所需格式
+        result = []
+        for form in forms:
+            result.append({
+                'id': form.id,
+                'formType': form.form_type,
+                # 'status': form.status,
+                'createTime': form.created_gmt.isoformat(),
+                'updateTime': form.updated_gmt.isoformat() if form.updated_gmt else None,
+                'formData': form.form_data
+            })
+
+        app_logger.info(f"[QUERY] 查询成功，返回 {len(result)} 条记录")
+        return jsonify({
+            'status': 'success',
+            'data': result
+        })
+
+    except Exception as e:
+        app_logger.exception(f"[QUERY] 查询失败: {e}")
+        return jsonify({'error': 'Server error'}), 500

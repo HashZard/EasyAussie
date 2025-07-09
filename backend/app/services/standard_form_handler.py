@@ -104,3 +104,9 @@ def get_latest_form(form_type: str, email: str) -> StandardForm | None:
         .order_by(StandardForm.created_gmt.desc())
         .first()
     )
+
+
+def query_forms(params):
+    """根据条件查询表单"""
+    query = StandardForm.query.filter_by(**params)
+    return query.order_by(StandardForm.created_gmt.desc()).all()
