@@ -1,18 +1,88 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8"/>
-    <title>Easy Aussie 首页</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Easy Aussie - 专业房屋服务平台</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
 </head>
 
-<body class="flex flex-col min-h-screen">
+<body class="flex flex-col min-h-screen bg-gray-50">
 <div id="header"></div>
 
-<main class="flex-grow p-6 max-w-5xl mx-auto">
-    <h1 class="text-3xl font-bold mb-4">欢迎来到 Easy Aussie 房屋服务</h1>
-    <p class="text-lg">服务详情移步右上角,网站建设中……</p>
+<main class="flex-grow">
+    <!-- Hero Section -->
+    <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-16">
+        <div class="max-w-5xl mx-auto px-6">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">让租房变得简单而高效</h1>
+            <p class="text-xl text-blue-100 mb-8">专业的珀斯房屋代看服务，为您解决海外租房难题</p>
+            <a href="/pages/service/service.html" class="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors">
+                立即预约看房 <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="max-w-5xl mx-auto px-6 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm text-center">
+                <div class="text-3xl font-bold text-blue-600 mb-2">1300+</div>
+                <div class="text-gray-600">完成代看任务</div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm text-center">
+                <div class="text-3xl font-bold text-blue-600 mb-2">550+</div>
+                <div class="text-gray-600">服务客户数量</div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm text-center">
+                <div class="text-3xl font-bold text-blue-600 mb-2">98%</div>
+                <div class="text-gray-600">客户满意度</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Services Section -->
+    <div class="max-w-5xl mx-auto px-6 py-12">
+        <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">我们的服务</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                <i class="fas fa-home text-3xl text-blue-600 mb-4"></i>
+                <h3 class="text-xl font-semibold mb-3">房源代看</h3>
+                <p class="text-gray-600">专业团队实地看房，提供详细视频讲解和实况反馈</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                <i class="fas fa-file-signature text-3xl text-blue-600 mb-4"></i>
+                <h3 class="text-xl font-semibold mb-3">申请协助</h3>
+                <p class="text-gray-600">专业指导租房流程，协助准备申请材料</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                <i class="fas fa-key text-3xl text-blue-600 mb-4"></i>
+                <h3 class="text-xl font-semibold mb-3">租房跑腿</h3>
+                <p class="text-gray-600">代办交接手续，协助远程客户顺利入住</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Why Choose Us -->
+    <div class="bg-gray-100 py-12">
+        <div class="max-w-5xl mx-auto px-6">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">为什么选择我们</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-star text-yellow-400 mr-3"></i>专业经验
+                    </h3>
+                    <p class="text-gray-600">深耕珀斯租房市场，熟悉各区域房源情况，提供专业判断与建议</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <h3 class="text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-shield-alt text-blue-600 mr-3"></i>高度可靠
+                    </h3>
+                    <p class="text-gray-600">看房准时、沟通及时，始终以客户托付为首要责任</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </main>
 
 <div id="footer"></div>
@@ -20,5 +90,4 @@
 <script src="/js/components/user-auth.js"></script>
 <script src="/js/components/layout.js"></script>
 </body>
-
 </html>
