@@ -105,9 +105,9 @@ function init_admin_user() {
     echo "✅ 管理员用户检查完成"
 }
 
-# 前端构建（如果需要）
+# 前端构建（TypeScript 编译）
 function build_frontend() {
-    echo ">>> 检查前端构建需求..."
+    echo ">>> 开始前端构建..."
     
     if [ -f "$PROJECT_PATH/frontend/package.json" ]; then
         echo "📦 发现前端项目，开始构建..."
@@ -118,12 +118,19 @@ function build_frontend() {
             echo "⬇️ 安装前端依赖..."
             npm install || { echo "❌ 前端依赖安装失败"; exit 1; }
             
-            echo "🔨 构建前端资源..."
+            echo "🔨 构建前端资源（TypeScript -> JavaScript）..."
             npm run build || { echo "❌ 前端构建失败"; exit 1; }
             
-            echo "✅ 前端构建完成"
+            # 确保构建输出目录权限正确
+            echo "🔐 设置构建文件权限..."
+            sudo chown -R www-data:www-data "$PROJECT_PATH/frontend/dist/"
+            sudo chmod -R 755 "$PROJECT_PATH/frontend/dist/"
+            
+            echo "✅ 前端构建完成，TypeScript 已编译为 JavaScript"
         else
             echo "⚠️ Node.js 未安装，跳过前端构建"
+            echo "❌ 注意：没有构建的话 TypeScript 文件将无法在浏览器中运行"
+            exit 1
         fi
     else
         echo "📄 未发现前端项目，跳过构建步骤"
