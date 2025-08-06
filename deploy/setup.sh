@@ -259,6 +259,7 @@ else
             stop_old_processes
             update_code
             install_dependencies
+            update_systemd_config
             build_frontend
             run_migrations
             restart_services
