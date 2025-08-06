@@ -6,38 +6,7 @@
     <title>预约看房 - Easy Aussie</title>
     <meta name="description" content="预约专业代看房服务，远程了解真实房屋情况"/>
     <script type="module" src="/src/main.ts"></script>
-    <style>
-        .checklist-item {
-            animation: slideIn 0.3s ease-out;
-        }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .checklist-remove-btn {
-            min-width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .char-counter {
-            pointer-events: none;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 2px 4px;
-            border-radius: 4px;
-            font-size: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="/src/styles/main.css"/>
     <script type="module">
         import { MobileHeaderComponent } from '/src/components/mobile-header.ts';
         import { MobileFooterComponent } from '/src/components/mobile-footer.ts';
@@ -67,6 +36,13 @@
                         required: true
                     },
                     {
+                        name: 'name',
+                        type: 'text',
+                        label: '预约姓名',
+                        placeholder: 'Full Name, 不确定可检查预约邮件抬头',
+                        required: true
+                    },
+                    {
                         name: 'address',
                         type: 'text',
                         label: '房产地址',
@@ -77,13 +53,6 @@
                         name: 'appointmentDate',
                         type: 'datetime-local',
                         label: '预约时间',
-                        required: true
-                    },
-                    {
-                        name: 'name',
-                        type: 'text',
-                        label: '预约姓名',
-                        placeholder: 'Full Name, 不确定可检查预约邮件抬头',
                         required: true
                     },
                     {
@@ -220,25 +189,25 @@
                     <label class="ea-label">
                         重点检查事项
                     </label>
-                    <div id="checklist-container" class="space-y-3">
-                        <div class="checklist-item flex gap-2">
+                    <div id="checklist-container" class="ea-checklist">
+                        <div class="ea-checklist-item">
                             <input 
                                 type="text" 
-                                class="ea-input flex-1" 
+                                class="ea-input ea-checklist-input" 
                                 placeholder="请输入需要重点检查的事项"
                                 maxlength="50"
                                 name="checklist-item"
                             />
-                            <button type="button" class="checklist-remove-btn hidden bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-colors">
+                            <button type="button" class="ea-checklist-remove hidden">
                                 删除
                             </button>
                         </div>
                     </div>
-                    <div class="mt-3 flex justify-between items-center">
-                        <button type="button" id="add-checklist-item" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
-                            <i class="fas fa-plus mr-1"></i>添加检查项
+                    <div class="ea-checklist-footer">
+                        <button type="button" id="add-checklist-item" class="ea-checklist-add">
+                            <i class="fas fa-plus"></i>添加检查项
                         </button>
-                        <span class="text-sm text-gray-500">最多5项，每项50字符</span>
+                        <span class="ea-checklist-hint">最多5项，每项50字符</span>
                     </div>
                 </div>
             `;
@@ -257,22 +226,22 @@
 
             // 添加检查项
             addBtn.addEventListener('click', () => {
-                const items = container.querySelectorAll('.checklist-item');
+                const items = container.querySelectorAll('.ea-checklist-item');
                 if (items.length >= 5) {
                     notificationService.warning('最多只能添加5个检查项');
                     return;
                 }
 
                 const newItemHtml = `
-                    <div class="checklist-item flex gap-2">
+                    <div class="ea-checklist-item">
                         <input 
                             type="text" 
-                            class="ea-input flex-1" 
+                            class="ea-input ea-checklist-input" 
                             placeholder="请输入需要重点检查的事项"
                             maxlength="50"
                             name="checklist-item"
                         />
-                        <button type="button" class="checklist-remove-btn bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-colors">
+                        <button type="button" class="ea-checklist-remove">
                             删除
                         </button>
                     </div>
@@ -286,9 +255,9 @@
 
             // 删除检查项（事件委托）
             container.addEventListener('click', (e) => {
-                const removeBtn = e.target.closest('.checklist-remove-btn');
+                const removeBtn = e.target.closest('.ea-checklist-remove');
                 if (removeBtn) {
-                    const item = removeBtn.closest('.checklist-item');
+                    const item = removeBtn.closest('.ea-checklist-item');
                     if (item) {
                         item.remove();
                         updateRemoveButtons();
@@ -333,16 +302,16 @@
                 checklistData.forEach((item, index) => {
                     const isFirst = index === 0;
                     const newItemHtml = `
-                        <div class="checklist-item flex gap-2">
+                        <div class="ea-checklist-item">
                             <input 
                                 type="text" 
-                                class="ea-input flex-1" 
+                                class="ea-input ea-checklist-input" 
                                 placeholder="请输入需要重点检查的事项"
                                 maxlength="50"
                                 name="checklist-item"
                                 value="${item}"
                             />
-                            <button type="button" class="checklist-remove-btn ${isFirst ? 'hidden' : ''} bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-colors">
+                            <button type="button" class="ea-checklist-remove ${isFirst ? 'hidden' : ''}">
                                 删除
                             </button>
                         </div>
@@ -353,15 +322,15 @@
                 // 如果没有项目，至少添加一个空项目
                 if (checklistData.length === 0) {
                     const defaultItemHtml = `
-                        <div class="checklist-item flex gap-2">
+                        <div class="ea-checklist-item">
                             <input 
                                 type="text" 
-                                class="ea-input flex-1" 
+                                class="ea-input ea-checklist-input" 
                                 placeholder="请输入需要重点检查的事项"
                                 maxlength="50"
                                 name="checklist-item"
                             />
-                            <button type="button" class="checklist-remove-btn hidden bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-colors">
+                            <button type="button" class="ea-checklist-remove hidden">
                                 删除
                             </button>
                         </div>
@@ -380,8 +349,8 @@
             const container = document.getElementById('checklist-container');
             if (!container) return;
 
-            const items = container.querySelectorAll('.checklist-item');
-            const removeButtons = container.querySelectorAll('.checklist-remove-btn');
+            const items = container.querySelectorAll('.ea-checklist-item');
+            const removeButtons = container.querySelectorAll('.ea-checklist-remove');
 
             // 只有一个项目时隐藏删除按钮
             if (items.length <= 1) {
@@ -397,7 +366,7 @@
             
             if (!container || !addBtn) return;
 
-            const items = container.querySelectorAll('.checklist-item');
+            const items = container.querySelectorAll('.ea-checklist-item');
             
             if (items.length >= 5) {
                 addBtn.disabled = true;
@@ -452,147 +421,117 @@
                     }
                 });
             }
-
-            // 添加快速咨询功能
-            const quickConsultBtn = document.getElementById('quick-consult');
-            if (quickConsultBtn) {
-                quickConsultBtn.addEventListener('click', () => {
-                    notificationService.info('客服微信: EasyAussie', {
-                        actions: [
-                            {
-                                text: '复制微信号',
-                                action: () => {
-                                    navigator.clipboard.writeText('EasyAussie');
-                                    notificationService.success('微信号已复制');
-                                }
-                            }
-                        ]
-                    });
-                });
-            }
         }
     </script>
 </head>
 
-<body class="bg-gray-50 text-gray-900">
+<body class="ea-service-page">
 <div id="header"></div>
 
 <main class="flex-grow">
-    <!-- Page Header -->
-    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-6 sm:py-8">
-        <div class="max-w-4xl mx-auto px-4">
-            <div class="flex items-center justify-between">
+    <!-- 页面头部 -->
+    <div class="ea-service-header">
+        <div class="ea-service-header-content">
+            <div class="ea-service-header-layout">
                 <div>
-                    <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">预约看房服务</h1>
-                    <p class="text-blue-100">专业团队代您实地看房，详细反馈房屋情况</p>
+                    <h1 class="ea-service-title">预约看房服务</h1>
+                    <p class="ea-service-subtitle">专业团队代您实地看房，详细反馈房屋情况</p>
                 </div>
-                <div class="hidden sm:block text-right">
-                    <div class="text-2xl font-bold">$25</div>
-                    <div class="text-blue-100 text-sm">起</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Service Features - 移动端优化 -->
-    <div class="py-6 bg-white">
-        <div class="max-w-4xl mx-auto px-4">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="flex items-center p-4 bg-blue-50 rounded-lg">
-                    <i class="fas fa-video text-blue-600 text-xl mr-3"></i>
-                    <div>
-                        <div class="font-semibold text-sm">高清视频</div>
-                        <div class="text-gray-600 text-xs">详细拍摄每个角落</div>
-                    </div>
-                </div>
-                <div class="flex items-center p-4 bg-green-50 rounded-lg">
-                    <i class="fas fa-clock text-green-600 text-xl mr-3"></i>
-                    <div>
-                        <div class="font-semibold text-sm">24小时反馈</div>
-                        <div class="text-gray-600 text-xs">快速提供看房报告</div>
-                    </div>
-                </div>
-                <div class="flex items-center p-4 bg-purple-50 rounded-lg">
-                    <i class="fas fa-star text-purple-600 text-xl mr-3"></i>
-                    <div>
-                        <div class="font-semibold text-sm">专业评价</div>
-                        <div class="text-gray-600 text-xs">给出中肯建议</div>
-                    </div>
+                <div class="ea-service-price ea-service-price-desktop">
+                    <div class="ea-service-price-amount">$25</div>
+                    <div class="ea-service-price-label">起</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Form Section -->
-    <div class="py-6 sm:py-8">
-        <div class="max-w-4xl mx-auto px-4">
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                <!-- Form Header -->
-                <div class="bg-gray-50 px-6 py-4 border-b">
-                    <h2 class="text-lg font-semibold text-gray-800">填写预约信息</h2>
-                    <p class="text-gray-600 text-sm mt-1">请准确填写以下信息，我们会根据您的需求安排看房</p>
+    <!-- 服务特色 -->
+    <div class="ea-service-features">
+        <div class="ea-feature-grid">
+            <div class="ea-feature-item">
+                <div class="ea-feature-icon ea-feature-icon--blue">
+                    <i class="fas fa-video"></i>
                 </div>
+                <div class="ea-feature-content">
+                    <div class="ea-feature-title">高清视频</div>
+                    <div class="ea-feature-description">详细拍摄每个角落</div>
+                </div>
+            </div>
+            <div class="ea-feature-item">
+                <div class="ea-feature-icon ea-feature-icon--green">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="ea-feature-content">
+                    <div class="ea-feature-title">24小时反馈</div>
+                    <div class="ea-feature-description">快速提供看房报告</div>
+                </div>
+            </div>
+            <div class="ea-feature-item">
+                <div class="ea-feature-icon ea-feature-icon--purple">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="ea-feature-content">
+                    <div class="ea-feature-title">专业评价</div>
+                    <div class="ea-feature-description">给出中肯建议</div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                <!-- Form Content -->
-                <div class="p-6">
+    <!-- 表单区域 -->
+    <div class="ea-service-main">
+        <div class="ea-service-container">
+            <div class="ea-form-card">
+                <div class="ea-form-card-header">
+                    <h2 class="ea-form-card-title">填写预约信息</h2>
+                    <p class="ea-form-card-description">请准确填写以下信息，我们会根据您的需求安排看房</p>
+                </div>
+                <div class="ea-form-card-content">
                     <div id="inspection-form"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Help Section -->
-    <div class="py-6 bg-gray-50">
-        <div class="max-w-4xl mx-auto px-4">
-            <div class="bg-white rounded-xl p-6">
-                <h3 class="text-lg font-semibold mb-4 flex items-center">
-                    <i class="fas fa-question-circle text-blue-600 mr-2"></i>
+    <!-- 帮助区域 -->
+    <div class="ea-help-section">
+        <div class="ea-service-container">
+            <div class="ea-help-card">
+                <h3 class="ea-help-title">
+                    <i class="fas fa-question-circle"></i>
                     常见问题
                 </h3>
-                <div class="space-y-3 text-sm">
-                    <div class="flex">
-                        <span class="text-blue-600 font-semibold mr-2">Q:</span>
-                        <div>
-                            <span class="font-medium">看房报告包含什么内容？</span>
-                            <p class="text-gray-600 mt-1">包括高清视频、房屋状况评价、周边环境介绍、专业建议等。</p>
+                <div class="ea-faq-list">
+                    <div class="ea-faq-item">
+                        <span class="ea-faq-q">Q:</span>
+                        <div class="ea-faq-content">
+                            <div class="ea-faq-question">看房报告包含什么内容？</div>
+                            <p class="ea-faq-answer">包括高清视频、房屋状况评价、周边环境介绍、专业建议等。</p>
                         </div>
                     </div>
-                    <div class="flex">
-                        <span class="text-blue-600 font-semibold mr-2">Q:</span>
-                        <div>
-                            <span class="font-medium">如果看房时间与中介安排冲突怎么办？</span>
-                            <p class="text-gray-600 mt-1">我们会协调最佳时间，或建议备选方案。</p>
+                    <div class="ea-faq-item">
+                        <span class="ea-faq-q">Q:</span>
+                        <div class="ea-faq-content">
+                            <div class="ea-faq-question">如果看房时间与中介安排冲突怎么办？</div>
+                            <p class="ea-faq-answer">我们会协调最佳时间，或建议备选方案。</p>
                         </div>
                     </div>
-                    <div class="flex">
-                        <span class="text-blue-600 font-semibold mr-2">Q:</span>
-                        <div>
-                            <span class="font-medium">费用什么时候支付？</span>
-                            <p class="text-gray-600 mt-1">看房完成并发送报告后再付款，确保服务质量。</p>
+                    <div class="ea-faq-item">
+                        <span class="ea-faq-q">Q:</span>
+                        <div class="ea-faq-content">
+                            <div class="ea-faq-question">费用什么时候支付？</div>
+                            <p class="ea-faq-answer">看房完成并发送报告后再付款，确保服务质量。</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Contact Section -->
-    <div class="py-6 bg-blue-600 text-white">
-        <div class="max-w-4xl mx-auto px-4 text-center">
-            <h3 class="text-lg font-semibold mb-3">需要帮助？</h3>
-            <p class="text-blue-100 mb-4 text-sm">我们的客服团队随时为您解答疑问</p>
-            <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                <button id="quick-consult" class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors">
-                    <i class="fab fa-weixin mr-2"></i>微信咨询
-                </button>
-                <a href="tel:+61xxxxxxxxx" class="bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors">
-                    <i class="fas fa-phone mr-2"></i>电话咨询
-                </a>
-            </div>
-        </div>
-    </div>
 </main>
 
 <div id="footer"></div>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
 </body>
 </html>

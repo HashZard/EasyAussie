@@ -13,15 +13,41 @@ def force_reset_password(email, new_password):
     return {"success": True, "message": "密码已重置"}
 
 
-def get_all_users():
-    users = User.query.order_by(User.id.asc()).all()
+def get_all_users(email_query=None, name_query=None, phone_query=None, wechat_query=None):
+    """
+    获取用户列表，支持模糊查询
+    :param email_query: 邮箱模糊查询
+    :param name_query: 姓名模糊查询
+    :param phone_query: 电话模糊查询
+    :param wechat_query: 微信ID模糊查询
+    """
+    query = User.query
+    
+    # 添加模糊查询条件
+    if email_query:
+        query = query.filter(User.email.ilike(f"%{email_query}%"))
+    if name_query:
+        query = query.filter(User.name.ilike(f"%{name_query}%"))
+    if phone_query:
+        query = query.filter(User.phone.ilike(f"%{phone_query}%"))
+    if wechat_query:
+        query = query.filter(User.wechat_nickname.ilike(f"%{wechat_query}%"))
+    
+    users = query.order_by(User.id.asc()).all()
     result = []
     for user in users:
         roles = [r.name for r in user.roles]
         result.append({
+            "id": user.id,
             "email": user.email,
+            "name": user.name,
+            "phone": user.phone,
+            "wechat_nickname": user.wechat_nickname,
+            "avatar": user.avatar,
             "roles": roles,
-            "active": user.active
+            "active": user.active,
+            "created_at": user.created_gmt.isoformat() if user.created_gmt else None,
+            "last_login_at": user.last_login_at.isoformat() if user.last_login_at else None
         })
     return result
 

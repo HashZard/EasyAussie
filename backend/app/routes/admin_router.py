@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_security import roles_required
+from datetime import datetime, timedelta
 
 from backend.app.models.service_obj.standard_form import StandardForm
 from backend.app.services.admin_handler import (
@@ -34,7 +35,9 @@ def get_standard_forms():
             "id": item.id,
             "email": item.email,
             "form_type": item.form_type,
-            "created_gmt": item.created_gmt.isoformat() if item.created_gmt else None
+            "status": item.status or 'pending',
+            "created_gmt": item.created_gmt.isoformat() if item.created_gmt else None,
+            "updated_gmt": item.updated_gmt.isoformat() if item.updated_gmt else None
         }
         for item in results
     ]
@@ -54,6 +57,7 @@ def get_form_detail(id):
         "form_data": form.form_data,
         "files": form.files,
         "remark": form.remark,
+        "status": form.status or 'pending',
         "created_gmt": form.created_gmt.isoformat() if form.created_gmt else None,
         "updated_gmt": form.updated_gmt.isoformat() if form.updated_gmt else None
     })
@@ -75,7 +79,31 @@ def admin_reset_password():
 @admin_bp.route("/users", methods=["GET"])
 @roles_required('admin')
 def get_user_list():
-    users_data = get_all_users()
+    """
+    获取用户列表，支持模糊查询
+    查询参数:
+    - email: 邮箱模糊查询
+    - name: 姓名模糊查询  
+    - phone: 电话模糊查询
+    - wechat: 微信ID模糊查询
+    """
+    email_query = request.args.get("email", "").strip()
+    name_query = request.args.get("name", "").strip()
+    phone_query = request.args.get("phone", "").strip()
+    wechat_query = request.args.get("wechat", "").strip()
+    
+    # 将空字符串转换为None
+    email_query = email_query if email_query else None
+    name_query = name_query if name_query else None
+    phone_query = phone_query if phone_query else None
+    wechat_query = wechat_query if wechat_query else None
+    
+    users_data = get_all_users(
+        email_query=email_query,
+        name_query=name_query, 
+        phone_query=phone_query,
+        wechat_query=wechat_query
+    )
     return jsonify({"users": users_data})
 
 
@@ -133,3 +161,86 @@ def toggle_user():
 
     result = toggle_user_active(email, active)
     return jsonify(result), 200 if result["success"] else 404
+
+
+@admin_bp.route("/forms/<int:form_id>/status", methods=["PUT"])
+@roles_required('admin')
+def update_form_status(form_id):
+    """更新表单状态"""
+    data = request.get_json()
+    status = data.get("status")
+    
+    if not status:
+        return jsonify({"success": False, "message": "缺少状态参数"}), 400
+    
+    valid_statuses = ['pending', 'processing', 'completed', 'cancelled', 'rejected']
+    if status not in valid_statuses:
+        return jsonify({"success": False, "message": "无效的状态值"}), 400
+    
+    try:
+        form = StandardForm.query.get_or_404(form_id)
+        form.status = status
+        form.updated_gmt = datetime.utcnow()
+        
+        from backend.app import db
+        db.session.commit()
+        
+        return jsonify({"success": True, "message": "状态更新成功"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@admin_bp.route("/forms/<int:form_id>/remark", methods=["PUT"])
+@roles_required('admin')
+def update_form_remark(form_id):
+    """更新表单备注"""
+    data = request.get_json()
+    remark = data.get("remark", "")
+    
+    try:
+        form = StandardForm.query.get_or_404(form_id)
+        form.remark = remark
+        form.updated_gmt = datetime.utcnow()
+        
+        from backend.app import db
+        db.session.commit()
+        
+        return jsonify({"success": True, "message": "备注更新成功"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@admin_bp.route("/dashboard/stats", methods=["GET"])
+@roles_required('admin')
+def get_dashboard_stats():
+    """获取仪表盘统计数据"""
+    try:
+        from backend.app.services.admin_handler import get_all_users
+        
+        # 获取用户统计
+        users_data = get_all_users()
+        total_users = len(users_data)
+        
+        # 获取表单统计
+        total_forms = StandardForm.query.count()
+        pending_forms = StandardForm.query.filter_by(status='pending').count()
+        
+        # 获取今日新增
+        from datetime import date
+        today = date.today()
+        today_new = StandardForm.query.filter(
+            StandardForm.created_gmt >= today,
+            StandardForm.created_gmt < today + timedelta(days=1)
+        ).count()
+        
+        return jsonify({
+            "success": True,
+            "data": {
+                "total_users": total_users,
+                "total_forms": total_forms,
+                "pending_forms": pending_forms,
+                "today_new": today_new
+            }
+        })
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500

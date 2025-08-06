@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <title>个人中心 - Easy Aussie</title>
+    <meta name="description" content="管理您的账号信息和订单"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../../src/styles/components/spa-base.css">
+    
+    <script type="module">
+        // TypeScript版本的用户中心实现
+        import { SPABase } from '../../src/components/spa-base.ts';
+        import { SharedHeader } from '../../src/components/shared-header.ts';
+        import { getProfilePageContent, initializeProfilePage } from './profile.ts';
+        import { getOrdersPageContent, initializeOrdersPage } from './orders.ts';
+
+        class UserCenter extends SPABase {
+            constructor() {
+                super({
+                    defaultPage: 'profile',
+                    authRequired: true,
+                    adminRequired: false,
+                    title: 'Easy Aussie',
+                    subtitle: '个人中心',
+                    showUserInfo: true,
+                    showBackToHome: true,
+                    logoHref: '/'
+                });
+
+                this.navigationItems = [
+                    { key: 'profile', label: '个人中心', icon: 'fas fa-user' },
+                    { key: 'orders', label: '我的订单', icon: 'fas fa-list-alt' }
+                ];
+            }
+
+            async initialize() {
+                // 生成界面结构
+                this.generateUI();
+
+                // 注册页面
+                this.registerPages({
+                    profile: {
+                        getContent: getProfilePageContent,
+                        initialize: initializeProfilePage
+                    },
+                    orders: {
+                        getContent: getOrdersPageContent,
+                        initialize: initializeOrdersPage
+                    }
+                });
+
+                // 调用父类初始化（包含认证检查和路由处理）
+                await super.initialize();
+
+                // 重新渲染用户信息（因为界面是后生成的）
+                this.renderUserInfo();
+            }
+
+            generateUI() {
+                // 生成侧边栏
+                const sidebarContainer = document.getElementById('sidebar-container');
+                if (sidebarContainer) {
+                    sidebarContainer.innerHTML = this.sharedHeader.getSidebarHTML(this.navigationItems);
+                }
+
+                // 生成头部（对于移动端）
+                const headerContainer = document.getElementById('header-container');
+                if (headerContainer) {
+                    headerContainer.innerHTML = this.sharedHeader.getHeaderHTML();
+                }
+
+                // 生成移动端标签导航
+                const mobileTabsContainer = document.getElementById('mobile-tabs-container');
+                if (mobileTabsContainer) {
+                    mobileTabsContainer.innerHTML = this.sharedHeader.getMobileTopTabsHTML(this.navigationItems);
+                }
+
+                // 设置移动端菜单切换
+                this.setupMobileMenu();
+                
+                // 重新绑定退出登录事件（因为按钮是后生成的）
+                this.setupLogoutButton();
+            }
+
+            setupLogoutButton() {
+                const logoutBtn = document.getElementById('logout-btn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.handleLogout();
+                    });
+                }
+            }
+
+            handleLogout() {
+                if (confirm('确定要退出登录吗？')) {
+                    authStore.logout();
+                }
+            }
+
+            setupMobileMenu() {
+                const menuToggle = document.getElementById('menu-toggle');
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('overlay');
+
+                if (menuToggle && sidebar && overlay) {
+                    menuToggle.addEventListener('click', () => {
+                        sidebar.classList.toggle('-translate-x-full');
+                        overlay.classList.toggle('hidden');
+                    });
+
+                    overlay.addEventListener('click', () => {
+                        sidebar.classList.add('-translate-x-full');
+                        overlay.classList.add('hidden');
+                    });
+                }
+            }
+        }
+
+        // 初始化用户中心
+        const userCenter = new UserCenter();
+        userCenter.init();
+
+        // 暴露到全局（用于调试）
+        window.userCenter = userCenter;
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- 移动端菜单按钮 -->
+    <div class="lg:hidden fixed top-4 left-4 z-50">
+        <button id="menu-toggle" class="p-2 rounded-md bg-white shadow-md text-gray-600 hover:text-blue-600">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+
+    <!-- 侧边栏遮罩 -->
+    <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+
+    <!-- 侧边栏将由JavaScript动态生成 -->
+    <div id="sidebar-container"></div>
+
+    <!-- 主内容区域 -->
+    <div class="lg:ml-64">
+        <!-- 顶部头部将由JavaScript动态生成 -->
+        <div id="header-container"></div>
+
+        <!-- 移动端导航标签将由JavaScript动态生成 -->
+        <div id="mobile-tabs-container"></div>
+
+        <!-- 页面内容 -->
+        <main id="main-content" class="p-4 lg:p-6">
+            <div class="flex items-center justify-center py-12">
+                <div class="text-gray-500">初始化中...</div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 通知容器 -->
+    <div id="notification-container" class="fixed top-4 right-4 z-50">
+</body>
+</html>

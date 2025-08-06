@@ -31,7 +31,12 @@
             // 检查是否已经登录
             const currentUser = authStore.getCurrentUser();
             if (currentUser) {
-                window.location.href = '/pages/management/admin.html';
+                // 根据用户角色重定向到相应页面
+                if (currentUser.roles?.includes('admin')) {
+                    window.location.href = '/pages/admin/index.html';
+                } else {
+                    window.location.href = '/pages/user/index.html';
+                }
                 return;
             }
 

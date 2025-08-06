@@ -5,21 +5,130 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>提交成功 - Easy Aussie</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/css/common.css"/>
-    <link rel="stylesheet" href="/css/ea-card.css"/>
-    <script src="/js/components/layout.ts" defer></script>
+    <link rel="stylesheet" href="/src/styles/main.css"/>
+    <script type="module">
+        import { MobileHeaderComponent } from '/src/components/mobile-header.ts';
+        import { MobileFooterComponent } from '/src/components/mobile-footer.ts';
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            new MobileHeaderComponent();
+            new MobileFooterComponent();
+        });
+    </script>
+    <script src="/js/services/notification.js" defer></script>
+    <script src="/src/pages/result-handler.js" defer></script>
 </head>
-<body class="bg-gray-100 text-gray-900 min-h-screen">
-<div id="header"></div>
+<body class="ea-result-page ea-success-page">
+    <div id="header"></div>
+    
+    <!-- 浮动粒子效果 -->
+    <div class="ea-particles"></div>
 
-<main class="flex-grow w-full max-w-5xl mx-auto p-6">
-    <div class="ea-card text-center">
-        <h2 class="text-2xl font-bold text-green-600 mb-4">🎉 提交成功！</h2>
-        <p class="text-gray-700 mb-6">我们已成功接收到您的表单信息，工作人员将尽快为您处理。</p>
-        <a href="/index.html" class="ea-btn-primary inline-block w-auto">返回主页</a>
-    </div>
-</main>
+    <main class="ea-result-container">
+        <!-- 主要图标 -->
+        <div class="ea-hero-icon">
+            <div class="ea-hero-icon-bg ea-success-hero-bg">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+        </div>
 
-<div id="footer" class="mt-12"></div>
+        <!-- 主要内容卡片 -->
+        <div class="ea-result-card">
+            <h1 class="ea-result-title ea-success-title">提交成功！</h1>
+            <p class="ea-result-description">
+                您的申请已成功提交并进入审核流程。我们将尽快为您处理，请耐心等待。
+            </p>
+            
+            <!-- 处理流程时间线 -->
+            <ul class="ea-timeline">
+                <li class="ea-timeline-item">
+                    <div class="ea-timeline-icon ea-success-timeline-icon">1</div>
+                    <div class="ea-timeline-content">
+                        <div class="ea-timeline-title">即时确认</div>
+                        <div class="ea-timeline-description">您的申请已成功提交到我们的系统</div>
+                    </div>
+                </li>
+                <li class="ea-timeline-item">
+                    <div class="ea-timeline-icon ea-success-timeline-icon">2</div>
+                    <div class="ea-timeline-content">
+                        <div class="ea-timeline-title">专业审核 (24小时内)</div>
+                        <div class="ea-timeline-description">我们的专业团队将仔细审核您的申请材料</div>
+                    </div>
+                </li>
+                <li class="ea-timeline-item">
+                    <div class="ea-timeline-icon ea-success-timeline-icon">3</div>
+                    <div class="ea-timeline-content">
+                        <div class="ea-timeline-title">结果通知</div>
+                        <div class="ea-timeline-description">审核完成后我们会通过邮件或电话联系您</div>
+                    </div>
+                </li>
+            </ul>
+
+            <!-- 操作按钮 -->
+            <div class="ea-result-actions">
+                <button onclick="goToOrders()" class="ea-result-btn ea-result-btn-primary">
+                    <svg class="ea-result-btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    查看申请状态
+                </button>
+                <button onclick="goHome()" class="ea-result-btn ea-result-btn-secondary">
+                    <svg class="ea-result-btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    返回主页
+                </button>
+            </div>
+
+            <!-- 联系信息 -->
+            <div class="ea-result-contact">
+                <div class="ea-contact-title">需要帮助？随时联系我们</div>
+                <div class="ea-contact-links">
+                    <a href="mailto:support@easyaussie.com" class="ea-contact-link">
+                        <svg class="ea-contact-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        support@easyaussie.com
+                    </a>
+                    <a href="tel:+61123456789" class="ea-contact-link">
+                        <svg class="ea-contact-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                        </svg>
+                        +61 123 456 789
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="footer"></div>
+
+    <script>
+        // 创建浮动粒子效果
+        function createParticles() {
+            const container = document.querySelector('.ea-particles');
+            const particleCount = 15;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'ea-particle ea-particle-success';
+                
+                // 随机位置
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                
+                // 随机动画延迟
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                
+                container.appendChild(particle);
+            }
+        }
+        
+        // 页面加载完成后创建粒子效果
+        document.addEventListener('DOMContentLoaded', createParticles);
+    </script>
 </body>
 </html>

@@ -1,0 +1,268 @@
+/* 按钮组件样式 */
+
+/* 基础按钮样式 */
+.ea-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ea-spacing-sm) var(--ea-spacing-lg);
+  font-weight: 600;
+  font-size: var(--ea-text-sm);
+  line-height: 1.5;
+  border-radius: var(--ea-radius-lg);
+  border: 2px solid transparent;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--ea-transition-normal);
+  user-select: none;
+  white-space: nowrap;
+}
+
+.ea-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.ea-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* 按钮尺寸变体 */
+.ea-btn-sm {
+  padding: var(--ea-spacing-xs) var(--ea-spacing-md);
+  font-size: var(--ea-text-xs);
+}
+
+.ea-btn-lg {
+  padding: var(--ea-spacing-md) var(--ea-spacing-xl);
+  font-size: var(--ea-text-base);
+}
+
+.ea-btn-xl {
+  padding: var(--ea-spacing-lg) var(--ea-spacing-2xl);
+  font-size: var(--ea-text-lg);
+}
+
+/* 全宽按钮 */
+.ea-btn-full {
+  width: 100%;
+}
+
+/* 按钮颜色变体 */
+
+/* 主要按钮 */
+.ea-btn-primary {
+  background-color: var(--ea-primary-600);
+  color: white;
+  border-color: var(--ea-primary-600);
+}
+
+.ea-btn-primary:hover:not(:disabled) {
+  background-color: var(--ea-primary-700);
+  border-color: var(--ea-primary-700);
+  transform: translateY(-1px);
+  box-shadow: var(--ea-shadow-md);
+}
+
+.ea-btn-primary:active {
+  transform: translateY(0);
+  box-shadow: var(--ea-shadow-sm);
+}
+
+/* 次要按钮 */
+.ea-btn-secondary {
+  background-color: var(--ea-gray-100);
+  color: var(--ea-gray-700);
+  border-color: var(--ea-gray-300);
+}
+
+.ea-btn-secondary:hover:not(:disabled) {
+  background-color: var(--ea-gray-200);
+  border-color: var(--ea-gray-400);
+  transform: translateY(-1px);
+  box-shadow: var(--ea-shadow-md);
+}
+
+.ea-btn-secondary:active {
+  transform: translateY(0);
+  box-shadow: var(--ea-shadow-sm);
+}
+
+/* 轮廓按钮 */
+.ea-btn-outline {
+  background-color: transparent;
+  color: var(--ea-gray-600);
+  border-color: var(--ea-gray-300);
+}
+
+.ea-btn-outline:hover:not(:disabled) {
+  background-color: var(--ea-gray-50);
+  border-color: var(--ea-gray-400);
+  color: var(--ea-gray-700);
+}
+
+/* 成功按钮 */
+.ea-btn-success {
+  background-color: var(--ea-success-600);
+  color: white;
+  border-color: var(--ea-success-600);
+}
+
+.ea-btn-success:hover:not(:disabled) {
+  background-color: var(--ea-success-700);
+  border-color: var(--ea-success-700);
+  transform: translateY(-1px);
+  box-shadow: var(--ea-shadow-md);
+}
+
+/* 危险按钮 */
+.ea-btn-danger {
+  background-color: var(--ea-error-600);
+  color: white;
+  border-color: var(--ea-error-600);
+}
+
+.ea-btn-danger:hover:not(:disabled) {
+  background-color: var(--ea-error-700);
+  border-color: var(--ea-error-700);
+  transform: translateY(-1px);
+  box-shadow: var(--ea-shadow-md);
+}
+
+/* 警告按钮 */
+.ea-btn-warning {
+  background-color: var(--ea-warning-600);
+  color: white;
+  border-color: var(--ea-warning-600);
+}
+
+.ea-btn-warning:hover:not(:disabled) {
+  background-color: var(--ea-warning-700);
+  border-color: var(--ea-warning-700);
+  transform: translateY(-1px);
+  box-shadow: var(--ea-shadow-md);
+}
+
+/* 文本按钮 */
+.ea-btn-text {
+  background-color: transparent;
+  color: var(--ea-primary-600);
+  border-color: transparent;
+  padding: var(--ea-spacing-xs) var(--ea-spacing-sm);
+}
+
+.ea-btn-text:hover:not(:disabled) {
+  background-color: var(--ea-primary-50);
+  color: var(--ea-primary-700);
+}
+
+/* 按钮图标 */
+.ea-btn .ea-btn-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.ea-btn .ea-btn-icon:first-child {
+  margin-right: var(--ea-spacing-xs);
+}
+
+.ea-btn .ea-btn-icon:last-child {
+  margin-left: var(--ea-spacing-xs);
+}
+
+.ea-btn .ea-btn-icon:only-child {
+  margin: 0;
+}
+
+/* 按钮组 */
+.ea-btn-group {
+  display: inline-flex;
+  border-radius: var(--ea-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--ea-shadow-sm);
+}
+
+.ea-btn-group .ea-btn {
+  border-radius: 0;
+  border-right-width: 0;
+}
+
+.ea-btn-group .ea-btn:first-child {
+  border-top-left-radius: var(--ea-radius-lg);
+  border-bottom-left-radius: var(--ea-radius-lg);
+}
+
+.ea-btn-group .ea-btn:last-child {
+  border-top-right-radius: var(--ea-radius-lg);
+  border-bottom-right-radius: var(--ea-radius-lg);
+  border-right-width: 2px;
+}
+
+.ea-btn-group .ea-btn:not(:first-child):not(:last-child) {
+  border-radius: 0;
+}
+
+/* 加载状态 */
+.ea-btn-loading {
+  position: relative;
+  pointer-events: none;
+}
+
+.ea-btn-loading::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1rem;
+  height: 1rem;
+  margin: -0.5rem 0 0 -0.5rem;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: ea-spin 1s linear infinite;
+}
+
+.ea-btn-loading > * {
+  opacity: 0;
+}
+
+@keyframes ea-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 响应式按钮 */
+@media (max-width: 640px) {
+  .ea-btn-responsive {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* 旧版兼容性（从legacy迁移过来的类名） */
+.ea-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: var(--ea-spacing-sm) var(--ea-spacing-lg);
+  background-color: var(--ea-primary-600);
+  color: white;
+  font-weight: 600;
+  font-size: var(--ea-text-sm);
+  border-radius: var(--ea-radius-lg);
+  border: 2px solid var(--ea-primary-600);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--ea-transition-normal);
+}
+
+.ea-button:hover:not(:disabled) {
+  background-color: var(--ea-primary-700);
+  border-color: var(--ea-primary-700);
+  transform: translateY(-1px);
+  box-shadow: var(--ea-shadow-md);
+}

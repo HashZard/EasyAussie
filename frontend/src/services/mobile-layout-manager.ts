@@ -285,7 +285,6 @@ export class MobileLayoutManager {
     private preloadCriticalResources(): void {
         const criticalPages = [
             '/pages/service/service.html',
-            '/pages/management/admin.html',
             '/pages/auth/login.html'
         ];
 

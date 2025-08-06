@@ -1,0 +1,290 @@
+/* 卡片组件样式 */
+
+/* 基础卡片 */
+.ea-card {
+  background-color: white;
+  border: 1px solid var(--ea-gray-200);
+  border-radius: var(--ea-radius-xl);
+  box-shadow: var(--ea-shadow-sm);
+  overflow: hidden;
+  transition: all var(--ea-transition-normal);
+}
+
+.ea-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--ea-shadow-lg);
+}
+
+/* 卡片标题 */
+.ea-card-title {
+  font-size: var(--ea-text-xl);
+  font-weight: 600;
+  color: var(--ea-primary-600);
+  margin-bottom: var(--ea-spacing-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--ea-spacing-sm);
+}
+
+/* 卡片描述 */
+.ea-card-desc {
+  color: var(--ea-gray-600);
+  font-size: var(--ea-text-sm);
+  line-height: 1.5;
+  margin-bottom: var(--ea-spacing-md);
+}
+
+/* 卡片价格 */
+.ea-card-price {
+  font-size: var(--ea-text-sm);
+  font-weight: 500;
+  color: var(--ea-primary-600);
+  margin-top: var(--ea-spacing-sm);
+}
+
+/* 卡片操作按钮 */
+.ea-card-action {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--ea-spacing-sm) var(--ea-spacing-lg);
+  background-color: white;
+  color: var(--ea-primary-600);
+  font-size: var(--ea-text-sm);
+  font-weight: 500;
+  border: 1px solid var(--ea-primary-600);
+  border-radius: 9999px;
+  text-decoration: none;
+  transition: all var(--ea-transition-normal);
+  white-space: nowrap;
+  margin-left: var(--ea-spacing-xl);
+}
+
+.ea-card-action:hover {
+  background-color: var(--ea-primary-50);
+  transform: translateY(-1px);
+  box-shadow: var(--ea-shadow-sm);
+}
+
+.ea-card-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* 卡片内容区域 */
+.ea-card-header {
+  padding: var(--ea-spacing-lg);
+  border-bottom: 1px solid var(--ea-gray-200);
+  background-color: var(--ea-gray-50);
+}
+
+.ea-card-body {
+  padding: var(--ea-spacing-lg);
+}
+
+.ea-card-footer {
+  padding: var(--ea-spacing-lg);
+  border-top: 1px solid var(--ea-gray-200);
+  background-color: var(--ea-gray-50);
+}
+
+/* 卡片变体 */
+.ea-card-elevated {
+  box-shadow: var(--ea-shadow-lg);
+}
+
+.ea-card-flat {
+  box-shadow: none;
+  border: 2px solid var(--ea-gray-100);
+}
+
+.ea-card-outline {
+  background-color: transparent;
+  border: 2px solid var(--ea-gray-200);
+  box-shadow: none;
+}
+
+/* 紧凑型卡片 */
+.ea-card-compact .ea-card-header,
+.ea-card-compact .ea-card-body,
+.ea-card-compact .ea-card-footer {
+  padding: var(--ea-spacing-md);
+}
+
+/* 区域组件 */
+.ea-section {
+  background-color: white;
+  border: 1px solid var(--ea-gray-200);
+  border-radius: var(--ea-radius-lg);
+  box-shadow: var(--ea-shadow-sm);
+  padding: var(--ea-spacing-xl);
+  margin-bottom: var(--ea-spacing-xl);
+}
+
+.ea-section-title {
+  font-size: var(--ea-text-xl);
+  font-weight: 600;
+  color: var(--ea-gray-800);
+  margin-bottom: var(--ea-spacing-lg);
+  padding-bottom: var(--ea-spacing-sm);
+  border-bottom: 1px solid var(--ea-gray-200);
+}
+
+/* 容器和布局 */
+.ea-container {
+  width: 100%;
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--ea-spacing-lg);
+  padding-right: var(--ea-spacing-lg);
+}
+
+/* 网格布局 */
+.ea-grid {
+  display: grid;
+  gap: var(--ea-spacing-lg);
+}
+
+.ea-grid-1 {
+  grid-template-columns: 1fr;
+}
+
+.ea-grid-2 {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.ea-grid-3 {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.ea-grid-4 {
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+/* 响应式网格 */
+@media (min-width: 768px) {
+  .ea-grid-md-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .ea-grid-md-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .ea-grid-md-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .ea-grid-lg-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .ea-grid-lg-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .ea-grid-lg-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Flexbox 布局工具 */
+.ea-flex {
+  display: flex;
+}
+
+.ea-flex-col {
+  flex-direction: column;
+}
+
+.ea-flex-wrap {
+  flex-wrap: wrap;
+}
+
+.ea-flex-nowrap {
+  flex-wrap: nowrap;
+}
+
+.ea-items-center {
+  align-items: center;
+}
+
+.ea-items-start {
+  align-items: flex-start;
+}
+
+.ea-items-end {
+  align-items: flex-end;
+}
+
+.ea-justify-center {
+  justify-content: center;
+}
+
+.ea-justify-between {
+  justify-content: space-between;
+}
+
+.ea-justify-around {
+  justify-content: space-around;
+}
+
+.ea-justify-evenly {
+  justify-content: space-evenly;
+}
+
+/* 间距工具 */
+.ea-gap-xs { gap: var(--ea-spacing-xs); }
+.ea-gap-sm { gap: var(--ea-spacing-sm); }
+.ea-gap-md { gap: var(--ea-spacing-md); }
+.ea-gap-lg { gap: var(--ea-spacing-lg); }
+.ea-gap-xl { gap: var(--ea-spacing-xl); }
+.ea-gap-2xl { gap: var(--ea-spacing-2xl); }
+
+/* 内边距工具 */
+.ea-p-xs { padding: var(--ea-spacing-xs); }
+.ea-p-sm { padding: var(--ea-spacing-sm); }
+.ea-p-md { padding: var(--ea-spacing-md); }
+.ea-p-lg { padding: var(--ea-spacing-lg); }
+.ea-p-xl { padding: var(--ea-spacing-xl); }
+.ea-p-2xl { padding: var(--ea-spacing-2xl); }
+
+/* 外边距工具 */
+.ea-m-xs { margin: var(--ea-spacing-xs); }
+.ea-m-sm { margin: var(--ea-spacing-sm); }
+.ea-m-md { margin: var(--ea-spacing-md); }
+.ea-m-lg { margin: var(--ea-spacing-lg); }
+.ea-m-xl { margin: var(--ea-spacing-xl); }
+.ea-m-2xl { margin: var(--ea-spacing-2xl); }
+
+/* 响应式容器 */
+@media (max-width: 640px) {
+  .ea-container {
+    padding-left: var(--ea-spacing-sm);
+    padding-right: var(--ea-spacing-sm);
+  }
+  
+  .ea-section {
+    padding: var(--ea-spacing-lg);
+    margin-bottom: var(--ea-spacing-lg);
+  }
+  
+  .ea-card-body,
+  .ea-card-header,
+  .ea-card-footer {
+    padding: var(--ea-spacing-md);
+  }
+  
+  .ea-grid {
+    gap: var(--ea-spacing-md);
+  }
+  
+  .ea-grid-2,
+  .ea-grid-3,
+  .ea-grid-4 {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,373 @@
+/* 表单组件样式 */
+
+/* 基础表单样式 */
+.ea-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ea-spacing-lg);
+}
+
+/* 表单字段容器 */
+.ea-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ea-spacing-xs);
+}
+
+/* 表单行（水平布局） */
+.ea-form-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--ea-spacing-md);
+}
+
+/* 内联字段 */
+.ea-inline-field {
+  display: flex;
+  align-items: center;
+  gap: var(--ea-spacing-sm);
+}
+
+/* 标签样式 */
+.ea-label {
+  display: block;
+  font-weight: 500;
+  font-size: var(--ea-text-sm);
+  color: var(--ea-gray-700);
+  margin-bottom: var(--ea-spacing-xs);
+}
+
+.ea-inline-label {
+  font-weight: 600;
+  min-width: 6rem;
+  white-space: nowrap;
+  font-size: var(--ea-text-sm);
+  color: var(--ea-gray-700);
+}
+
+/* 必填标记 */
+.ea-label-required::after {
+  content: ' *';
+  color: var(--ea-error-500);
+}
+
+/* 基础输入框样式 */
+.ea-input {
+  width: 100%;
+  padding: var(--ea-spacing-sm);
+  font-size: var(--ea-text-sm);
+  line-height: 1.5;
+  color: var(--ea-gray-900);
+  background-color: white;
+  border: 1px solid var(--ea-gray-300);
+  border-radius: var(--ea-radius-md);
+  transition: border-color var(--ea-transition-fast), box-shadow var(--ea-transition-fast);
+}
+
+.ea-input:focus {
+  outline: none;
+  border-color: var(--ea-primary-500);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.ea-input:disabled {
+  background-color: var(--ea-gray-100);
+  color: var(--ea-gray-500);
+  cursor: not-allowed;
+}
+
+.ea-input::placeholder {
+  color: var(--ea-gray-400);
+}
+
+/* 输入框尺寸变体 */
+.ea-input-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: var(--ea-text-xs);
+}
+
+.ea-input-lg {
+  padding: 0.75rem 1rem;
+  font-size: var(--ea-text-base);
+}
+
+/* 文本域 */
+.ea-textarea {
+  width: 100%;
+  padding: var(--ea-spacing-sm);
+  font-size: var(--ea-text-sm);
+  line-height: 1.5;
+  color: var(--ea-gray-900);
+  background-color: white;
+  border: 1px solid var(--ea-gray-300);
+  border-radius: var(--ea-radius-md);
+  min-height: 6rem;
+  resize: vertical;
+  transition: border-color var(--ea-transition-fast), box-shadow var(--ea-transition-fast);
+}
+
+.ea-textarea:focus {
+  outline: none;
+  border-color: var(--ea-primary-500);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* 选择框 */
+.ea-select {
+  width: 100%;
+  padding: var(--ea-spacing-sm);
+  font-size: var(--ea-text-sm);
+  line-height: 1.5;
+  color: var(--ea-gray-900);
+  background-color: white;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  border: 1px solid var(--ea-gray-300);
+  border-radius: var(--ea-radius-md);
+  cursor: pointer;
+  transition: border-color var(--ea-transition-fast), box-shadow var(--ea-transition-fast);
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.ea-select:focus {
+  outline: none;
+  border-color: var(--ea-primary-500);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.ea-select:disabled {
+  background-color: var(--ea-gray-100);
+  color: var(--ea-gray-500);
+  cursor: not-allowed;
+}
+
+/* 数字输入框 */
+.ea-number-input {
+  width: 9rem;
+  padding: var(--ea-spacing-sm);
+  font-size: var(--ea-text-sm);
+  line-height: 1.5;
+  color: var(--ea-gray-900);
+  background-color: white;
+  border: 1px solid var(--ea-gray-300);
+  border-radius: var(--ea-radius-md);
+  transition: border-color var(--ea-transition-fast), box-shadow var(--ea-transition-fast);
+}
+
+.ea-number-input:focus {
+  outline: none;
+  border-color: var(--ea-primary-500);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* 移除数字输入框的箭头 */
+.ea-number-input::-webkit-inner-spin-button,
+.ea-number-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.ea-number-input {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* 文件输入框 */
+.ea-file-input {
+  width: 100%;
+  font-size: var(--ea-text-sm);
+  color: var(--ea-gray-500);
+  background-color: white;
+  border: 1px solid var(--ea-gray-300);
+  border-radius: var(--ea-radius-md);
+  cursor: pointer;
+  transition: border-color var(--ea-transition-fast);
+}
+
+.ea-file-input::-webkit-file-upload-button {
+  margin-right: var(--ea-spacing-md);
+  padding: var(--ea-spacing-sm) var(--ea-spacing-md);
+  background-color: var(--ea-primary-50);
+  color: var(--ea-primary-700);
+  border: none;
+  border-radius: var(--ea-radius-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--ea-transition-fast);
+}
+
+.ea-file-input::-webkit-file-upload-button:hover {
+  background-color: var(--ea-primary-100);
+}
+
+/* 复选框和单选框 */
+.ea-checkbox-option,
+.ea-radio-option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ea-spacing-sm);
+  font-size: var(--ea-text-sm);
+  color: var(--ea-gray-700);
+  cursor: pointer;
+}
+
+.ea-radio-option {
+  width: 6rem;
+  margin-right: var(--ea-spacing-md);
+}
+
+.ea-checkbox-option input,
+.ea-radio-option input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--ea-primary-600);
+  cursor: pointer;
+}
+
+/* 表单状态样式 */
+.ea-field-error .ea-input,
+.ea-field-error .ea-textarea,
+.ea-field-error .ea-select {
+  border-color: var(--ea-error-500);
+}
+
+.ea-field-error .ea-input:focus,
+.ea-field-error .ea-textarea:focus,
+.ea-field-error .ea-select:focus {
+  border-color: var(--ea-error-500);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.ea-field-success .ea-input,
+.ea-field-success .ea-textarea,
+.ea-field-success .ea-select {
+  border-color: var(--ea-success-500);
+}
+
+.ea-field-success .ea-input:focus,
+.ea-field-success .ea-textarea:focus,
+.ea-field-success .ea-select:focus {
+  border-color: var(--ea-success-500);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+/* 帮助文本 */
+.ea-help-text {
+  font-size: var(--ea-text-xs);
+  color: var(--ea-gray-500);
+  margin-top: var(--ea-spacing-xs);
+}
+
+.ea-error-text {
+  font-size: var(--ea-text-xs);
+  color: var(--ea-error-600);
+  margin-top: var(--ea-spacing-xs);
+}
+
+.ea-success-text {
+  font-size: var(--ea-text-xs);
+  color: var(--ea-success-600);
+  margin-top: var(--ea-spacing-xs);
+}
+
+/* 表单组 */
+.ea-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ea-spacing-md);
+  padding: var(--ea-spacing-lg);
+  background-color: white;
+  border: 1px solid var(--ea-gray-200);
+  border-radius: var(--ea-radius-lg);
+  box-shadow: var(--ea-shadow-sm);
+}
+
+.ea-form-group-title {
+  font-size: var(--ea-text-lg);
+  font-weight: 600;
+  color: var(--ea-gray-800);
+  margin-bottom: var(--ea-spacing-sm);
+  padding-bottom: var(--ea-spacing-sm);
+  border-bottom: 1px solid var(--ea-gray-200);
+}
+
+/* 表单容器 */
+.ea-form-container {
+  background-color: white;
+  padding: var(--ea-spacing-xl);
+  border-radius: var(--ea-radius-lg);
+  box-shadow: var(--ea-shadow-lg);
+  width: 100%;
+  max-width: 28rem;
+  margin: auto;
+}
+
+.ea-form-title {
+  font-size: var(--ea-text-2xl);
+  font-weight: bold;
+  text-align: center;
+  color: var(--ea-gray-900);
+  margin-bottom: var(--ea-spacing-xl);
+}
+
+/* 验证码图片 */
+.ea-captcha-img {
+  height: 2.5rem;
+  cursor: pointer;
+  border: 1px solid var(--ea-gray-300);
+  border-radius: var(--ea-radius-md);
+  transition: border-color var(--ea-transition-fast);
+}
+
+.ea-captcha-img:hover {
+  border-color: var(--ea-gray-400);
+}
+
+/* 链接提示区域 */
+.ea-link-hint {
+  text-align: center;
+  margin-top: var(--ea-spacing-sm);
+}
+
+.ea-link-hint a {
+  font-size: var(--ea-text-sm);
+  color: var(--ea-primary-600);
+  text-decoration: underline;
+  transition: color var(--ea-transition-fast);
+}
+
+.ea-link-hint a:hover {
+  color: var(--ea-primary-700);
+}
+
+/* 响应式设计 */
+@media (max-width: 640px) {
+  .ea-form-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .ea-inline-field {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .ea-inline-label {
+    min-width: auto;
+  }
+  
+  .ea-number-input {
+    width: 100%;
+  }
+  
+  .ea-radio-option {
+    width: auto;
+    margin-right: 0;
+    margin-bottom: var(--ea-spacing-sm);
+  }
+}

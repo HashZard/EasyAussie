@@ -12,12 +12,16 @@ export default defineConfig({
         main: './index.html',
         login: './pages/auth/login.html',
         register: './pages/auth/register.html',
-        admin: './pages/management/admin.html',
-        profile: './pages/management/profile.html',
+        userIndex: './pages/user/index.html',
         service: './pages/service/service.html',
         inspection: './pages/service/inspection.html',
         coverletter: './pages/service/coverletter.html',
-        'airport-pickup': './pages/service/airport-pickup.html'
+        'airport-pickup': './pages/service/airport-pickup.html',
+        // 管理中心页面
+        adminIndex: './pages/admin/index.html',
+        adminDashboard: './pages/admin/dashboard.html',
+        adminUserManagement: './pages/admin/user-management.html',
+        adminFormList: './pages/admin/form-list.html'
       }
     }
   },

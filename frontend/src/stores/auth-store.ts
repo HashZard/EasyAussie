@@ -36,7 +36,14 @@ export class AuthStore {
       if (storedToken && storedUser) {
         this.token = storedToken;
         this.user = JSON.parse(storedUser);
-        this.validateAndRefreshUser();
+        
+        // 立即通知订阅者，让UI能快速显示登录状态
+        this.notify();
+        
+        // 然后在后台验证用户状态（异步，不阻塞UI）
+        setTimeout(() => {
+          this.validateAndRefreshUser();
+        }, 100);
       }
     } catch (error) {
       console.warn('Failed to initialize auth from storage:', error);
@@ -128,12 +135,15 @@ export class AuthStore {
         captcha: credentials.captcha,
       });
       
-      if (response.success && response.data) {
-        await this.setAuthData(response.data.user, response.data.token);
-        return response.data.user;
+      // httpClient 会将后端响应包装在 data 字段中
+      const backendResponse = response.data;
+      
+      if (backendResponse.success && backendResponse.data) {
+        await this.setAuthData(backendResponse.data.user, backendResponse.data.token);
+        return backendResponse.data.user;
       }
       
-      throw new Error(response.message || 'Login failed');
+      throw new Error(backendResponse.message || 'Login failed');
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -145,14 +155,17 @@ export class AuthStore {
    */
   async register(data: RegisterData): Promise<User> {
     try {
-      const response = await httpClient.post<AuthResponse>('/api/auth/register', data);
+      const response = await httpClient.post<AuthResponse>('/api/register', data);
       
-      if (response.success && response.data) {
-        await this.setAuthData(response.data.user, response.data.token);
-        return response.data.user;
+      // httpClient 会将后端响应包装在 data 字段中
+      const backendResponse = response.data;
+      
+      if (backendResponse.success && backendResponse.data) {
+        await this.setAuthData(backendResponse.data.user, backendResponse.data.token);
+        return backendResponse.data.user;
       }
       
-      throw new Error(response.message || 'Registration failed');
+      throw new Error(backendResponse.message || 'Registration failed');
     } catch (error) {
       console.error('Registration error:', error);
       throw error;
@@ -164,7 +177,7 @@ export class AuthStore {
    */
   async logout(): Promise<void> {
     try {
-      await httpClient.post('/api/auth/logout');
+      await httpClient.post('/api/logout');
     } catch (error) {
       console.warn('Logout request failed:', error);
     } finally {
@@ -178,11 +191,26 @@ export class AuthStore {
    */
   async fetchUserProfile(): Promise<User | null> {
     try {
-      const response = await httpClient.get<User>('/api/profile');
+      const response = await httpClient.get<any>('/api/profile');
       
-      if (response.success && response.data) {
-        this.setUser(response.data);
-        return response.data;
+      // httpClient将后端响应放在data字段中，后端返回格式：{success: true, data: {...}}
+      const backendResponse = response.data;
+      
+      if (backendResponse.success && backendResponse.data) {
+        // 转换后端格式到前端 User 接口
+        const backendUser = backendResponse.data;
+        const user: User = {
+          id: backendUser.id || 0,
+          email: backendUser.email,
+          roles: backendUser.roles || [],
+          name: backendUser.name,
+          avatar: backendUser.avatar,
+          createdAt: backendUser.createdAt,
+          lastLoginAt: backendUser.lastLoginAt
+        };
+        
+        this.setUser(user);
+        return user;
       }
       
       return null;

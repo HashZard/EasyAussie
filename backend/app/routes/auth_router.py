@@ -5,7 +5,7 @@ from captcha.image import ImageCaptcha
 from flask import Blueprint, request, jsonify, session, send_file, g
 from flask_security import logout_user
 
-from backend.app.services.auth_handler import handle_login, handle_register
+from backend.app.services.auth_handler import handle_login, handle_register, handle_update_profile, handle_change_password
 from backend.app.utils.auth_utils import token_required
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api')
@@ -59,7 +59,31 @@ def register():
 def profile():
     user = g.current_user
     return jsonify({
-        "email": user.email,
-        "roles": [role.name for role in user.roles],
-        "active": user.active
+        "success": True,
+        "data": user.to_dict()
     })
+
+
+@auth_bp.route("/profile", methods=["PUT"])
+@token_required
+def update_profile():
+    user = g.current_user
+    data = request.get_json()
+    
+    result = handle_update_profile(user, data)
+    status = 200 if result["success"] else result.get("status", 400)
+    return jsonify(result), status
+
+
+@auth_bp.route("/change-password", methods=["POST"])
+@token_required
+def change_password():
+    user = g.current_user
+    data = request.get_json()
+    
+    current_password = data.get("currentPassword")
+    new_password = data.get("newPassword")
+    
+    result = handle_change_password(user, current_password, new_password)
+    status = 200 if result["success"] else result.get("status", 400)
+    return jsonify(result), status

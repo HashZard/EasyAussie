@@ -30,7 +30,7 @@
             // 检查是否已经登录
             const currentUser = authStore.getCurrentUser();
             if (currentUser) {
-                window.location.href = '/pages/management/admin.html';
+                window.location.href = '/pages/user/index.html';
                 return;
             }
 
@@ -59,20 +59,24 @@
                     
                     notificationService.loading('正在验证登录信息...');
 
-                    const success = await authStore.login({
+                    const user = await authStore.login({
                         email,
                         password,
                         captcha
                     });
 
-                    if (success) {
-                        notificationService.success('登录成功！正在跳转...');
-                        
-                        setTimeout(() => {
-                            const returnUrl = new URLSearchParams(window.location.search).get('return') || '/index.html';
-                            window.location.href = returnUrl;
-                        }, 1000);
-                    }
+                    console.log('登录成功，用户信息:', user);
+                    console.log('LocalStorage 检查:', {
+                        token: localStorage.getItem('auth_token'),
+                        user: localStorage.getItem('current_user')
+                    });
+
+                    notificationService.success('登录成功！正在跳转...');
+                    
+                    setTimeout(() => {
+                        const returnUrl = new URLSearchParams(window.location.search).get('return') || '/index.html';
+                        window.location.href = returnUrl;
+                    }, 1000);
                 } catch (error) {
                     console.error('Login error:', error);
                     notificationService.error(error.message || '登录失败，请检查用户名和密码');
@@ -174,7 +178,8 @@
                         <div class="relative flex-1">
                             <input type="text" id="captcha" name="captcha" required
                                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                   placeholder="请输入验证码">
+                                   placeholder="请输入验证码"
+                                   style="color: #1f2937 !important; background-color: white !important;">
                             <i class="fas fa-shield-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                         </div>
                         <div class="w-24 h-12 bg-gray-100 border border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors"

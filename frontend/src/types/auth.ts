@@ -23,9 +23,13 @@ export interface RegisterData {
 }
 
 export interface AuthResponse {
-  user: User;
-  token: string;
-  refreshToken?: string;
+  success: boolean;
+  message: string;
+  data: {
+    user: User;
+    token: string;
+    refreshToken?: string;
+  };
 }
 
 export interface AuthConfig {

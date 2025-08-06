@@ -5,21 +5,186 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>提交失败 - Easy Aussie</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/css/common.css"/>
-    <link rel="stylesheet" href="/css/ea-card.css"/>
+    <link rel="stylesheet" href="/src/styles/main.css"/>
     <script src="/js/components/layout.ts" defer></script>
+    <script src="/js/components/spa-router.js" defer></script>
+    <script src="/js/services/notification.js" defer></script>
+    <script src="/src/pages/result-handler.js" defer></script>
 </head>
-<body class="bg-gray-100 text-gray-900 flex flex-col min-h-screen">
-<div id="header"></div>
+<body class="ea-result-page ea-error-page">
+    <div id="header"></div>
+    
+    <!-- 浮动粒子效果 -->
+    <div class="ea-particles"></div>
 
-<main class="flex-grow w-full max-w-5xl mx-auto p-6">
-    <div class="ea-card text-center">
-        <h2 class="text-2xl font-bold text-red-600 mb-4">⚠️ 提交失败</h2>
-        <p class="text-gray-700 mb-6">抱歉，提交过程中出现错误，请稍后重试或检查网络连接。</p>
-        <a href="/index.html" class="ea-btn-primary inline-block w-auto">返回主页</a>
-    </div>
-</main>
+    <main class="ea-result-container">
+        <!-- 主要图标 -->
+        <div class="ea-hero-icon">
+            <div class="ea-hero-icon-bg ea-error-hero-bg">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </div>
+        </div>
 
-<div id="footer" class="mt-12"></div>
+        <!-- 主要内容卡片 -->
+        <div class="ea-result-card">
+            <h1 class="ea-result-title ea-error-title">提交失败</h1>
+            <p class="ea-result-description" id="error-message">
+                很抱歉，您的申请提交时遇到了问题。请查看下方的常见解决方案或重新尝试。
+            </p>
+            
+            <!-- 常见问题解决方案 -->
+            <div class="ea-error-solutions">
+                <h3 class="ea-solutions-title">常见问题及解决方案</h3>
+                <ul class="ea-solutions-list">
+                    <li class="ea-solution-item">
+                        <div class="ea-solution-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="ea-solution-content">
+                            <div class="ea-solution-title">检查网络连接</div>
+                            <div class="ea-solution-description">请确保您的网络连接正常，然后重新尝试提交</div>
+                        </div>
+                    </li>
+                    <li class="ea-solution-item">
+                        <div class="ea-solution-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="ea-solution-content">
+                            <div class="ea-solution-title">检查表单信息</div>
+                            <div class="ea-solution-description">确认所有必填项已正确填写，文件格式符合要求</div>
+                        </div>
+                    </li>
+                    <li class="ea-solution-item">
+                        <div class="ea-solution-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                        </div>
+                        <div class="ea-solution-content">
+                            <div class="ea-solution-title">刷新页面重试</div>
+                            <div class="ea-solution-description">有时简单的页面刷新就能解决临时的技术问题</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 错误详情（如果有的话） -->
+            <div id="error-details" class="ea-error-details hidden">
+                <h4 class="ea-error-details-title">技术详情：</h4>
+                <code id="error-code" class="ea-error-code"></code>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="ea-result-actions">
+                <button onclick="goToForm()" class="ea-result-btn ea-result-btn-primary">
+                    <svg class="ea-result-btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    重新提交申请
+                </button>
+                <button onclick="goHome()" class="ea-result-btn ea-result-btn-secondary">
+                    <svg class="ea-result-btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    返回主页
+                </button>
+            </div>
+
+            <!-- 联系信息 -->
+            <div class="ea-result-contact">
+                <div class="ea-contact-title">仍然有问题？我们随时为您提供帮助</div>
+                <div class="ea-contact-links">
+                    <a href="mailto:support@easyaussie.com" class="ea-contact-link">
+                        <svg class="ea-contact-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        support@easyaussie.com
+                    </a>
+                    <a href="tel:+61123456789" class="ea-contact-link">
+                        <svg class="ea-contact-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                        </svg>
+                        +61 123 456 789
+                    </a>
+                </div>
+                <div class="ea-contact-hours">客服时间：周一至周五 9:00-18:00 (AEST)</div>
+            </div>
+        </div>
+    </main>
+
+    <div id="footer"></div>
+
+    <script>
+        // 创建浮动粒子效果
+        function createParticles() {
+            const container = document.querySelector('.ea-particles');
+            const particleCount = 12;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'ea-particle ea-particle-error';
+                
+                // 随机位置
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                
+                // 随机动画延迟
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                
+                container.appendChild(particle);
+            }
+        }
+        
+        // 页面加载完成后创建粒子效果
+        document.addEventListener('DOMContentLoaded', createParticles);
+
+        // 重新提交申请功能
+        function goToForm() {
+            // 获取之前的申请类型，如果没有则默认跳转到服务页面
+            const referrer = document.referrer;
+            if (referrer.includes('inspection')) {
+                window.location.href = '/pages/service/inspection.html';
+            } else if (referrer.includes('application')) {
+                window.location.href = '/pages/service/application.html';
+            } else if (referrer.includes('coverletter')) {
+                window.location.href = '/pages/service/coverletter.html';
+            } else if (referrer.includes('airport-pickup')) {
+                window.location.href = '/pages/service/airport-pickup.html';
+            } else {
+                window.location.href = '/pages/service/service.html';
+            }
+        }
+
+        // 联系客服功能
+        function contactSupport() {
+            window.location.href = 'mailto:support@easyaussie.com?subject=提交失败求助&body=我在提交申请时遇到了问题，请协助处理。';
+        }
+
+        // 获取错误信息（如果URL中有错误参数）
+        function displayErrorInfo() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const errorMsg = urlParams.get('error');
+            const errorCode = urlParams.get('code');
+            
+            if (errorMsg) {
+                document.getElementById('error-message').textContent = errorMsg;
+            }
+            
+            if (errorCode) {
+                document.getElementById('error-code').textContent = errorCode;
+                document.getElementById('error-details').classList.remove('hidden');
+            }
+        }
+
+        // 页面加载时显示错误信息
+        document.addEventListener('DOMContentLoaded', displayErrorInfo);
+    </script>
 </body>
 </html>

@@ -94,12 +94,8 @@ class EasyAussieApp {
       // 获取用户信息
       const user = await authStore.fetchUserProfile();
 
-      // 并行加载布局组件
-      await Promise.all([
-        this.loadComponent('header'),
-        this.loadComponent('footer'),
-        this.loadComponent('back-button'),
-      ]);
+      // 初始化移动端组件
+      await this.initializeMobileComponents();
 
       // 更新用户状态显示
       this.updateUserInterface(user);
@@ -109,27 +105,19 @@ class EasyAussieApp {
   }
 
   /**
-   * 加载组件
+   * 初始化移动端组件
    */
-  private async loadComponent(name: string): Promise<void> {
-    const container = document.getElementById(name);
-    if (!container) return;
-
+  private async initializeMobileComponents(): Promise<void> {
     try {
-      const response = await fetch(`/components/${name}.html`);
-      if (response.ok) {
-        const html = await response.text();
-        container.innerHTML = html;
-        
-        // 触发组件加载事件
-        const event = new CustomEvent(`${name}Loaded`, {
-          detail: { container },
-          bubbles: true,
-        });
-        document.dispatchEvent(event);
-      }
+      // 动态导入组件类
+      const { MobileHeaderComponent } = await import('./components/mobile-header');
+      const { MobileFooterComponent } = await import('./components/mobile-footer');
+
+      // 初始化组件实例
+      new MobileHeaderComponent();
+      new MobileFooterComponent();
     } catch (error) {
-      console.warn(`Failed to load ${name} component:`, error);
+      console.warn('Failed to initialize mobile components:', error);
     }
   }
 
@@ -270,7 +258,7 @@ class EasyAussieApp {
         <div class="block px-4 py-2 text-sm text-white font-medium border-b border-blue-500">
           ${user.email}
         </div>
-        <a href="/pages/management/profile.html" 
+        <a href="/pages/user/profile.html" 
            class="block px-4 py-3 text-white hover:bg-blue-500 transition-colors">
           个人中心
         </a>
