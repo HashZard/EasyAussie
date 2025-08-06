@@ -10,18 +10,23 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: './index.html',
+        // 认证页面
         login: './pages/auth/login.html',
         register: './pages/auth/register.html',
+        // 用户页面
         userIndex: './pages/user/index.html',
+        // 服务页面
         service: './pages/service/service.html',
         inspection: './pages/service/inspection.html',
         coverletter: './pages/service/coverletter.html',
+        application: './pages/service/application.html',
         'airport-pickup': './pages/service/airport-pickup.html',
-        // 管理中心页面
+        // 结果页面
+        'submit-success': './pages/submit-success.html',
+        'submit-fail': './pages/submit-fail.html',
+        // 管理页面
         adminIndex: './pages/admin/index.html',
-        adminDashboard: './pages/admin/dashboard.html',
-        adminUserManagement: './pages/admin/user-management.html',
-        adminFormList: './pages/admin/form-list.html'
+        managementAdmin: './pages/management/admin.html'
       }
     }
   },
