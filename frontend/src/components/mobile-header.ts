@@ -142,7 +142,7 @@ export class MobileHeaderComponent {
                             </a>
                             
                             <!-- 汉堡菜单按钮 -->
-                            <button id="mobile-menu-button" class="p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100 transition-colors">
+                            <button id="mobile-menu-button" class="w-12 h-12 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100 transition-colors touch-manipulation flex items-center justify-center">
                                 <i class="fas fa-bars text-xl"></i>
                             </button>
                         </div>
@@ -151,16 +151,16 @@ export class MobileHeaderComponent {
                     <!-- 移动端导航菜单 -->
                     <div id="mobile-menu" class="hidden bg-white border-t border-gray-200">
                         <div class="px-4 py-2 space-y-1">
-                            <a href="/" class="block px-3 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors">
+                            <a href="/" class="block px-3 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors touch-manipulation">
                                 <i class="fas fa-home w-6"></i>
                                 首页
                             </a>
-                            <a href="/pages/service/service.html" class="block px-3 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors">
+                            <a href="/pages/service/service.html" class="block px-3 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors touch-manipulation">
                                 <i class="fas fa-concierge-bell w-6"></i>
                                 服务预约
                             </a>
                             ${this.currentUser && this.currentUser.roles?.includes('admin') ? `
-                                <a href="/pages/admin/index.html" class="block px-3 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors">
+                                <a href="/pages/admin/index.html" class="block px-3 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors touch-manipulation">
                                     <i class="fas fa-cog w-6"></i>
                                     管理中心
                                 </a>
@@ -177,7 +177,7 @@ export class MobileHeaderComponent {
         if (this.currentUser) {
             return `
                 <div class="relative">
-                    <button id="user-menu-button" class="flex items-center text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md transition-colors">
+                    <button id="user-menu-button" class="flex items-center text-gray-700 hover:text-blue-600 px-4 py-3 rounded-md transition-colors touch-manipulation">
                         <i class="fas fa-user-circle text-xl mr-2"></i>
                         <span class="hidden md:inline">${this.currentUser.email}</span>
                         <i class="fas fa-chevron-down ml-1"></i>
@@ -212,15 +212,15 @@ export class MobileHeaderComponent {
                         <div class="text-sm font-medium text-gray-500">登录身份</div>
                         <div class="text-base font-medium text-gray-900">${this.currentUser.email}</div>
                     </div>
-                    <a href="/pages/user/index.html" class="block px-3 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors">
+                    <a href="/pages/user/index.html" class="block px-3 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors touch-manipulation">
                         <i class="fas fa-user w-6"></i>
                         个人中心
                     </a>
-                    <a href="/pages/user/index.html?page=orders" class="block px-3 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors">
+                    <a href="/pages/user/index.html?page=orders" class="block px-3 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors touch-manipulation">
                         <i class="fas fa-list w-6"></i>
                         我的订单
                     </a>
-                    <button class="logout-btn w-full text-left block px-3 py-3 text-base font-medium text-red-600 hover:bg-red-50 rounded-md transition-colors">
+                    <button class="logout-btn w-full text-left block px-3 py-3 text-base font-medium text-red-600 hover:bg-red-50 rounded-md transition-colors touch-manipulation">
                         <i class="fas fa-sign-out-alt w-6"></i>
                         退出登录
                     </button>
@@ -228,7 +228,7 @@ export class MobileHeaderComponent {
             `;
         } else {
             return `
-                <a href="/pages/auth/login.html" class="block px-3 py-3 text-base font-medium bg-blue-600 text-white hover:bg-blue-700 rounded-md transition-colors">
+                <a href="/pages/auth/login.html" class="block px-3 py-3 text-base font-medium bg-blue-600 text-white hover:bg-blue-700 rounded-md transition-colors touch-manipulation">
                     <i class="fas fa-sign-in-alt w-6"></i>
                     登录
                 </a>

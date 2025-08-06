@@ -14,24 +14,6 @@ export class MobileFooterComponent {
 
     private render(): void {
         this.container.innerHTML = `
-            <!-- 移动端固定底部操作栏 -->
-            <div class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
-                <div class="grid grid-cols-3 gap-1 p-2">
-                    <button id="quick-call" class="flex flex-col items-center p-3 text-green-600 hover:bg-green-50 rounded-lg transition-colors">
-                        <i class="fas fa-phone text-lg mb-1"></i>
-                        <span class="text-xs">电话咨询</span>
-                    </button>
-                    <button id="quick-wechat" class="flex flex-col items-center p-3 text-green-600 hover:bg-green-50 rounded-lg transition-colors">
-                        <i class="fab fa-weixin text-lg mb-1"></i>
-                        <span class="text-xs">微信咨询</span>
-                    </button>
-                    <a href="/pages/service/service.html" class="flex flex-col items-center p-3 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                        <i class="fas fa-calendar-plus text-lg mb-1"></i>
-                        <span class="text-xs">立即预约</span>
-                    </a>
-                </div>
-            </div>
-
             <!-- 桌面端底部 -->
             <footer class="bg-gray-800 text-white py-12 pb-16 lg:pb-12">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -106,25 +88,20 @@ export class MobileFooterComponent {
     }
 
     private attachEventListeners(): void {
-        // 快速电话拨打
-        const quickCall = this.container.querySelector('#quick-call');
-        if (quickCall) {
-            quickCall.addEventListener('click', () => {
-                window.location.href = 'tel:+61xxxxxxxxx';
-            });
-        }
-
-        // 微信咨询按钮
-        const quickWechat = this.container.querySelector('#quick-wechat');
+        // 微信咨询按钮（桌面端）
         const wechatModal = this.container.querySelector('#wechat-modal');
         const closeWechatModal = this.container.querySelector('#close-wechat-modal');
 
-        if (quickWechat && wechatModal) {
-            quickWechat.addEventListener('click', () => {
-                wechatModal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
+        // 桌面端微信按钮
+        const desktopWechatBtns = this.container.querySelectorAll('.fab.fa-weixin');
+        desktopWechatBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (wechatModal) {
+                    wechatModal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                }
             });
-        }
+        });
 
         if (closeWechatModal && wechatModal) {
             closeWechatModal.addEventListener('click', () => {

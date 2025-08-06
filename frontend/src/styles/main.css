@@ -301,3 +301,19 @@
     background: transparent !important;
   }
 }
+
+/* 移动端触摸优化 */
+@layer utilities {
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* 为移动端按钮提供更大的点击区域 */
+  @media (hover: none) and (pointer: coarse) {
+    .mobile-touch-target {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+}

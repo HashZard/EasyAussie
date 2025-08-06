@@ -23,6 +23,9 @@ class EasyAussieApp {
     if (this.isInitialized) return;
 
     try {
+      // 确保页面可以滚动（修复移动端滚动问题）
+      this.ensurePageScrollable();
+
       // 显示移动端加载器
       mobileLayoutManager.showPageLoader();
 
@@ -70,6 +73,21 @@ class EasyAussieApp {
         resolve();
       }
     });
+  }
+
+  /**
+   * 确保页面可以滚动
+   */
+  private ensurePageScrollable(): void {
+    // 移除可能阻止滚动的样式
+    document.body.style.overflow = '';
+    document.body.classList.remove('overflow-hidden');
+    
+    // 确保 html 和 body 可以滚动
+    document.documentElement.style.overflow = '';
+    document.documentElement.classList.remove('overflow-hidden');
+    
+    console.log('🔄 页面滚动已恢复');
   }
 
   /**
@@ -249,8 +267,16 @@ class EasyAussieApp {
 
   if (!mobileMenu || !mobileUserSection) return;
 
+  const isHidden = mobileMenu.classList.contains('hidden');
   mobileMenu.classList.toggle('hidden');
-  document.body.classList.toggle('overflow-hidden');
+  
+  // 只在菜单打开时阻止滚动，关闭时立即恢复
+  if (isHidden) {
+    document.body.classList.add('overflow-hidden');
+  } else {
+    document.body.classList.remove('overflow-hidden');
+    document.body.style.overflow = '';
+  }
 
   if (user) {
     mobileUserSection.innerHTML = `

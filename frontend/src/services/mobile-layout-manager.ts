@@ -41,10 +41,11 @@ export class MobileLayoutManager {
             lastTouchEnd = now;
         }, false);
 
-        // 阻止默认的拖拽行为
+        // 允许页面滚动，只阻止特定元素的拖拽
         document.addEventListener('touchmove', function(e) {
             const target = e.target as HTMLElement;
-            if (target && !target.closest('.scrollable')) {
+            // 只阻止明确标记为不可滚动的元素
+            if (target && target.closest('.no-scroll')) {
                 e.preventDefault();
             }
         }, { passive: false });
