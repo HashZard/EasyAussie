@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <title>移动端优化演示 - Easy Aussie</title>
+    <meta name="description" content="展示 Easy Aussie 移动端优化功能"/>
+    <script type="module" src="/src/main.ts"></script>
+    <script type="module">
+        import { MobileHeaderComponent } from '/src/components/mobile-header.ts';
+        import { MobileFooterComponent } from '/src/components/mobile-footer.ts';
+        import { MobileServiceCardComponent } from '/src/components/mobile-service-card.ts';
+        import { notificationService } from '/src/services/notification-service.ts';
+        import mobileLayoutManager from '/src/services/mobile-layout-manager.ts';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new MobileHeaderComponent();
+            new MobileFooterComponent();
+            new MobileServiceCardComponent('mobile-services');
+
+            initDemoFeatures();
+        });
+
+        function initDemoFeatures() {
+            // 设备信息展示
+            const deviceInfo = mobileLayoutManager.getDeviceInfo();
+            document.getElementById('device-info').innerHTML = `
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span>设备类型:</span>
+                        <span class="font-medium">${deviceInfo.isMobile ? '移动设备' : '桌面设备'}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>操作系统:</span>
+                        <span class="font-medium">${deviceInfo.isIOS ? 'iOS' : deviceInfo.isAndroid ? 'Android' : '其他'}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>触摸支持:</span>
+                        <span class="font-medium">${deviceInfo.isTouchDevice ? '是' : '否'}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>屏幕尺寸:</span>
+                        <span class="font-medium">${deviceInfo.screenWidth} × ${deviceInfo.screenHeight}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>视口尺寸:</span>
+                        <span class="font-medium">${deviceInfo.viewportWidth} × ${deviceInfo.viewportHeight}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>像素比例:</span>
+                        <span class="font-medium">${deviceInfo.devicePixelRatio}x</span>
+                    </div>
+                </div>
+            `;
+
+            // 通知演示
+            const notificationBtns = document.querySelectorAll('[data-notification]');
+            notificationBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const type = btn.getAttribute('data-notification');
+                    switch (type) {
+                        case 'success':
+                            notificationService.success('操作成功！这是一条成功消息。');
+                            break;
+                        case 'error':
+                            notificationService.error('操作失败！请重试。');
+                            break;
+                        case 'warning':
+                            notificationService.warning('注意：这是一条警告消息。');
+                            break;
+                        case 'info':
+                            notificationService.info('提示：这是一条信息消息。');
+                            break;
+                        case 'loading':
+                            notificationService.loading('正在处理中，请稍候...');
+                            setTimeout(() => {
+                                notificationService.success('处理完成！');
+                            }, 3000);
+                            break;
+                        case 'action':
+                            notificationService.info('这是一个带操作的通知', {
+                                actions: [
+                                    {
+                                        text: '确认',
+                                        action: () => notificationService.success('您点击了确认')
+                                    },
+                                    {
+                                        text: '取消',
+                                        action: () => notificationService.error('您点击了取消')
+                                    }
+                                ]
+                            });
+                            break;
+                    }
+                });
+            });
+
+            // 触摸反馈演示
+            const touchDemo = document.getElementById('touch-demo');
+            let touchCount = 0;
+            touchDemo.addEventListener('click', () => {
+                touchCount++;
+                touchDemo.textContent = `点击次数: ${touchCount}`;
+                notificationService.info(`您点击了 ${touchCount} 次`);
+            });
+
+            // 键盘处理演示
+            const keyboardInput = document.getElementById('keyboard-input');
+            keyboardInput.addEventListener('focus', () => {
+                notificationService.info('键盘已显示，布局自动调整');
+            });
+
+            keyboardInput.addEventListener('blur', () => {
+                notificationService.info('键盘已隐藏，布局恢复正常');
+            });
+
+            // 滚动演示
+            let scrollDistance = 0;
+            window.addEventListener('scroll', () => {
+                scrollDistance = Math.round(window.scrollY);
+                document.getElementById('scroll-distance').textContent = scrollDistance + 'px';
+            });
+
+            // 网络状态演示
+            updateNetworkStatus();
+            window.addEventListener('online', updateNetworkStatus);
+            window.addEventListener('offline', updateNetworkStatus);
+
+            function updateNetworkStatus() {
+                const statusEl = document.getElementById('network-status');
+                const isOnline = navigator.onLine;
+                statusEl.textContent = isOnline ? '在线' : '离线';
+                statusEl.className = `px-2 py-1 rounded text-sm font-medium ${
+                    isOnline ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`;
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-50">
+<div id="header"></div>
+
+<main class="flex-grow py-6">
+    <div class="max-w-4xl mx-auto px-4 space-y-8">
+        <!-- 页面标题 -->
+        <div class="text-center">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-4">移动端优化演示</h1>
+            <p class="text-gray-600">体验专为移动设备优化的界面和交互</p>
+        </div>
+
+        <!-- 设备信息 -->
+        <div class="bg-white rounded-xl p-6 shadow-sm">
+            <h2 class="text-lg font-semibold mb-4 flex items-center">
+                <i class="fas fa-mobile-alt text-blue-600 mr-2"></i>
+                设备信息
+            </h2>
+            <div id="device-info" class="bg-gray-50 rounded-lg p-4"></div>
+        </div>
+
+        <!-- 通知系统演示 -->
+        <div class="bg-white rounded-xl p-6 shadow-sm">
+            <h2 class="text-lg font-semibold mb-4 flex items-center">
+                <i class="fas fa-bell text-blue-600 mr-2"></i>
+                通知系统
+            </h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <button data-notification="success" class="bg-green-500 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors">
+                    成功通知
+                </button>
+                <button data-notification="error" class="bg-red-500 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-red-600 transition-colors">
+                    错误通知
+                </button>
+                <button data-notification="warning" class="bg-yellow-500 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-yellow-600 transition-colors">
+                    警告通知
+                </button>
+                <button data-notification="info" class="bg-blue-500 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors">
+                    信息通知
+                </button>
+                <button data-notification="loading" class="bg-purple-500 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-purple-600 transition-colors">
+                    加载通知
+                </button>
+                <button data-notification="action" class="bg-indigo-500 text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-indigo-600 transition-colors">
+                    操作通知
+                </button>
+            </div>
+        </div>
+
+        <!-- 触摸交互演示 -->
+        <div class="bg-white rounded-xl p-6 shadow-sm">
+            <h2 class="text-lg font-semibold mb-4 flex items-center">
+                <i class="fas fa-hand-pointer text-blue-600 mr-2"></i>
+                触摸交互
+            </h2>
+            <div class="space-y-4">
+                <button id="touch-demo" class="touchable w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg">
+                    点击次数: 0
+                </button>
+                <p class="text-sm text-gray-600">点击上方按钮体验触摸反馈效果</p>
+            </div>
+        </div>
+
+        <!-- 键盘适配演示 -->
+        <div class="bg-white rounded-xl p-6 shadow-sm">
+            <h2 class="text-lg font-semibold mb-4 flex items-center">
+                <i class="fas fa-keyboard text-blue-600 mr-2"></i>
+                键盘适配
+            </h2>
+            <div class="space-y-4">
+                <input 
+                    id="keyboard-input" 
+                    type="text" 
+                    placeholder="点击输入框测试键盘适配" 
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                <p class="text-sm text-gray-600">在移动设备上，键盘显示时布局会自动调整</p>
+            </div>
+        </div>
+
+        <!-- 服务卡片演示 -->
+        <div class="bg-white rounded-xl p-6 shadow-sm">
+            <h2 class="text-lg font-semibold mb-4 flex items-center">
+                <i class="fas fa-th-large text-blue-600 mr-2"></i>
+                服务卡片
+            </h2>
+            <div id="mobile-services"></div>
+        </div>
+
+        <!-- 状态信息 -->
+        <div class="bg-white rounded-xl p-6 shadow-sm">
+            <h2 class="text-lg font-semibold mb-4 flex items-center">
+                <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                实时状态
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <div class="text-sm text-gray-600 mb-1">滚动距离</div>
+                    <div id="scroll-distance" class="text-lg font-semibold text-gray-800">0px</div>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <div class="text-sm text-gray-600 mb-1">网络状态</div>
+                    <div id="network-status" class="px-2 py-1 rounded text-sm font-medium bg-green-100 text-green-800">在线</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 功能特性 -->
+        <div class="bg-white rounded-xl p-6 shadow-sm">
+            <h2 class="text-lg font-semibold mb-4 flex items-center">
+                <i class="fas fa-star text-blue-600 mr-2"></i>
+                移动端优化特性
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="space-y-3">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        <span class="text-sm">响应式布局设计</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        <span class="text-sm">触摸优化交互</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        <span class="text-sm">虚拟键盘适配</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        <span class="text-sm">手势导航支持</span>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        <span class="text-sm">快速加载优化</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        <span class="text-sm">离线功能支持</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        <span class="text-sm">现代化通知系统</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        <span class="text-sm">智能布局管理</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 测试区域 -->
+        <div class="bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl p-6">
+            <h2 class="text-lg font-semibold mb-4 text-center">🎉 恭喜！</h2>
+            <p class="text-center text-gray-700 mb-4">
+                您已体验完所有移动端优化功能。<br>
+                现在可以在各个页面中享受流畅的移动端体验。
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <a href="/" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-center">
+                    返回首页
+                </a>
+                <a href="/pages/service/service.html" class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors text-center">
+                    体验服务
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div id="footer"></div>
+</body>
+</html>

@@ -1,3 +1,4 @@
+import uuid
 from flask_security import UserMixin, RoleMixin
 
 from backend.app import db

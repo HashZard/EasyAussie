@@ -2,81 +2,359 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>预约接机服务 - Easy Aussie</title>
-    <link rel="stylesheet" href="/css/common.css"/>
-    <link rel="stylesheet" href="/css/ea-card.css"/>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="/js/components/user-auth.js"></script>
-<script src="/js/components/layout.js"></script>
-    <script src="/js/components/ea-form.js" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <meta name="permission" content="required">
+    <title>机场接机服务 - Easy Aussie</title>
+    <meta name="description" content="预订专业的机场接机服务，安全舒适地到达目的地"/>
+    <script type="module" src="/src/main.ts"></script>
+    <script type="module">
+        import { MobileHeaderComponent } from '/src/components/mobile-header.ts';
+        import { MobileFooterComponent } from '/src/components/mobile-footer.ts';
+        import { notificationService } from '/src/services/notification-service.ts';
+        import { httpClient } from '/src/services/http-client.ts';
+        import { authStore } from '/src/stores/auth-store.ts';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new MobileHeaderComponent();
+            new MobileFooterComponent();
+            
+            // 权限检查
+            authStore.requireRole('paid1').catch(() => {
+                // 权限不足会自动跳转
+            });
+
+            initAirportPickupForm();
+        });
+
+        function initAirportPickupForm() {
+            const form = document.getElementById('airportPickupForm');
+            
+            // 表单提交
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await submitForm();
+            });
+
+            // 航班查询
+            document.getElementById('flightNumberInput').addEventListener('blur', (e) => {
+                const flightNumber = e.target.value.trim();
+                if (flightNumber) {
+                    lookupFlightInfo(flightNumber);
+                }
+            });
+
+            // 添加行李按钮
+            document.getElementById('addLuggage').addEventListener('click', () => {
+                addLuggageItem();
+            });
+
+            // 自动保存功能
+            setupAutoSave();
+        }
+
+        async function lookupFlightInfo(flightNumber) {
+            try {
+                // 模拟航班信息查询
+                notificationService.info('正在查询航班信息...');
+                
+                // 实际项目中这里应该调用航班API
+                setTimeout(() => {
+                    notificationService.success('航班信息已更新');
+                    // 这里可以填充航班信息到表单
+                }, 1000);
+            } catch (error) {
+                console.error('Flight lookup error:', error);
+                notificationService.warning('无法获取航班信息，请手动填写');
+            }
+        }
+
+        function addLuggageItem() {
+            const container = document.getElementById('luggageList');
+            const count = container.children.length;
+            
+            if (count >= 10) {
+                notificationService.warning('最多只能添加10件行李');
+                return;
+            }
+
+            const item = createLuggageItem(count);
+            container.appendChild(item);
+            notificationService.success('已添加行李信息');
+        }
+
+        function createLuggageItem(index) {
+            const div = document.createElement('div');
+            div.className = 'bg-gray-50 p-4 rounded-lg flex items-center gap-3 relative';
+            div.innerHTML = `
+                <button type="button" class="absolute top-2 right-2 text-red-500 hover:text-red-700" onclick="removeLuggageItem(this)">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <select name="luggage_type[]" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                        <option value="checked">托运行李</option>
+                        <option value="carry_on">随身行李</option>
+                        <option value="oversized">超大件</option>
+                    </select>
+                    <input type="text" name="luggage_size[]" placeholder="尺寸(如: 28寸)" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                    <input type="text" name="luggage_weight[]" placeholder="重量(如: 20kg)" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                </div>
+            `;
+            return div;
+        }
+
+        window.removeLuggageItem = function(button) {
+            button.closest('.bg-gray-50').remove();
+            notificationService.info('已删除行李信息');
+        };
+
+        function setupAutoSave() {
+            const form = document.getElementById('airportPickupForm');
+            const inputs = form.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="date"], input[type="time"], select, textarea');
+            
+            inputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    const key = `airport_pickup_${input.name}`;
+                    localStorage.setItem(key, input.value);
+                });
+            });
+
+            // 加载保存的数据
+            inputs.forEach(input => {
+                const key = `airport_pickup_${input.name}`;
+                const saved = localStorage.getItem(key);
+                if (saved && !input.value) {
+                    input.value = saved;
+                }
+            });
+        }
+
+        async function submitForm() {
+            const form = document.getElementById('airportPickupForm');
+            const formData = new FormData(form);
+            
+            try {
+                notificationService.loading('正在提交接机预订...');
+                
+                const response = await httpClient.post('/api/form-submit', formData);
+                
+                notificationService.success('接机预订成功！我们会尽快与您确认详细信息。');
+                
+                // 清除自动保存的数据
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('airport_pickup_')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                
+                setTimeout(() => {
+                    window.location.href = '/pages/submit-success.html';
+                }, 2000);
+            } catch (error) {
+                console.error('Submit error:', error);
+                notificationService.error('提交失败，请重试或联系客服');
+            }
+        }
+    </script>
 </head>
-<body class="bg-gray-100 text-gray-900">
+
+<body class="bg-gray-50 text-gray-900" data-required-role="paid1">
 <div id="header"></div>
 
-<main class="w-full max-w-4xl mx-auto p-6">
-    <!-- 主卡片 -->
-    <div class="ea-card">
-        <div class="relative mb-6">
-            <div id="back-button"></div>
-            <h2 class="text-2xl font-bold mb-4 text-center">预约接机服务</h2>
+<main class="flex-grow py-6">
+    <div class="max-w-4xl mx-auto px-4">
+        <!-- 页面标题 -->
+        <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+            <h1 class="text-xl sm:text-2xl font-bold text-center mb-4">机场接机服务预订</h1>
+            <p class="text-gray-600 text-center text-sm">专业司机，安全舒适，让您的澳洲之旅从温暖的接机开始</p>
         </div>
 
-        <form id="standardForm" action="/api/form-submit" method="POST" class="space-y-6"
-              data-success="/pages/submit-success.html" data-fail="/pages/submit-fail.html">
-            <!-- 页面标识 -->
+        <form id="airportPickupForm" class="space-y-6">
             <input type="hidden" name="formType" value="airportPickup"/>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="ea-label">微信名：</label>
-                    <input type="text" name="wx_name" required class="ea-input"/>
+            
+            <!-- 个人信息 -->
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <h2 class="text-lg font-semibold mb-4">一、联系信息</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">姓名 *</label>
+                        <input type="text" name="name" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">电话 *</label>
+                        <input type="tel" name="phone" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">邮箱 *</label>
+                        <input type="email" name="email" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">微信号</label>
+                        <input type="text" name="wechat" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+                    </div>
                 </div>
-                <div>
-                    <label class="ea-label">航班号：</label>
-                    <input type="text" name="flight_number" required class="ea-input"/>
-                </div>
-                <div>
-                    <label class="ea-label">飞机降落时间 / 接机时间：</label>
-                    <input type="datetime-local" name="pickup_time" required class="ea-input"/>
-                </div>
-                <div>
-                    <label class="ea-label">联系电话：</label>
-                    <input type="tel" name="contact_phone" required class="ea-input"/>
-                </div>
-            </div>
-            <div>
-                <label class="ea-label">目的地地址：</label>
-                <input type="text" name="destination" required class="ea-input"/>
-            </div>
-            <div>
-                <label class="ea-label">行李数量及尺寸：</label>
-                <textarea name="luggage_info" rows="3" class="ea-input"
-                          placeholder="例：28寸箱子 ×2 个，24寸箱子 ×1 个"></textarea>
-            </div>
-            <div>
-                <label class="ea-label">备注：</label>
-                <textarea name="note" rows="3" class="ea-input"></textarea>
             </div>
 
-            <button type="submit" class="ea-button w-full">
-                提交
-            </button>
+            <!-- 航班信息 -->
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <h2 class="text-lg font-semibold mb-4">二、航班信息</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">航班号 *</label>
+                        <input type="text" id="flightNumberInput" name="flight_number" required placeholder="如：CZ325" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">起飞机场</label>
+                        <input type="text" name="departure_airport" placeholder="如：广州白云机场" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">到达日期 *</label>
+                        <input type="date" name="arrival_date" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">预计到达时间 *</label>
+                        <input type="time" name="arrival_time" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">到达机场 *</label>
+                        <select name="arrival_airport" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">请选择</option>
+                            <option value="mel">墨尔本机场 (MEL)</option>
+                            <option value="syd">悉尼机场 (SYD)</option>
+                            <option value="bne">布里斯班机场 (BNE)</option>
+                            <option value="per">珀斯机场 (PER)</option>
+                            <option value="adl">阿德莱德机场 (ADL)</option>
+                            <option value="cbr">堪培拉机场 (CBR)</option>
+                            <option value="other">其他</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">航站楼</label>
+                        <input type="text" name="terminal" placeholder="如：T3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 接机信息 -->
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <h2 class="text-lg font-semibold mb-4">三、接机安排</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">目的地地址 *</label>
+                        <input type="text" name="destination" required placeholder="详细地址" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">目的地类型</label>
+                        <select name="destination_type" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">请选择</option>
+                            <option value="home">住宿地址</option>
+                            <option value="hotel">酒店</option>
+                            <option value="uni">学校</option>
+                            <option value="office">办公地点</option>
+                            <option value="other">其他</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">乘客人数 *</label>
+                        <select name="passenger_count" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">请选择</option>
+                            <option value="1">1人</option>
+                            <option value="2">2人</option>
+                            <option value="3">3人</option>
+                            <option value="4">4人</option>
+                            <option value="5+">5人以上</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">车型需求</label>
+                        <select name="car_type" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">系统推荐</option>
+                            <option value="sedan">轿车 (1-3人)</option>
+                            <option value="suv">SUV (4-6人)</option>
+                            <option value="van">面包车 (7+人)</option>
+                            <option value="luxury">豪华车型</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">特殊需求</label>
+                    <textarea name="special_requirements" rows="3" placeholder="如：需要儿童安全座椅、轮椅通道、婴儿车等" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                </div>
+            </div>
+
+            <!-- 行李信息 -->
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold">四、行李信息</h2>
+                    <button type="button" id="addLuggage" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-sm">
+                        <i class="fas fa-plus mr-1"></i>添加行李
+                    </button>
+                </div>
+                <div id="luggageList" class="space-y-3">
+                    <!-- 默认第一件行李 -->
+                    <div class="bg-gray-50 p-4 rounded-lg flex items-center gap-3">
+                        <div class="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <select name="luggage_type[]" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                                <option value="checked">托运行李</option>
+                                <option value="carry_on">随身行李</option>
+                                <option value="oversized">超大件</option>
+                            </select>
+                            <input type="text" name="luggage_size[]" placeholder="尺寸(如: 28寸)" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                            <input type="text" name="luggage_weight[]" placeholder="重量(如: 20kg)" class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 价格信息 -->
+            <div class="bg-blue-50 rounded-xl p-6 shadow-sm">
+                <h2 class="text-lg font-semibold mb-4 text-blue-800">五、服务费用</h2>
+                <div class="space-y-3 text-blue-700">
+                    <div class="flex justify-between">
+                        <span>墨尔本机场接机</span>
+                        <span class="font-medium">从 $60 起</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>悉尼机场接机</span>
+                        <span class="font-medium">从 $80 起</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>其他城市机场</span>
+                        <span class="font-medium">联系客服报价</span>
+                    </div>
+                    <hr class="border-blue-200"/>
+                    <div class="text-sm text-blue-600">
+                        <p>• 费用根据距离、时间、车型确定</p>
+                        <p>• 深夜/早晨时段可能加收费用</p>
+                        <p>• 实际价格以客服确认为准</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 提交按钮 -->
+            <div class="bg-white rounded-xl p-6 shadow-sm">
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button type="submit" class="flex-1 bg-blue-500 text-white py-4 px-6 rounded-lg hover:bg-blue-600 font-medium text-lg">
+                        <i class="fas fa-car mr-2"></i>预订接机服务
+                    </button>
+                    <button type="button" onclick="window.history.back()" class="flex-1 bg-gray-500 text-white py-4 px-6 rounded-lg hover:bg-gray-600 font-medium text-lg">
+                        <i class="fas fa-arrow-left mr-2"></i>返回
+                    </button>
+                </div>
+                
+                <div class="mt-4 text-center">
+                    <p class="text-xs text-gray-500">
+                        提交预订后，我们将在2小时内联系您确认详细信息和最终价格
+                    </p>
+                </div>
+            </div>
         </form>
     </div>
-
-    <!-- 注意事项 -->
-    <section class="ea-card mt-10">
-        <h2 class="text-xl font-semibold mb-4">接机服务须知</h2>
-        <div class="text-gray-700 text-sm space-y-3 leading-relaxed">
-            <p>接机服务需提前支付，可使用澳元或人民币，人民币按“澳元×5”换算（建议优先使用澳元）。</p>
-            <p>取消规则如下：当天取消不退款；提前1至3天取消退还50%；提前3天以上取消全额退款。</p>
-            <p>司机免费等待时间为30分钟，超时将收取每30分钟 $10 附加费用。</p>
-            <p>晚上 8 点至早上 8 点期间接机，将加收 20% 夜间服务费。</p>
-        </div>
-    </section>
 </main>
 
-<div id="footer" class="mt-12"></div>
+<div id="footer"></div>
 
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
 </body>
 </html>

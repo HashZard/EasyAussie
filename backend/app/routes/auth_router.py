@@ -16,9 +16,9 @@ def login():
     data = request.get_json()
     email = data.get("email")
     password = data.get("password")
-    code = data.get("code")
+    captcha = data.get("captcha")
 
-    result = handle_login(email, password, code)
+    result = handle_login(email, password, captcha)
     status = 200 if result["success"] else result.get("status", 400)
     return jsonify(result), status
 

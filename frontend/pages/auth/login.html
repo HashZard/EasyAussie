@@ -1,80 +1,218 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <title>用户登录 - Easy Aussie</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/css/common.css">
-</head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-<div class="form-container">
-    <h1 class="form-title">用户登录</h1>
-    <form id="loginForm" class="space-y-4">
-        <div>
-            <label for="email" class="ea-label">邮箱：</label>
-            <input type="email" id="email" required class="ea-input">
-        </div>
-        <div>
-            <label for="password" class="ea-label">密码：</label>
-            <input type="password" id="password" required class="ea-input">
-        </div>
-        <div>
-            <label for="code" class="ea-label">验证码：</label>
-            <div class="flex gap-2 items-center">
-                <input type="text" id="code" maxlength="4" placeholder="请输入验证码" required class="ea-input">
-                <img id="captchaImg" src="/api/captcha" alt="验证码" class="captcha-img">
-            </div>
-        </div>
-        <button type="submit" class="ea-button">登录</button>
-        <div class="link-hint">
-            <a href="/pages/auth/register.html">没有账号？点击注册</a>
-        </div>
-    </form>
-</div>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <title>登录 - Easy Aussie</title>
+    <meta name="description" content="登录 Easy Aussie 管理中心"/>
+    <script type="module" src="/src/main.ts"></script>
+    <script type="module">
+        import { MobileHeaderComponent } from '/src/components/mobile-header.ts';
+        import { MobileFooterComponent } from '/src/components/mobile-footer.ts';
+        import { authStore } from '/src/stores/auth-store.ts';
+        import { notificationService } from '/src/services/notification-service.ts';
 
-<script>
-    function getReturnUrl() {
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get("next") || "/index.html";
-    }
-
-    function saveLoginInfo(token, user) {
-        localStorage.setItem("auth_token", token);
-        localStorage.setItem("user_info", JSON.stringify(user));
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-        const loginForm = document.getElementById("loginForm");
-        const captchaImg = document.getElementById("captchaImg");
-
-        captchaImg.addEventListener("click", () => {
-            captchaImg.src = "/api/captcha?reload=" + Date.now();
+        document.addEventListener('DOMContentLoaded', () => {
+            new MobileHeaderComponent();
+            new MobileFooterComponent();
+            
+            initLoginForm();
+            initMobileFeatures();
         });
 
-        loginForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const email = document.getElementById("email").value.trim();
-            const password = document.getElementById("password").value.trim();
-            const code = document.getElementById("code").value.trim();
+        function initLoginForm() {
+            const form = document.getElementById('login-form');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const captchaInput = document.getElementById('captcha');
+            const submitButton = document.getElementById('submit-btn');
 
-            const response = await fetch("/api/login", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                credentials: "include",
-                body: JSON.stringify({email, password, code})
+            // 检查是否已经登录
+            const currentUser = authStore.getCurrentUser();
+            if (currentUser) {
+                window.location.href = '/pages/management/admin.html';
+                return;
+            }
+
+            // 表单提交
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const email = emailInput.value.trim();
+                const password = passwordInput.value;
+                const captcha = captchaInput.value.trim();
+
+                // 基本验证
+                if (!email || !password || !captcha) {
+                    notificationService.error('请填写完整的登录信息');
+                    return;
+                }
+
+                if (!isValidEmail(email)) {
+                    notificationService.error('请输入有效的邮箱地址');
+                    return;
+                }
+
+                try {
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>登录中...';
+                    
+                    notificationService.loading('正在验证登录信息...');
+
+                    const success = await authStore.login({
+                        email,
+                        password,
+                        captcha
+                    });
+
+                    if (success) {
+                        notificationService.success('登录成功！正在跳转...');
+                        
+                        setTimeout(() => {
+                            const returnUrl = new URLSearchParams(window.location.search).get('return') || '/index.html';
+                            window.location.href = returnUrl;
+                        }, 1000);
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    notificationService.error(error.message || '登录失败，请检查用户名和密码');
+                    refreshCaptcha();
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '登录';
+                }
             });
 
-            const result = await response.json();
-            if (result.success) {
-                saveLoginInfo(result.token, result.user);
-                window.location.href = getReturnUrl();
-            } else {
-                alert("登录失败：" + (result.message || "请重试"));
-                captchaImg.click();
-            }
-        });
-    });
-</script>
+            // 回车键提交
+            [emailInput, passwordInput, captchaInput].forEach(input => {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        form.dispatchEvent(new Event('submit'));
+                    }
+                });
+            });
+
+            // 初始化验证码
+            refreshCaptcha();
+        }
+
+        function initMobileFeatures() {
+            // 密码可见性切换
+            const passwordInput = document.getElementById('password');
+            const togglePasswordBtn = document.getElementById('toggle-password');
+            
+            togglePasswordBtn.addEventListener('click', () => {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                
+                const icon = togglePasswordBtn.querySelector('i');
+                icon.classList.toggle('fa-eye');
+                icon.classList.toggle('fa-eye-slash');
+            });
+        }
+
+        function refreshCaptcha() {
+            const captchaImg = document.getElementById('captcha-img');
+            const timestamp = new Date().getTime();
+            captchaImg.src = `/api/captcha?t=${timestamp}`;
+        }
+
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        // 全局函数供HTML调用
+        window.refreshCaptcha = refreshCaptcha;
+    </script>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+<div id="header"></div>
+
+<main class="flex-grow flex items-center justify-center py-8 px-4">
+    <div class="w-full max-w-md">
+        <!-- Logo和标题 -->
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-home text-white text-2xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-800 mb-2">登录 Easy Aussie</h1>
+        </div>
+
+        <!-- 登录表单 -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <form id="login-form" class="p-6 space-y-6">
+                <!-- 邮箱输入 -->
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">邮箱地址</label>
+                    <div class="relative">
+                        <input type="email" id="email" name="email" required
+                               class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                               placeholder="请输入邮箱地址">
+                        <i class="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+
+                <!-- 密码输入 -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">密码</label>
+                    <div class="relative">
+                        <input type="password" id="password" name="password" required
+                               class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                               placeholder="请输入密码">
+                        <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <button type="button" id="toggle-password" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 验证码 -->
+                <div>
+                    <label for="captcha" class="block text-sm font-medium text-gray-700 mb-2">验证码</label>
+                    <div class="flex space-x-3">
+                        <div class="relative flex-1">
+                            <input type="text" id="captcha" name="captcha" required
+                                   class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                   placeholder="请输入验证码">
+                            <i class="fas fa-shield-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        </div>
+                        <div class="w-24 h-12 bg-gray-100 border border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors"
+                             onclick="refreshCaptcha()">
+                            <img id="captcha-img" src="/api/captcha" alt="验证码" class="w-full h-full object-contain rounded-lg">
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">点击验证码图片刷新</p>
+                </div>
+
+                <!-- 登录按钮 -->
+                <button type="submit" id="submit-btn"
+                        class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition-all">
+                    登录
+                </button>
+            </form>
+        </div>
+
+        <!-- 注册链接 -->
+        <div class="mt-6 text-center">
+            <p class="text-sm text-gray-600">
+                还没有账户？
+                <a href="/pages/auth/register.html" class="text-blue-600 hover:text-blue-700 font-medium">立即注册</a>
+            </p>
+        </div>
+
+        <!-- 帮助信息 -->
+        <div class="mt-8 text-center">
+            <p class="text-xs text-gray-500">
+                登录即表示您同意我们的
+                <a href="#" class="text-blue-600 hover:text-blue-700">服务条款</a>
+                和
+                <a href="#" class="text-blue-600 hover:text-blue-700">隐私政策</a>
+            </p>
+        </div>
+    </div>
+</main>
+
+<div id="footer"></div>
 </body>
 </html>

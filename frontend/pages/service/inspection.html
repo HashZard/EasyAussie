@@ -2,102 +2,597 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>预约登记表 - Easy Aussie</title>
-    <script src="/js/components/ea-form.js" defer></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <title>预约看房 - Easy Aussie</title>
+    <meta name="description" content="预约专业代看房服务，远程了解真实房屋情况"/>
+    <script type="module" src="/src/main.ts"></script>
+    <style>
+        .checklist-item {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .checklist-remove-btn {
+            min-width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .char-counter {
+            pointer-events: none;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 10px;
+        }
+    </style>
+    <script type="module">
+        import { MobileHeaderComponent } from '/src/components/mobile-header.ts';
+        import { MobileFooterComponent } from '/src/components/mobile-footer.ts';
+        import { FormComponent } from '/src/components/form.ts';
+        import { notificationService } from '/src/services/notification-service.ts';
+        import { httpClient } from '/src/services/http-client.ts';
+        import { authStore } from '/src/stores/auth-store.ts';
 
-    <link rel="stylesheet" href="/css/common.css"/>
-    <link rel="stylesheet" href="/css/ea-card.css"/>
+        document.addEventListener('DOMContentLoaded', () => {
+            new MobileHeaderComponent();
+            new MobileFooterComponent();
+            
+            initInspectionForm();
+            initMobileFeatures();
+        });
 
-</head>
-<body class="bg-gray-100 text-gray-900">
+        function initInspectionForm() {
+            const formContainer = document.getElementById('inspection-form');
+            
+            const form = new FormComponent(formContainer, {
+                fields: [
+                    {
+                        name: 'wxid',
+                        type: 'text',
+                        label: '微信名称',
+                        placeholder: '请输入您的微信名称',
+                        required: true
+                    },
+                    {
+                        name: 'address',
+                        type: 'text',
+                        label: '房产地址',
+                        placeholder: '例如: 35 Stirling Hwy, Crawley WA 6009',
+                        required: true
+                    },
+                    {
+                        name: 'appointmentDate',
+                        type: 'datetime-local',
+                        label: '预约时间',
+                        required: true
+                    },
+                    {
+                        name: 'name',
+                        type: 'text',
+                        label: '预约姓名',
+                        placeholder: 'Full Name, 不确定可检查预约邮件抬头',
+                        required: true
+                    },
+                    {
+                        name: 'email',
+                        type: 'email',
+                        label: '预约邮箱',
+                        placeholder: '请输入预约时使用的邮箱',
+                        required: true
+                    },
+                    {
+                        name: 'phone',
+                        type: 'tel',
+                        label: '联系电话',
+                        placeholder: '请输入您的联系电话'
+                    }
+                ],
+                autoSave: true,
+                onSubmit: async (data) => {
+                    let loadingId = null;
+                    try {
+                        // 检查用户是否已登录
+                        const currentUser = authStore.getCurrentUser();
+                        const token = localStorage.getItem('auth_token');
+                        
+                        console.log('认证状态检查:', {
+                            isAuthenticated: authStore.isAuthenticated(),
+                            hasUser: !!currentUser,
+                            hasToken: !!token,
+                            userEmail: currentUser?.email,
+                            tokenPreview: token ? token.substring(0, 20) + '...' : 'null'
+                        });
+                        
+                        if (!authStore.isAuthenticated()) {
+                            console.warn('用户未登录，无法提交表单');
+                            notificationService.error('请先登录后再提交预约', {
+                                actions: [
+                                    {
+                                        label: '去登录',
+                                        action: () => {
+                                            const currentPath = encodeURIComponent(window.location.pathname);
+                                            window.location.href = `/pages/auth/login.html?next=${currentPath}`;
+                                        },
+                                        primary: true
+                                    }
+                                ]
+                            });
+                            return;
+                        }
+                        
+                        loadingId = notificationService.loading('正在提交预约...');
+                        
+                        // 获取检查清单数据
+                        const checklistItems = getChecklistData();
+                        
+                        // 构建提交数据，格式与后端期望一致
+                        const formData = new FormData();
+                        
+                        // 添加表单字段
+                        for (const [key, value] of data.entries()) {
+                            formData.append(key, value);
+                        }
+                        
+                        // 添加检查清单，使用后端期望的格式 checklist[]
+                        checklistItems.forEach(item => {
+                            if (item.trim()) {
+                                formData.append('checklist[]', item);
+                            }
+                        });
+                        
+                        // 添加表单类型
+                        formData.append('formType', 'inspection');
 
-<div id="header"></div>
+                        const result = await httpClient.post('/api/form-submit', formData);
+                        
+                        // 关闭加载通知
+                        if (loadingId) {
+                            notificationService.remove(loadingId);
+                        }
+                        
+                        if (result.success) {
+                            notificationService.success('预约提交成功！我们会尽快与您联系。');
+                            setTimeout(() => {
+                                window.location.href = '/pages/submit-success.html';
+                            }, 2000);
+                        } else {
+                            throw new Error(result.message || '提交失败');
+                        }
+                    } catch (error) {
+                        // 关闭加载通知
+                        if (loadingId) {
+                            notificationService.remove(loadingId);
+                        }
+                        console.error('Submit error:', error);
+                        
+                        // 如果是认证错误，提供更明确的提示
+                        if (error.status === 401 || error.status === 403) {
+                            notificationService.error('登录已过期，请重新登录', {
+                                actions: [
+                                    {
+                                        label: '重新登录',
+                                        action: () => {
+                                            const currentPath = encodeURIComponent(window.location.pathname);
+                                            window.location.href = `/pages/auth/login.html?next=${currentPath}`;
+                                        },
+                                        primary: true
+                                    }
+                                ]
+                            });
+                        } else {
+                            notificationService.error('提交失败，请重试或联系客服');
+                        }
+                    }
+                }
+            });
 
-<main class="w-full max-w-4xl mx-auto p-6">
-    <div class="ea-card">
-        <div class="relative mb-6">
-            <!-- 返回按钮 -->
-            <div id="back-button"></div>
-            <!-- 页面标题 -->
-            <h2 class="text-2xl font-bold mb-4 text-center">预约登记</h2>
-        </div>
+            // 在表单创建后添加自定义的检查清单组件
+            setTimeout(() => {
+                addChecklistComponent();
+                // 恢复自动保存的检查清单数据
+                restoreChecklistData();
+            }, 100);
+        }
 
-        <form id="standardForm" action="/api/form-submit" method="POST" class="space-y-6"
-              data-success="/pages/submit-success.html" data-fail="/pages/submit-fail.html">
-            <!-- 页面标识 -->
-            <input type="hidden" name="formType" value="inspection"/>
-            <div>
-                <label for="name" class="ea-label">微信名称:</label>
-                <input type="text" id="wxid" name="wxid" class="ea-input"/>
-            </div>
+        function addChecklistComponent() {
+            const form = document.querySelector('#inspection-form form');
+            if (!form) return;
 
-            <div>
-                <label for="address" class="ea-label">房产地址:</label>
-                <input type="text" id="address" name="address" required
-                       class="ea-input"
-                       placeholder="例如: 35 Stirling Hwy, Crawley WA 6009"/>
-            </div>
+            // 在提交按钮前插入检查清单组件
+            const submitContainer = form.querySelector('.flex.gap-4.pt-4');
+            if (!submitContainer) return;
 
-            <div>
-                <label for="appointmentDate" class="ea-label">预约时间:</label>
-                <input type="datetime-local" id="appointmentDate" name="appointmentDate" required
-                       class="ea-input"/>
-            </div>
-
-            <div>
-                <label for="name" class="ea-label">预约姓名:</label>
-                <input type="text" id="name" name="name" required
-                       class="ea-input"
-                       placeholder="Full Name, 不确定可检查预约邮件抬头"/>
-            </div>
-
-            <div>
-                <label for="email" class="ea-label">预约 Email:</label>
-                <input type="email" id="email" name="email" required
-                       class="ea-input"/>
-            </div>
-
-            <div>
-                <label for="phone" class="ea-label">预约电话:</label>
-                <input type="tel" id="phone" name="phone"
-                       class="ea-input"/>
-            </div>
-
-            <div id="checklistSection">
-                <label class="ea-label">重点检查事项 (≤5条):</label>
-                <div id="checklist-container" class="space-y-2">
-                    <div class="flex items-center">
-                        <input type="text" name="checklist[]" class="flex-grow ea-input"
-                               placeholder="输入重点检查事项"/>
+            const checklistHtml = `
+                <div class="ea-field">
+                    <label class="ea-label">
+                        重点检查事项
+                    </label>
+                    <div id="checklist-container" class="space-y-3">
+                        <div class="checklist-item flex gap-2">
+                            <input 
+                                type="text" 
+                                class="ea-input flex-1" 
+                                placeholder="请输入需要重点检查的事项"
+                                maxlength="50"
+                                name="checklist-item"
+                            />
+                            <button type="button" class="checklist-remove-btn hidden bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-colors">
+                                删除
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex justify-between items-center">
+                        <button type="button" id="add-checklist-item" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                            <i class="fas fa-plus mr-1"></i>添加检查项
+                        </button>
+                        <span class="text-sm text-gray-500">最多5项，每项50字符</span>
                     </div>
                 </div>
-                <div class="text-right mt-2">
-                    <button type="button" id="add-checklist"
-                            class="ea-button">添加检查项 +
-                    </button>
+            `;
+
+            submitContainer.insertAdjacentHTML('beforebegin', checklistHtml);
+            
+            // 绑定检查清单事件
+            bindChecklistEvents();
+        }
+
+        function bindChecklistEvents() {
+            const container = document.getElementById('checklist-container');
+            const addBtn = document.getElementById('add-checklist-item');
+            
+            if (!container || !addBtn) return;
+
+            // 添加检查项
+            addBtn.addEventListener('click', () => {
+                const items = container.querySelectorAll('.checklist-item');
+                if (items.length >= 5) {
+                    notificationService.warning('最多只能添加5个检查项');
+                    return;
+                }
+
+                const newItemHtml = `
+                    <div class="checklist-item flex gap-2">
+                        <input 
+                            type="text" 
+                            class="ea-input flex-1" 
+                            placeholder="请输入需要重点检查的事项"
+                            maxlength="50"
+                            name="checklist-item"
+                        />
+                        <button type="button" class="checklist-remove-btn bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-colors">
+                            删除
+                        </button>
+                    </div>
+                `;
+                
+                container.insertAdjacentHTML('beforeend', newItemHtml);
+                updateRemoveButtons();
+                updateAddButton();
+                saveChecklistData();
+            });
+
+            // 删除检查项（事件委托）
+            container.addEventListener('click', (e) => {
+                const removeBtn = e.target.closest('.checklist-remove-btn');
+                if (removeBtn) {
+                    const item = removeBtn.closest('.checklist-item');
+                    if (item) {
+                        item.remove();
+                        updateRemoveButtons();
+                        updateAddButton();
+                        saveChecklistData();
+                    }
+                }
+            });
+
+            // 字符计数和自动保存
+            container.addEventListener('input', (e) => {
+                const input = e.target;
+                if (input.name === 'checklist-item') {
+                    // 自动保存检查清单数据
+                    saveChecklistData();
+                }
+            });
+
+            updateRemoveButtons();
+        }
+
+        function saveChecklistData() {
+            const checklistData = getChecklistData();
+            localStorage.setItem('ea-form-checklist', JSON.stringify(checklistData));
+        }
+
+        function restoreChecklistData() {
+            const saved = localStorage.getItem('ea-form-checklist');
+            if (!saved) return;
+
+            try {
+                const checklistData = JSON.parse(saved);
+                if (!Array.isArray(checklistData) || checklistData.length === 0) return;
+
+                const container = document.getElementById('checklist-container');
+                if (!container) return;
+
+                // 清空现有项目
+                container.innerHTML = '';
+
+                // 添加保存的项目
+                checklistData.forEach((item, index) => {
+                    const isFirst = index === 0;
+                    const newItemHtml = `
+                        <div class="checklist-item flex gap-2">
+                            <input 
+                                type="text" 
+                                class="ea-input flex-1" 
+                                placeholder="请输入需要重点检查的事项"
+                                maxlength="50"
+                                name="checklist-item"
+                                value="${item}"
+                            />
+                            <button type="button" class="checklist-remove-btn ${isFirst ? 'hidden' : ''} bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-colors">
+                                删除
+                            </button>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', newItemHtml);
+                });
+
+                // 如果没有项目，至少添加一个空项目
+                if (checklistData.length === 0) {
+                    const defaultItemHtml = `
+                        <div class="checklist-item flex gap-2">
+                            <input 
+                                type="text" 
+                                class="ea-input flex-1" 
+                                placeholder="请输入需要重点检查的事项"
+                                maxlength="50"
+                                name="checklist-item"
+                            />
+                            <button type="button" class="checklist-remove-btn hidden bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-colors">
+                                删除
+                            </button>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', defaultItemHtml);
+                }
+
+                updateRemoveButtons();
+                updateAddButton();
+            } catch (error) {
+                console.warn('Failed to restore checklist data:', error);
+            }
+        }
+
+        function updateRemoveButtons() {
+            const container = document.getElementById('checklist-container');
+            if (!container) return;
+
+            const items = container.querySelectorAll('.checklist-item');
+            const removeButtons = container.querySelectorAll('.checklist-remove-btn');
+
+            // 只有一个项目时隐藏删除按钮
+            if (items.length <= 1) {
+                removeButtons.forEach(btn => btn.classList.add('hidden'));
+            } else {
+                removeButtons.forEach(btn => btn.classList.remove('hidden'));
+            }
+        }
+
+        function updateAddButton() {
+            const container = document.getElementById('checklist-container');
+            const addBtn = document.getElementById('add-checklist-item');
+            
+            if (!container || !addBtn) return;
+
+            const items = container.querySelectorAll('.checklist-item');
+            
+            if (items.length >= 5) {
+                addBtn.disabled = true;
+                addBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                addBtn.disabled = false;
+                addBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        function getChecklistData() {
+            const container = document.getElementById('checklist-container');
+            if (!container) return [];
+
+            const inputs = container.querySelectorAll('input[name="checklist-item"]');
+            const items = [];
+            
+            inputs.forEach(input => {
+                const value = input.value.trim();
+                if (value) {
+                    items.push(value);
+                }
+            });
+            
+            return items;
+        }
+
+        function initMobileFeatures() {
+            // 自动填充当前时间（1小时后）
+            const appointmentInput = document.querySelector('input[name="appointmentDate"]');
+            if (appointmentInput) {
+                const now = new Date();
+                now.setHours(now.getHours() + 1);
+                appointmentInput.value = now.toISOString().slice(0, 16);
+            }
+
+            // 添加地址自动完成（模拟）
+            const addressInput = document.querySelector('input[name="address"]');
+            if (addressInput) {
+                const commonAddresses = [
+                    'Stirling Hwy, Crawley WA',
+                    'Hay Street, Perth WA',
+                    'Murray Street, Perth WA',
+                    'Adelaide Terrace, East Perth WA',
+                    'Great Eastern Hwy, Belmont WA'
+                ];
+
+                addressInput.addEventListener('input', (e) => {
+                    const value = e.target.value.toLowerCase();
+                    if (value.length > 2) {
+                        // 可以在这里添加地址自动完成功能
+                    }
+                });
+            }
+
+            // 添加快速咨询功能
+            const quickConsultBtn = document.getElementById('quick-consult');
+            if (quickConsultBtn) {
+                quickConsultBtn.addEventListener('click', () => {
+                    notificationService.info('客服微信: EasyAussie', {
+                        actions: [
+                            {
+                                text: '复制微信号',
+                                action: () => {
+                                    navigator.clipboard.writeText('EasyAussie');
+                                    notificationService.success('微信号已复制');
+                                }
+                            }
+                        ]
+                    });
+                });
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-50 text-gray-900">
+<div id="header"></div>
+
+<main class="flex-grow">
+    <!-- Page Header -->
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-6 sm:py-8">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">预约看房服务</h1>
+                    <p class="text-blue-100">专业团队代您实地看房，详细反馈房屋情况</p>
+                </div>
+                <div class="hidden sm:block text-right">
+                    <div class="text-2xl font-bold">$25</div>
+                    <div class="text-blue-100 text-sm">起</div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div class="hidden">
-                <label for="remarks" class="ea-label">备注信息:</label>
-                <textarea id="remarks" name="remarks" class="ea-textarea"
-                          placeholder="如需和中介简要介绍个人信息,请在此填写"></textarea>
+    <!-- Service Features - 移动端优化 -->
+    <div class="py-6 bg-white">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="flex items-center p-4 bg-blue-50 rounded-lg">
+                    <i class="fas fa-video text-blue-600 text-xl mr-3"></i>
+                    <div>
+                        <div class="font-semibold text-sm">高清视频</div>
+                        <div class="text-gray-600 text-xs">详细拍摄每个角落</div>
+                    </div>
+                </div>
+                <div class="flex items-center p-4 bg-green-50 rounded-lg">
+                    <i class="fas fa-clock text-green-600 text-xl mr-3"></i>
+                    <div>
+                        <div class="font-semibold text-sm">24小时反馈</div>
+                        <div class="text-gray-600 text-xs">快速提供看房报告</div>
+                    </div>
+                </div>
+                <div class="flex items-center p-4 bg-purple-50 rounded-lg">
+                    <i class="fas fa-star text-purple-600 text-xl mr-3"></i>
+                    <div>
+                        <div class="font-semibold text-sm">专业评价</div>
+                        <div class="text-gray-600 text-xs">给出中肯建议</div>
+                    </div>
+                </div>
             </div>
+        </div>
+    </div>
 
-            <button type="submit" class="ea-button w-full">
-                提交
-            </button>
-        </form>
+    <!-- Form Section -->
+    <div class="py-6 sm:py-8">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                <!-- Form Header -->
+                <div class="bg-gray-50 px-6 py-4 border-b">
+                    <h2 class="text-lg font-semibold text-gray-800">填写预约信息</h2>
+                    <p class="text-gray-600 text-sm mt-1">请准确填写以下信息，我们会根据您的需求安排看房</p>
+                </div>
+
+                <!-- Form Content -->
+                <div class="p-6">
+                    <div id="inspection-form"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Section -->
+    <div class="py-6 bg-gray-50">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="bg-white rounded-xl p-6">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fas fa-question-circle text-blue-600 mr-2"></i>
+                    常见问题
+                </h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex">
+                        <span class="text-blue-600 font-semibold mr-2">Q:</span>
+                        <div>
+                            <span class="font-medium">看房报告包含什么内容？</span>
+                            <p class="text-gray-600 mt-1">包括高清视频、房屋状况评价、周边环境介绍、专业建议等。</p>
+                        </div>
+                    </div>
+                    <div class="flex">
+                        <span class="text-blue-600 font-semibold mr-2">Q:</span>
+                        <div>
+                            <span class="font-medium">如果看房时间与中介安排冲突怎么办？</span>
+                            <p class="text-gray-600 mt-1">我们会协调最佳时间，或建议备选方案。</p>
+                        </div>
+                    </div>
+                    <div class="flex">
+                        <span class="text-blue-600 font-semibold mr-2">Q:</span>
+                        <div>
+                            <span class="font-medium">费用什么时候支付？</span>
+                            <p class="text-gray-600 mt-1">看房完成并发送报告后再付款，确保服务质量。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="py-6 bg-blue-600 text-white">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <h3 class="text-lg font-semibold mb-3">需要帮助？</h3>
+            <p class="text-blue-100 mb-4 text-sm">我们的客服团队随时为您解答疑问</p>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <button id="quick-consult" class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors">
+                    <i class="fab fa-weixin mr-2"></i>微信咨询
+                </button>
+                <a href="tel:+61xxxxxxxxx" class="bg-green-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors">
+                    <i class="fas fa-phone mr-2"></i>电话咨询
+                </a>
+            </div>
+        </div>
     </div>
 </main>
 
-<div id="footer" class="mt-12"></div>
-
-<!-- 动态加载 Header/Footer -->
-<script src="/js/components/user-auth.js"></script>
-<script src="/js/components/layout.js"></script>
-<script src="/js/services/inspection.js"></script>
+<div id="footer"></div>
 </body>
 </html>

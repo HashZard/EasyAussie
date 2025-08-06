@@ -1,0 +1,320 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* 全局样式覆盖 */
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply min-h-screen flex flex-col bg-gray-50 text-gray-900;
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  }
+
+  main {
+    @apply flex-1;
+  }
+
+  /* 改进的焦点样式 */
+  *:focus {
+    @apply outline-none ring-2 ring-primary-500 ring-opacity-50;
+  }
+}
+
+/* 组件层样式 */
+@layer components {
+  /* 表单组件 */
+  .ea-input {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm;
+    @apply focus:ring-primary-500 focus:border-primary-500;
+    @apply placeholder-gray-400 transition-colors duration-200;
+  }
+
+  .ea-textarea {
+    @apply ea-input min-h-[6rem] resize-y;
+  }
+
+  .ea-select {
+    @apply ea-input pr-8 cursor-pointer;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+  }
+
+  .ea-file-input {
+    @apply w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4;
+    @apply file:rounded-md file:border-0 file:bg-primary-50 file:text-primary-700;
+    @apply hover:file:bg-primary-100 file:cursor-pointer cursor-pointer;
+  }
+
+  .ea-label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+
+  .ea-button {
+    @apply w-full bg-primary-600 text-white py-2 px-4 rounded-md font-medium;
+    @apply hover:bg-primary-700 focus:ring-primary-500 disabled:opacity-50;
+    @apply transition-colors duration-200 disabled:cursor-not-allowed;
+  }
+
+  .ea-button-secondary {
+    @apply ea-button bg-gray-600 hover:bg-gray-700 focus:ring-gray-500;
+  }
+
+  .ea-button-small {
+    @apply px-3 py-1 text-sm bg-primary-600 text-white rounded;
+    @apply hover:bg-primary-700 transition-colors duration-200;
+  }
+
+  /* 字段组件 */
+  .ea-field {
+    @apply space-y-1;
+  }
+
+  .ea-radio-option,
+  .ea-checkbox-option {
+    @apply flex items-center gap-2 text-sm;
+  }
+
+  .ea-radio-option input,
+  .ea-checkbox-option input {
+    @apply text-primary-600 focus:ring-primary-500;
+  }
+
+  /* 布局组件 */
+  .ea-section {
+    @apply bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-6;
+  }
+
+  .ea-section-title {
+    @apply text-lg font-semibold mb-4 pb-2 border-b border-gray-200;
+  }
+
+  .ea-admin-wrapper {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .ea-form-row {
+    @apply flex flex-wrap items-end gap-4;
+  }
+
+  .ea-inline-field {
+    @apply flex items-center gap-2;
+  }
+
+  .ea-inline-label {
+    @apply font-medium min-w-[6rem] whitespace-nowrap text-sm;
+  }
+
+  /* 卡片组件 */
+  .ea-card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden;
+  }
+
+  .ea-card-header {
+    @apply px-6 py-4 border-b border-gray-200 bg-gray-50;
+  }
+
+  .ea-card-body {
+    @apply p-6;
+  }
+
+  .ea-card-footer {
+    @apply px-6 py-4 border-t border-gray-200 bg-gray-50;
+  }
+
+  /* 表格组件 */
+  .ea-table {
+    @apply min-w-full divide-y divide-gray-200;
+  }
+
+  .ea-table thead {
+    @apply bg-gray-50;
+  }
+
+  .ea-table th {
+    @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
+  }
+
+  .ea-table td {
+    @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900;
+  }
+
+  .ea-table tbody tr {
+    @apply hover:bg-gray-50 transition-colors duration-150;
+  }
+
+  /* 状态徽章 */
+  .ea-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .ea-badge-success {
+    @apply ea-badge bg-green-100 text-green-800;
+  }
+
+  .ea-badge-warning {
+    @apply ea-badge bg-yellow-100 text-yellow-800;
+  }
+
+  .ea-badge-error {
+    @apply ea-badge bg-red-100 text-red-800;
+  }
+
+  .ea-badge-info {
+    @apply ea-badge bg-blue-100 text-blue-800;
+  }
+
+  /* 加载状态 */
+  .ea-loading {
+    @apply flex items-center justify-center p-8;
+  }
+
+  .ea-spinner {
+    @apply animate-spin h-5 w-5 text-primary-600;
+  }
+
+  /* 空状态 */
+  .ea-empty {
+    @apply flex flex-col items-center justify-center p-8 text-gray-500;
+  }
+
+  .ea-empty-icon {
+    @apply w-12 h-12 text-gray-400 mb-4;
+  }
+
+  /* 导航组件 */
+  .ea-nav-item {
+    @apply text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200;
+    @apply flex items-center px-4 py-3 rounded-md;
+  }
+
+  .ea-nav-item.active {
+    @apply bg-blue-50 text-blue-600 font-medium;
+  }
+
+  /* 响应式工具 */
+  .ea-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .ea-grid {
+    @apply grid grid-cols-1 gap-6;
+  }
+
+  .ea-grid-2 {
+    @apply ea-grid md:grid-cols-2;
+  }
+
+  .ea-grid-3 {
+    @apply ea-grid md:grid-cols-2 lg:grid-cols-3;
+  }
+
+  .ea-grid-4 {
+    @apply ea-grid md:grid-cols-2 lg:grid-cols-4;
+  }
+}
+
+/* 工具层样式 */
+@layer utilities {
+  /* 动画工具 */
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .animate-slideUp {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .animate-slideDown {
+    animation: slideDown 0.3s ease-out;
+  }
+
+  /* 隐藏滚动条但保持功能 */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 文本截断 */
+  .text-truncate {
+    @apply truncate;
+  }
+
+  .text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .text-truncate-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+/* 关键帧动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* 兼容性和回退样式 */
+@supports not (backdrop-filter: blur(10px)) {
+  .backdrop-blur {
+    background-color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+/* 打印样式 */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .ea-button,
+  .ea-nav-item {
+    color: #000 !important;
+    background: transparent !important;
+  }
+}

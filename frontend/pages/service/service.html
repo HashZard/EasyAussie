@@ -2,67 +2,325 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>服务预约 - Easy Aussie</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <title>选择服务 - Easy Aussie</title>
+    <meta name="description" content="选择您需要的专业服务，我们为您提供全方位的澳洲生活支持"/>
+    <script type="module" src="/src/main.ts"></script>
+    <style>
+        /* 简化的动画效果 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-    <link rel="stylesheet" href="/css/common.css"/>
-    <link rel="stylesheet" href="/css/ea-card.css"/>
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .animate-fadeInUp {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .animate-fadeInLeft {
+            animation: fadeInLeft 0.6s ease-out forwards;
+        }
+
+        .animate-fadeInRight {
+            animation: fadeInRight 0.6s ease-out forwards;
+        }
+
+        .animate-pulse-slow {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .animate-float {
+            animation: float 2s ease-in-out infinite;
+        }
+
+        .hover-scale {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .hover-scale:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .fade-in-element {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+    <script type="module">
+        import { MobileHeaderComponent } from '/src/components/mobile-header.ts';
+        import { MobileFooterComponent } from '/src/components/mobile-footer.ts';
+        import { notificationService } from '/src/services/notification-service.ts';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new MobileHeaderComponent();
+            new MobileFooterComponent();
+            
+            initServiceSelection();
+            initAnimations();
+        });
+
+        function initAnimations() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -30px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const element = entry.target;
+                        const animationType = element.dataset.animation;
+                        
+                        switch(animationType) {
+                            case 'fadeInUp':
+                                element.classList.add('animate-fadeInUp');
+                                break;
+                            case 'fadeInLeft':
+                                element.classList.add('animate-fadeInLeft');
+                                break;
+                            case 'fadeInRight':
+                                element.classList.add('animate-fadeInRight');
+                                break;
+                        }
+                        
+                        observer.unobserve(element);
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.fade-in-element').forEach(el => {
+                observer.observe(el);
+            });
+        }
+
+        function initServiceSelection() {
+            // 服务卡片点击跳转
+            const serviceCards = document.querySelectorAll('.service-card');
+            serviceCards.forEach(card => {
+                card.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const href = card.getAttribute('href');
+                    if (href) {
+                        window.location.href = href;
+                    }
+                });
+            });
+
+            // 快速咨询功能
+            const consultBtn = document.getElementById('quick-consult-btn');
+            if (consultBtn) {
+                consultBtn.addEventListener('click', () => {
+                    showConsultModal();
+                });
+            }
+        }
+
+        function showConsultModal() {
+            notificationService.info('联系客服获取专业建议', {
+                duration: 0,
+                actions: [
+                    {
+                        text: '复制微信号: EasyAussie',
+                        action: () => {
+                            navigator.clipboard.writeText('EasyAussie');
+                            notificationService.success('微信号已复制');
+                        }
+                    },
+                    {
+                        text: '拨打电话',
+                        action: () => {
+                            window.location.href = 'tel:+61400000000';
+                        }
+                    }
+                ]
+            });
+        }
+    </script>
 </head>
-<body class="bg-gray-100 text-gray-900">
+
+<body class="bg-gradient-to-br from-gray-50 to-blue-50 text-gray-900 min-h-screen">
 <div id="header"></div>
 
-<main class="flex-grow max-w-5xl mx-auto p-6">
+<main class="flex-grow py-8">
+    <div class="max-w-6xl mx-auto px-4">
+        <!-- 页面标题 -->
+        <div class="text-center mb-12 fade-in-element" data-animation="fadeInUp">
+            <h1 class="text-3xl sm:text-4xl font-bold gradient-text mb-4">选择您需要的服务</h1>
+            <p class="text-gray-600 text-lg max-w-2xl mx-auto">专业团队为您提供全方位的珀斯租房服务支持</p>
+        </div>
 
-    <div class="space-y-4">
-        <!-- 卡片: 预约看房 -->
-        <div class="ea-card">
-            <div class="flex justify-between items-center">
-                <div class="flex-1">
-                    <div class="ea-card-title">预约看房</div>
-                    <p class="ea-card-desc">
-                        提供专业的代看房服务，适合尚未抵达澳洲或时间冲突的租房者<br>
-                        服务内容包括：实地看房、拍摄视频、反馈总结, 帮助你远程了解真实房屋情况</p>
-                    <p class="ea-card-price hidden">价格：From $25 / 次</p>
+        <!-- 服务卡片网格 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+            
+            <!-- 房屋检查服务 -->
+            <div class="fade-in-element service-card group bg-white rounded-3xl p-8 shadow-lg hover-scale border border-gray-100 cursor-pointer" data-animation="fadeInLeft" onclick="window.location.href='/pages/service/inspection.html'">
+                <div class="flex items-start space-x-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center animate-float">
+                            <i class="fas fa-home text-white text-2xl"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-3 group-hover:text-blue-600 transition-colors">预约看房</h3>
+                        <p class="text-gray-600 mb-4 leading-relaxed">专业代看房服务，实地考察房屋状况，提供详细报告和建议</p>
+                        <div class="flex items-center text-blue-600 font-medium group-hover:text-blue-700 transition-colors">
+                            <span>点击预约</span>
+                            <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
                 </div>
-                <a href="/pages/service/inspection.html" class="ea-card-action">立即预约</a>
+            </div>
+
+            <!-- 求职信服务 -->
+            <div class="fade-in-element service-card group bg-white rounded-3xl p-8 shadow-lg hover-scale border border-gray-100 cursor-pointer" data-animation="fadeInRight" onclick="window.location.href='/pages/service/coverletter.html'">
+                <div class="flex items-start space-x-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center animate-float" style="animation-delay: 0.2s;">
+                            <i class="fas fa-file-alt text-white text-2xl"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-3 group-hover:text-green-600 transition-colors">Cover Letter</h3>
+                        <p class="text-gray-600 mb-4 leading-relaxed">为你量身定制租房求租信，个性化定制内容，大幅提升申请命中率</p>
+                        <div class="flex items-center text-green-600 font-medium group-hover:text-green-700 transition-colors">
+                            <span>点击预约</span>
+                            <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 租房申请服务 -->
+            <div class="fade-in-element service-card group bg-white rounded-3xl p-8 shadow-lg hover-scale border border-gray-100 cursor-pointer" data-animation="fadeInLeft" onclick="window.location.href='/pages/service/application.html'">
+                <div class="flex items-start space-x-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center animate-float" style="animation-delay: 0.4s;">
+                            <i class="fas fa-clipboard-list text-white text-2xl"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-3 group-hover:text-purple-600 transition-colors">租房申请</h3>
+                        <p class="text-gray-600 mb-4 leading-relaxed">全程代办租房申请流程，根据个人情况定制材料准备，节省时间，避免出错，提高成功率</p>
+                        <div class="flex items-center text-purple-600 font-medium group-hover:text-purple-700 transition-colors">
+                            <span>点击预约</span>
+                            <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 机场接机服务 -->
+            <div class="fade-in-element service-card group bg-white rounded-3xl p-8 shadow-lg hover-scale border border-gray-100 cursor-pointer" data-animation="fadeInRight" onclick="window.location.href='/pages/service/airport-pickup.html'">
+                <div class="flex items-start space-x-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center animate-float" style="animation-delay: 0.6s;">
+                            <i class="fas fa-car text-white text-2xl"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-3 group-hover:text-orange-600 transition-colors">接机服务</h3>
+                        <p class="text-gray-600 mb-4 leading-relaxed">安全舒适的机场接机服务，让您的澳洲之旅从温暖开始</p>
+                        <div class="flex items-center text-orange-600 font-medium group-hover:text-orange-700 transition-colors">
+                            <span>点击预约</span>
+                            <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- 卡片: CoverLetter-->
-        <div class="ea-card">
-            <div class="flex justify-between items-center">
-                <div class="flex-1">
-                    <div class="ea-card-title">CoverLetter</div>
-                    <p class="ea-card-desc">
-                        为你量身定制英文租房求租信，突出你的优势与诚意，提升中介对你的印象,大幅提升申请命中率</p>
-                    <p class="ea-card-price hidden">价格：$3 / 封</p>
+        <!-- 服务优势 -->
+        <div class="fade-in-element bg-white rounded-3xl p-8 sm:p-10 shadow-lg mb-8" data-animation="fadeInUp">
+            <h2 class="text-2xl sm:text-3xl font-bold text-center gradient-text mb-8">为什么选择我们？</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
+                <div class="text-center group">
+                    <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl mx-auto mb-4 flex items-center justify-center animate-pulse-slow">
+                        <i class="fas fa-bolt text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 group-hover:text-blue-600 transition-colors">快速响应</h3>
+                    <p class="text-gray-600 leading-relaxed">24小时内响应，高效处理您的需求</p>
                 </div>
-                <a href="/pages/service/coverletter.html" class="ea-card-action">立即预约</a>
+                <div class="text-center group">
+                    <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl mx-auto mb-4 flex items-center justify-center animate-pulse-slow">
+                        <i class="fas fa-users text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 group-hover:text-green-600 transition-colors">专业团队</h3>
+                    <p class="text-gray-600 leading-relaxed">经验丰富的本地团队，了解当地情况</p>
+                </div>
+                <div class="text-center group">
+                    <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center animate-pulse-slow">
+                        <i class="fas fa-medal text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 group-hover:text-purple-600 transition-colors">品质保证</h3>
+                    <p class="text-gray-600 leading-relaxed">服务用心，客户满意度高，口碑保障</p>
+                </div>
             </div>
         </div>
 
-        <!-- 卡片: 租房申请 -->
-        <div class="ea-card">
-            <div class="flex justify-between items-center">
-                <div class="flex-1">
-                    <div class="ea-card-title">租房申请</div>
-                    <p class="ea-card-desc">全程代办租房申请流程, 根据个人情况定制材料准备, 节省时间，避免出错，提高成功率</p>
-                    <p class="ea-card-price hidden">价格：$5 / 封</p>
-                </div>
-                <a href="/pages/service/application.html" class="ea-card-action">立即预约</a>
-            </div>
-        </div>
-
-        <!-- 卡片: 接机服务 -->
-        <div class="ea-card">
-            <div class="flex justify-between items-center">
-                <div class="flex-1">
-                    <div class="ea-card-title">接机服务</div>
-                    <p class="ea-card-desc">提供安全便捷的接机安排，让你落地无忧</p>
-                    <p class="ea-card-price hidden">价格：$50 / 次</p>
-                </div>
-                <a href="/pages/service/airport-pickup.html" class="ea-card-action">立即预约</a>
+        <!-- 快速咨询 -->
+        <div class="fade-in-element bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-8 sm:p-10 text-white text-center relative overflow-hidden" data-animation="fadeInUp">
+            <!-- 背景装饰 -->
+            <div class="absolute top-0 right-0 w-32 h-32 bg-white bg-opacity-10 rounded-full -mr-16 -mt-16"></div>
+            <div class="absolute bottom-0 left-0 w-24 h-24 bg-white bg-opacity-10 rounded-full -ml-12 -mb-12"></div>
+            
+            <div class="relative z-10">
+                <h2 class="text-2xl sm:text-3xl font-bold mb-4">需要专业建议？</h2>
+                <p class="text-blue-100 mb-8 max-w-2xl mx-auto leading-relaxed">不确定选择哪项服务？联系我们的专业顾问，获取个性化建议</p>
+                <button id="quick-consult-btn" class="glass px-8 py-4 rounded-full font-semibold text-lg hover-scale transition-all duration-300">
+                    <i class="fab fa-weixin mr-2"></i>立即咨询
+                </button>
             </div>
         </div>
     </div>
@@ -70,8 +328,7 @@
 
 <div id="footer"></div>
 
-
-<script src="/js/components/user-auth.js"></script>
-<script src="/js/components/layout.js"></script>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
 </body>
 </html>

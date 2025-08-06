@@ -4,28 +4,13 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>后台管理 - Easy Aussie</title>
-    <link rel="stylesheet" href="/css/common.css"/>
-    <link rel="stylesheet" href="/css/ea-card.css"/>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="/js/components/user-auth.js" defer></script>
-    <script src="/js/components/layout.js" defer></script>
+    <script type="module" src="/src/main.ts"></script>
     <script type="module">
-        import SpaRouter from '/js/components/spa-router.js';
-
+        import { AdminPage } from '/src/controllers/admin-page.ts';
+        
         document.addEventListener('DOMContentLoaded', () => {
-            // 初始化管理后台路由
-            const adminRouter = new SpaRouter({
-                containerId: 'admin-content',
-                basePath: '/pages/management/',
-                defaultView: 'dashboard'
-            });
-
-            // 监听视图加载完成事件
-            document.getElementById('admin-content').addEventListener('viewLoaded', (e) => {
-                const view = e.detail.view;
-                console.log('Admin view loaded:', view);
-            });
+            new AdminPage();
         });
     </script>
 </head>
