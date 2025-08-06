@@ -68,16 +68,12 @@ export class MobileFooterComponent {
                             <h3 class="text-lg font-semibold mb-4">联系方式</h3>
                             <div class="space-y-3 text-gray-300">
                                 <div class="flex items-center">
-                                    <i class="fas fa-phone w-5 mr-3"></i>
-                                    <span>+61 xxx xxx xxx</span>
-                                </div>
-                                <div class="flex items-center">
                                     <i class="fab fa-weixin w-5 mr-3"></i>
                                     <span>EasyAussie</span>
                                 </div>
                                 <div class="flex items-center">
                                     <i class="fas fa-envelope w-5 mr-3"></i>
-                                    <span>contact@easyaussie.com</span>
+                                    <span>easyaussie.info@gmail.com</span>
                                 </div>
                                 <div class="flex items-center">
                                     <i class="fas fa-map-marker-alt w-5 mr-3"></i>
