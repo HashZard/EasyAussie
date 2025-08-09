@@ -6,6 +6,7 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
     "./js/**/*.{js,ts}"
   ],
+  darkMode: false, // 完全禁用深色模式
   theme: {
     extend: {
       colors: {

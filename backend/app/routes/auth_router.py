@@ -6,7 +6,7 @@ from flask import Blueprint, request, jsonify, session, send_file, g
 from flask_security import logout_user
 
 from backend.app.services.auth_handler import handle_login, handle_register, handle_update_profile, handle_change_password
-from backend.app.utils.auth_utils import token_required
+from backend.app.utils.auth_utils import token_required, optional_token
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api')
 
@@ -55,13 +55,20 @@ def register():
 
 
 @auth_bp.route("/profile", methods=["GET"])
-@token_required
+@optional_token
 def profile():
     user = g.current_user
-    return jsonify({
-        "success": True,
-        "data": user.to_dict()
-    })
+    if user:
+        return jsonify({
+            "success": True,
+            "data": user.to_dict()
+        })
+    else:
+        return jsonify({
+            "success": True,
+            "data": None,
+            "message": "用户未登录"
+        })
 
 
 @auth_bp.route("/profile", methods=["PUT"])

@@ -68,6 +68,8 @@ export class AuthStore {
 
     // 响应拦截器：处理认证失败
     httpClient.addResponseInterceptor(async (response) => {
+      // 当收到401或403错误时，处理认证错误
+      // 现在/api/profile不会返回401，主要处理其他需要认证的接口
       if (response.status === 401 || response.status === 403) {
         await this.handleAuthError();
       }
@@ -196,7 +198,12 @@ export class AuthStore {
       // httpClient将后端响应放在data字段中，后端返回格式：{success: true, data: {...}}
       const backendResponse = response.data;
       
-      if (backendResponse.success && backendResponse.data) {
+      if (backendResponse.success) {
+        // 如果data为null，说明用户未登录
+        if (!backendResponse.data) {
+          return null;
+        }
+        
         // 转换后端格式到前端 User 接口
         const backendUser = backendResponse.data;
         const user: User = {
@@ -215,6 +222,7 @@ export class AuthStore {
       
       return null;
     } catch (error) {
+      // 现在/api/profile不会返回401，所以这里只处理网络错误等
       console.warn('Failed to fetch user profile:', error);
       return null;
     }
@@ -227,11 +235,13 @@ export class AuthStore {
     try {
       const user = await this.fetchUserProfile();
       if (!user) {
+        // 如果服务器返回用户未登录，清除本地状态
         this.clearAuth();
       }
     } catch (error) {
       console.warn('Failed to validate user:', error);
-      this.clearAuth();
+      // 只有在网络错误等情况下才清除认证状态
+      // 这样可以避免因为网络问题导致用户被强制登出
     }
   }
 
@@ -279,8 +289,8 @@ export class AuthStore {
     console.warn('Authentication failed, redirecting to login');
     this.clearAuth();
     
-    const currentPath = encodeURIComponent(window.location.pathname);
-    window.location.href = `${this.config.loginPath}?next=${currentPath}`;
+    const currentPath = encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.href = `${this.config.loginPath}?return=${currentPath}`;
   }
 
   /**

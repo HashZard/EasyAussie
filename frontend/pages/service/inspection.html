@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <meta name="color-scheme" content="light only"/>
     <title>预约看房 - Easy Aussie</title>
     <meta name="description" content="预约专业代看房服务，远程了解真实房屋情况"/>
     <script type="module" src="/src/main.ts"></script>
@@ -19,9 +20,47 @@
             new MobileHeaderComponent();
             new MobileFooterComponent();
             
+            // 检查登录状态，为用户提供登录提示
+            checkAuthenticationStatus();
+            
             initInspectionForm();
             initMobileFeatures();
+            
+            // 监听页面可见性变化，检查登录状态
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    // 页面变为可见时，重新检查登录状态
+                    setTimeout(checkAuthenticationStatus, 500);
+                }
+            });
         });
+
+        function checkAuthenticationStatus() {
+            // 如果用户未登录，显示友好提示
+            if (!authStore.isAuthenticated()) {
+                setTimeout(() => {
+                    // 检查是否是从登录页面跳转回来的
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const fromLogin = urlParams.get('from') === 'login';
+                    
+                    if (!fromLogin) {
+                        notificationService.info('提示：提交预约需要先登录账户', {
+                            duration: 5000,
+                            actions: [
+                                {
+                                    label: '现在登录',
+                                    action: () => {
+                                        const currentPath = encodeURIComponent(window.location.pathname + window.location.search);
+                                        window.location.href = `/pages/auth/login.html?return=${currentPath}`;
+                                    },
+                                    primary: true
+                                }
+                            ]
+                        });
+                    }
+                }, 2000); // 延迟2秒显示，给用户时间浏览页面
+            }
+        }
 
         function initInspectionForm() {
             const formContainer = document.getElementById('inspection-form');
@@ -69,112 +108,339 @@
                         placeholder: '请输入您的联系电话'
                     }
                 ],
-                autoSave: true,
-                onSubmit: async (data) => {
-                    let loadingId = null;
-                    try {
-                        // 检查用户是否已登录
-                        const currentUser = authStore.getCurrentUser();
-                        const token = localStorage.getItem('auth_token');
-                        
-                        console.log('认证状态检查:', {
-                            isAuthenticated: authStore.isAuthenticated(),
-                            hasUser: !!currentUser,
-                            hasToken: !!token,
-                            userEmail: currentUser?.email,
-                            tokenPreview: token ? token.substring(0, 20) + '...' : 'null'
-                        });
-                        
-                        if (!authStore.isAuthenticated()) {
-                            console.warn('用户未登录，无法提交表单');
-                            notificationService.error('请先登录后再提交预约', {
-                                actions: [
-                                    {
-                                        label: '去登录',
-                                        action: () => {
-                                            const currentPath = encodeURIComponent(window.location.pathname);
-                                            window.location.href = `/pages/auth/login.html?next=${currentPath}`;
-                                        },
-                                        primary: true
-                                    }
-                                ]
-                            });
-                            return;
-                        }
-                        
-                        loadingId = notificationService.loading('正在提交预约...');
-                        
-                        // 获取检查清单数据
-                        const checklistItems = getChecklistData();
-                        
-                        // 构建提交数据，格式与后端期望一致
-                        const formData = new FormData();
-                        
-                        // 添加表单字段
-                        for (const [key, value] of data.entries()) {
-                            formData.append(key, value);
-                        }
-                        
-                        // 添加检查清单，使用后端期望的格式 checklist[]
-                        checklistItems.forEach(item => {
-                            if (item.trim()) {
-                                formData.append('checklist[]', item);
-                            }
-                        });
-                        
-                        // 添加表单类型
-                        formData.append('formType', 'inspection');
-
-                        const result = await httpClient.post('/api/form-submit', formData);
-                        
-                        // 关闭加载通知
-                        if (loadingId) {
-                            notificationService.remove(loadingId);
-                        }
-                        
-                        if (result.success) {
-                            notificationService.success('预约提交成功！我们会尽快与您联系。');
-                            setTimeout(() => {
-                                window.location.href = '/pages/submit-success.html';
-                            }, 2000);
-                        } else {
-                            throw new Error(result.message || '提交失败');
-                        }
-                    } catch (error) {
-                        // 关闭加载通知
-                        if (loadingId) {
-                            notificationService.remove(loadingId);
-                        }
-                        console.error('Submit error:', error);
-                        
-                        // 如果是认证错误，提供更明确的提示
-                        if (error.status === 401 || error.status === 403) {
-                            notificationService.error('登录已过期，请重新登录', {
-                                actions: [
-                                    {
-                                        label: '重新登录',
-                                        action: () => {
-                                            const currentPath = encodeURIComponent(window.location.pathname);
-                                            window.location.href = `/pages/auth/login.html?next=${currentPath}`;
-                                        },
-                                        primary: true
-                                    }
-                                ]
-                            });
-                        } else {
-                            notificationService.error('提交失败，请重试或联系客服');
-                        }
-                    }
-                }
+                autoSave: false // 关闭原有的自动保存，改用自定义缓存逻辑
             });
 
-            // 在表单创建后添加自定义的检查清单组件
+            // 禁用FormComponent的默认提交处理，改用自定义处理
             setTimeout(() => {
+                const formElement = formContainer.querySelector('form');
+                if (formElement) {
+                    // 移除FormComponent的提交事件监听器
+                    const newForm = formElement.cloneNode(true);
+                    formElement.parentNode?.replaceChild(newForm, formElement);
+                    
+                    // 添加我们自己的提交处理
+                    newForm.addEventListener('submit', handleCustomSubmit);
+                }
+                
+                // 在表单创建后添加自定义的检查清单组件
                 addChecklistComponent();
-                // 恢复自动保存的检查清单数据
-                restoreChecklistData();
-            }, 100);
+                // 初始化数据缓存逻辑
+                initFormCache();
+                // 设置表单输入监听，用于自动保存
+                setupFormAutoSave();
+            }, 150);
         }
+
+        async function handleCustomSubmit(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+
+            // 检查用户是否已登录
+            if (!authStore.isAuthenticated()) {
+                notificationService.error('请先登录后再提交预约', {
+                    actions: [
+                        {
+                            label: '去登录',
+                            action: () => {
+                                const currentPath = encodeURIComponent(window.location.pathname + window.location.search);
+                                window.location.href = `/pages/auth/login.html?return=${currentPath}`;
+                            },
+                            primary: true
+                        }
+                    ]
+                });
+                return;
+            }
+
+            let loadingId = null;
+            try {
+                submitBtn.disabled = true;
+                submitBtn.textContent = '提交中...';
+                
+                loadingId = notificationService.loading('正在提交预约...');
+                
+                // 获取表单数据
+                const formData = new FormData(form);
+                
+                // 获取检查清单数据
+                const checklistItems = getChecklistData();
+                
+                // 添加检查清单，使用后端期望的格式 checklist[]
+                checklistItems.forEach(item => {
+                    if (item.trim()) {
+                        formData.append('checklist[]', item);
+                    }
+                });
+                
+                // 添加表单类型
+                formData.append('formType', 'inspection');
+
+                const result = await httpClient.post('/api/form-submit', formData);
+                
+                // 关闭加载通知
+                if (loadingId) {
+                    notificationService.remove(loadingId);
+                }
+                
+                if (result.success) {
+                    notificationService.success('预约提交成功！我们会尽快与您联系。');
+                    
+                    // 提交成功，清除本地缓存
+                    clearFormCache();
+                    
+                    setTimeout(() => {
+                        window.location.href = '/pages/submit-success.html';
+                    }, 2000);
+                } else {
+                    throw new Error(result.message || '提交失败');
+                }
+            } catch (error) {
+                // 关闭加载通知
+                if (loadingId) {
+                    notificationService.remove(loadingId);
+                }
+                
+                // 如果是认证错误，提供更明确的提示
+                if (error.status === 401 || error.status === 403) {
+                    notificationService.error('登录已过期，请重新登录', {
+                        actions: [
+                            {
+                                label: '重新登录',
+                                action: () => {
+                                    const currentPath = encodeURIComponent(window.location.pathname + window.location.search);
+                                    window.location.href = `/pages/auth/login.html?return=${currentPath}`;
+                                },
+                                primary: true
+                            }
+                        ]
+                    });
+                } else {
+                    notificationService.error('提交失败，请重试或联系客服');
+                }
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
+
+        // ================== 表单缓存相关功能 ==================
+        
+        function initFormCache() {
+            // 1. 优先检查本地缓存
+            const localCache = loadFormFromCache();
+            if (localCache) {
+                fillFormWithData(localCache);
+                return;
+            }
+            
+            // 2. 本地没有缓存，从后台获取最新数据
+            loadLatestFormFromServer();
+        }
+        
+        function loadFormFromCache() {
+            try {
+                const cached = localStorage.getItem('ea-inspection-form-cache');
+                if (cached) {
+                    return JSON.parse(cached);
+                }
+            } catch (error) {
+                localStorage.removeItem('ea-inspection-form-cache');
+            }
+            return null;
+        }
+        
+        async function loadLatestFormFromServer() {
+            try {
+                const currentUser = authStore.getCurrentUser();
+                if (!currentUser || !authStore.isAuthenticated()) {
+                    return;
+                }
+                
+                const response = await httpClient.get('/api/form-latest?type=inspection');
+                
+                // httpClient返回的格式是 { data: { data: "...", status: "success" }, success: true }
+                if (response.success && response.data && response.data.status === 'success' && response.data.data !== null && response.data.data !== undefined) {
+                    // 解析JSON字符串格式的数据
+                    let parsedData;
+                    if (typeof response.data.data === 'string') {
+                        try {
+                            parsedData = JSON.parse(response.data.data);
+                        } catch (parseError) {
+                            return;
+                        }
+                    } else {
+                        parsedData = response.data.data;
+                    }
+                    
+                    // 从后台获取的数据不保留房产地址和预约时间
+                    const filteredData = { ...parsedData };
+                    delete filteredData.address;
+                    delete filteredData.appointmentDate;
+                    
+                    // 处理检查清单数据
+                    if (parsedData['checklist[]'] && Array.isArray(parsedData['checklist[]'])) {
+                        filteredData.checklist = parsedData['checklist[]'];
+                    }
+                    
+                    // 清理不需要的字段
+                    delete filteredData['checklist[]'];
+                    delete filteredData['checklist-item'];
+                    
+                    // 保存到本地缓存
+                    saveFormToCache(filteredData);
+                    
+                    // 填充表单（不包括地址和预约时间）
+                    fillFormWithData(filteredData);
+                }
+            } catch (error) {
+                // 静默处理错误
+            }
+        }
+        
+        function fillFormWithData(data) {
+            if (!data || typeof data !== 'object') return;
+            
+            // 等待表单元素加载完成
+            setTimeout(() => {
+                // 填充基本字段
+                Object.keys(data).forEach(key => {
+                    if (key === 'checklist') return; // 检查清单单独处理
+                    
+                    const input = document.querySelector(`input[name="${key}"], textarea[name="${key}"], select[name="${key}"]`);
+                    if (input && data[key] !== undefined && data[key] !== null && data[key] !== '') {
+                        input.value = data[key];
+                        
+                        // 触发input事件以更新组件状态
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                        input.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+                
+                // 恢复检查清单数据
+                if (data.checklist && Array.isArray(data.checklist)) {
+                    restoreChecklistFromData(data.checklist);
+                }
+            }, 300); // 给表单组件更多时间完成初始化
+        }
+        
+        function saveFormToCache(data) {
+            try {
+                localStorage.setItem('ea-inspection-form-cache', JSON.stringify(data));
+            } catch (error) {
+                // 静默处理存储错误
+            }
+        }
+        
+        function clearFormCache() {
+            localStorage.removeItem('ea-inspection-form-cache');
+            localStorage.removeItem('ea-form-checklist'); // 也清除检查清单缓存
+        }
+        
+        function getCurrentFormData() {
+            const formData = {};
+            
+            // 获取所有表单字段
+            const inputs = document.querySelectorAll('#inspection-form input, #inspection-form textarea, #inspection-form select');
+            inputs.forEach(input => {
+                if (input.name && input.name !== 'checklist-item') {
+                    formData[input.name] = input.value;
+                }
+            });
+            
+            // 获取检查清单数据
+            const checklistData = getChecklistData();
+            if (checklistData.length > 0) {
+                formData.checklist = checklistData;
+            }
+            
+            return formData;
+        }
+        
+        function setupFormAutoSave() {
+            // 监听表单输入变化，自动保存到缓存
+            const container = document.getElementById('inspection-form');
+            if (!container) return;
+            
+            let saveTimeout;
+            
+            const autoSave = () => {
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(() => {
+                    const formData = getCurrentFormData();
+                    saveFormToCache(formData);
+                }, 1000); // 1秒后保存
+            };
+            
+            // 监听所有输入字段
+            container.addEventListener('input', autoSave);
+            container.addEventListener('change', autoSave);
+        }
+        
+        function restoreChecklistFromData(checklistData) {
+            if (!Array.isArray(checklistData) || checklistData.length === 0) return;
+            
+            setTimeout(() => {
+                const container = document.getElementById('checklist-container');
+                if (!container) {
+                    setTimeout(() => restoreChecklistFromData(checklistData), 500);
+                    return;
+                }
+                
+                // 清空现有项目
+                container.innerHTML = '';
+                
+                // 添加保存的项目
+                checklistData.forEach((item, index) => {
+                    const isFirst = index === 0;
+                    const newItemHtml = `
+                        <div class="ea-checklist-item">
+                            <input 
+                                type="text" 
+                                class="ea-input ea-checklist-input" 
+                                placeholder="请输入需要重点检查的事项"
+                                maxlength="50"
+                                name="checklist-item"
+                                value="${item.replace(/"/g, '&quot;')}"
+                            />
+                            <button type="button" class="ea-checklist-remove ${isFirst && checklistData.length === 1 ? 'hidden' : ''}">
+                                删除
+                            </button>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', newItemHtml);
+                });
+                
+                // 如果没有项目，至少添加一个空项目
+                if (checklistData.length === 0) {
+                    const defaultItemHtml = `
+                        <div class="ea-checklist-item">
+                            <input 
+                                type="text" 
+                                class="ea-input ea-checklist-input" 
+                                placeholder="请输入需要重点检查的事项"
+                                maxlength="50"
+                                name="checklist-item"
+                            />
+                            <button type="button" class="ea-checklist-remove hidden">
+                                删除
+                            </button>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', defaultItemHtml);
+                }
+                
+                updateRemoveButtons();
+                updateAddButton();
+                
+                // 重新绑定检查清单事件（因为重新生成了HTML）
+                bindChecklistEvents();
+            }, 400); // 增加延迟确保容器已创建
+        }
+        
 
         function addChecklistComponent() {
             const form = document.querySelector('#inspection-form form');
@@ -250,7 +516,9 @@
                 container.insertAdjacentHTML('beforeend', newItemHtml);
                 updateRemoveButtons();
                 updateAddButton();
-                saveChecklistData();
+                // 触发表单自动保存
+                const formData = getCurrentFormData();
+                saveFormToCache(formData);
             });
 
             // 删除检查项（事件委托）
@@ -262,7 +530,9 @@
                         item.remove();
                         updateRemoveButtons();
                         updateAddButton();
-                        saveChecklistData();
+                        // 触发表单自动保存
+                        const formData = getCurrentFormData();
+                        saveFormToCache(formData);
                     }
                 }
             });
@@ -271,8 +541,9 @@
             container.addEventListener('input', (e) => {
                 const input = e.target;
                 if (input.name === 'checklist-item') {
-                    // 自动保存检查清单数据
-                    saveChecklistData();
+                    // 触发表单自动保存
+                    const formData = getCurrentFormData();
+                    saveFormToCache(formData);
                 }
             });
 
@@ -280,69 +551,13 @@
         }
 
         function saveChecklistData() {
-            const checklistData = getChecklistData();
-            localStorage.setItem('ea-form-checklist', JSON.stringify(checklistData));
+            // 这个函数保留用于兼容性，但功能已整合到统一缓存系统
+            const formData = getCurrentFormData();
+            saveFormToCache(formData);
         }
 
         function restoreChecklistData() {
-            const saved = localStorage.getItem('ea-form-checklist');
-            if (!saved) return;
-
-            try {
-                const checklistData = JSON.parse(saved);
-                if (!Array.isArray(checklistData) || checklistData.length === 0) return;
-
-                const container = document.getElementById('checklist-container');
-                if (!container) return;
-
-                // 清空现有项目
-                container.innerHTML = '';
-
-                // 添加保存的项目
-                checklistData.forEach((item, index) => {
-                    const isFirst = index === 0;
-                    const newItemHtml = `
-                        <div class="ea-checklist-item">
-                            <input 
-                                type="text" 
-                                class="ea-input ea-checklist-input" 
-                                placeholder="请输入需要重点检查的事项"
-                                maxlength="50"
-                                name="checklist-item"
-                                value="${item}"
-                            />
-                            <button type="button" class="ea-checklist-remove ${isFirst ? 'hidden' : ''}">
-                                删除
-                            </button>
-                        </div>
-                    `;
-                    container.insertAdjacentHTML('beforeend', newItemHtml);
-                });
-
-                // 如果没有项目，至少添加一个空项目
-                if (checklistData.length === 0) {
-                    const defaultItemHtml = `
-                        <div class="ea-checklist-item">
-                            <input 
-                                type="text" 
-                                class="ea-input ea-checklist-input" 
-                                placeholder="请输入需要重点检查的事项"
-                                maxlength="50"
-                                name="checklist-item"
-                            />
-                            <button type="button" class="ea-checklist-remove hidden">
-                                删除
-                            </button>
-                        </div>
-                    `;
-                    container.insertAdjacentHTML('beforeend', defaultItemHtml);
-                }
-
-                updateRemoveButtons();
-                updateAddButton();
-            } catch (error) {
-                console.warn('Failed to restore checklist data:', error);
-            }
+            // 兼容性函数，实际恢复逻辑在 initFormCache 中处理
         }
 
         function updateRemoveButtons() {
@@ -395,13 +610,16 @@
         }
 
         function initMobileFeatures() {
-            // 自动填充当前时间（1小时后）
-            const appointmentInput = document.querySelector('input[name="appointmentDate"]');
-            if (appointmentInput) {
-                const now = new Date();
-                now.setHours(now.getHours() + 1);
-                appointmentInput.value = now.toISOString().slice(0, 16);
-            }
+            // 延迟自动填充预约时间，确保缓存系统优先级更高
+            setTimeout(() => {
+                const appointmentInput = document.querySelector('input[name="appointmentDate"]');
+                if (appointmentInput && !appointmentInput.value) {
+                    // 只有在没有值时才自动填充（避免覆盖缓存数据）
+                    const now = new Date();
+                    now.setHours(now.getHours() + 1);
+                    appointmentInput.value = now.toISOString().slice(0, 16);
+                }
+            }, 1000); // 延迟1秒，确保缓存恢复完成
 
             // 添加地址自动完成（模拟）
             const addressInput = document.querySelector('input[name="address"]');

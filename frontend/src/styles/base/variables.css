@@ -64,9 +64,11 @@
   /* 错误色彩 */
   --ea-error-50: #fef2f2;
   --ea-error-100: #fee2e2;
+  --ea-error-200: #fecaca;
   --ea-error-500: #ef4444;
   --ea-error-600: #dc2626;
   --ea-error-700: #b91c1c;
+  --ea-error-800: #991b1b;
 
   /* 警告色彩 */
   --ea-warning-50: #fffbeb;
@@ -162,7 +164,8 @@
   --ea-breakpoint-xl: 1280px;
 }
 
-/* 暗黑模式支持 */
+/* 注释掉暗黑模式支持 - 完全禁用深色模式 */
+/*
 @media (prefers-color-scheme: dark) {
   :root {
     --ea-gray-50: #1f2937;
@@ -177,3 +180,4 @@
     --ea-gray-900: #ffffff;
   }
 }
+*/

@@ -17,6 +17,61 @@
 @import './pages/admin-pages.css';
 @import './pages/user-pages.css';
 
+/* 全局强制禁用深色模式 */
+:root,
+html,
+body {
+  color-scheme: light only !important;
+}
+
+/* 强制覆盖任何深色模式样式 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: light only !important;
+  }
+  
+  /* 表单元素强制浅色样式 */
+  input, 
+  textarea, 
+  select {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border-color: #d1d5db !important;
+  }
+  
+  input::placeholder, 
+  textarea::placeholder {
+    color: #9ca3af !important;
+  }
+  
+  /* 标签文字强制深色 */
+  label, 
+  .ea-label {
+    color: #374151 !important;
+  }
+  
+  /* 表单卡片内容区域强制浅色背景 */
+  .ea-form-card-content {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+  
+  /* 按钮样式保持正确 */
+  button.ea-button, 
+  .ea-button,
+  button[type="submit"] {
+    background-color: var(--ea-primary-600) !important;
+    color: #ffffff !important;
+  }
+  
+  button.ea-button:hover, 
+  .ea-button:hover,
+  button[type="submit"]:hover {
+    background-color: var(--ea-primary-700) !important;
+    color: #ffffff !important;
+  }
+}
+
 /* 全局样式覆盖 */
 @layer base {
   /* 自定义主题色彩配置 */

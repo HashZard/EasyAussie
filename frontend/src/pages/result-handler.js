@@ -131,42 +131,6 @@ class ResultPageHandler {
     }
 
     /**
-     * 创建粒子效果（增强版）
-     */
-    static createEnhancedParticles(type = 'success') {
-        const container = document.querySelector('.ea-particles');
-        if (!container) return;
-
-        const particleCount = type === 'success' ? 15 : 12;
-        const particleClass = type === 'success' ? 'ea-particle-success' : 'ea-particle-error';
-        
-        // 清除现有粒子
-        container.innerHTML = '';
-        
-        for (let i = 0; i < particleCount; i++) {
-            const particle = document.createElement('div');
-            particle.className = `ea-particle ${particleClass}`;
-            
-            // 随机属性
-            const size = Math.random() * 8 + 4;
-            const left = Math.random() * 100;
-            const animationDuration = Math.random() * 3 + 3;
-            const animationDelay = Math.random() * 6;
-            
-            particle.style.cssText = `
-                left: ${left}%;
-                top: ${Math.random() * 100}%;
-                width: ${size}px;
-                height: ${size}px;
-                animation-duration: ${animationDuration}s;
-                animation-delay: ${animationDelay}s;
-            `;
-            
-            container.appendChild(particle);
-        }
-    }
-
-    /**
      * 添加键盘导航支持
      */
     initializeKeyboardNavigation() {
@@ -291,17 +255,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 初始化结果页面处理器
     const resultHandler = new ResultPageHandler();
     
-    // 根据页面类型创建对应的粒子效果
-    const isSuccessPage = document.body.classList.contains('ea-success-page');
-    const isErrorPage = document.body.classList.contains('ea-error-page');
-    
-    if (isSuccessPage) {
-        ResultPageHandler.createEnhancedParticles('success');
-    } else if (isErrorPage) {
-        ResultPageHandler.createEnhancedParticles('error');
-    }
-    
     // 检查URL参数中的错误信息（仅限错误页面）
+    const isErrorPage = document.body.classList.contains('ea-error-page');
     if (isErrorPage) {
         displayErrorInfo();
     }

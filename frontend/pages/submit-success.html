@@ -20,9 +20,6 @@
 </head>
 <body class="ea-result-page ea-success-page">
     <div id="header"></div>
-    
-    <!-- 浮动粒子效果 -->
-    <div class="ea-particles"></div>
 
     <main class="ea-result-container">
         <!-- 主要图标 -->
@@ -106,29 +103,10 @@
     <div id="footer"></div>
 
     <script>
-        // 创建浮动粒子效果
-        function createParticles() {
-            const container = document.querySelector('.ea-particles');
-            const particleCount = 15;
-            
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'ea-particle ea-particle-success';
-                
-                // 随机位置
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.top = Math.random() * 100 + '%';
-                
-                // 随机动画延迟
-                particle.style.animationDelay = Math.random() * 6 + 's';
-                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
-                
-                container.appendChild(particle);
-            }
-        }
-        
-        // 页面加载完成后创建粒子效果
-        document.addEventListener('DOMContentLoaded', createParticles);
+        // 页面加载完成后的简单初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('提交成功页面已加载');
+        });
     </script>
 </body>
 </html>

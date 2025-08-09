@@ -6,16 +6,20 @@
     <title>提交失败 - Easy Aussie</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/src/styles/main.css"/>
-    <script src="/js/components/layout.ts" defer></script>
-    <script src="/js/components/spa-router.js" defer></script>
+    <script type="module">
+        import { MobileHeaderComponent } from '/src/components/mobile-header.ts';
+        import { MobileFooterComponent } from '/src/components/mobile-footer.ts';
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            new MobileHeaderComponent();
+            new MobileFooterComponent();
+        });
+    </script>
     <script src="/js/services/notification.js" defer></script>
     <script src="/src/pages/result-handler.js" defer></script>
 </head>
 <body class="ea-result-page ea-error-page">
     <div id="header"></div>
-    
-    <!-- 浮动粒子效果 -->
-    <div class="ea-particles"></div>
 
     <main class="ea-result-container">
         <!-- 主要图标 -->
@@ -121,70 +125,10 @@
     <div id="footer"></div>
 
     <script>
-        // 创建浮动粒子效果
-        function createParticles() {
-            const container = document.querySelector('.ea-particles');
-            const particleCount = 12;
-            
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'ea-particle ea-particle-error';
-                
-                // 随机位置
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.top = Math.random() * 100 + '%';
-                
-                // 随机动画延迟
-                particle.style.animationDelay = Math.random() * 6 + 's';
-                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
-                
-                container.appendChild(particle);
-            }
-        }
-        
-        // 页面加载完成后创建粒子效果
-        document.addEventListener('DOMContentLoaded', createParticles);
-
-        // 重新提交申请功能
-        function goToForm() {
-            // 获取之前的申请类型，如果没有则默认跳转到服务页面
-            const referrer = document.referrer;
-            if (referrer.includes('inspection')) {
-                window.location.href = '/pages/service/inspection.html';
-            } else if (referrer.includes('application')) {
-                window.location.href = '/pages/service/application.html';
-            } else if (referrer.includes('coverletter')) {
-                window.location.href = '/pages/service/coverletter.html';
-            } else if (referrer.includes('airport-pickup')) {
-                window.location.href = '/pages/service/airport-pickup.html';
-            } else {
-                window.location.href = '/pages/service/service.html';
-            }
-        }
-
-        // 联系客服功能
-        function contactSupport() {
-            window.location.href = 'mailto:support@easyaussie.com?subject=提交失败求助&body=我在提交申请时遇到了问题，请协助处理。';
-        }
-
-        // 获取错误信息（如果URL中有错误参数）
-        function displayErrorInfo() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const errorMsg = urlParams.get('error');
-            const errorCode = urlParams.get('code');
-            
-            if (errorMsg) {
-                document.getElementById('error-message').textContent = errorMsg;
-            }
-            
-            if (errorCode) {
-                document.getElementById('error-code').textContent = errorCode;
-                document.getElementById('error-details').classList.remove('hidden');
-            }
-        }
-
-        // 页面加载时显示错误信息
-        document.addEventListener('DOMContentLoaded', displayErrorInfo);
+        // 页面加载完成后的简单初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('提交失败页面已加载');
+        });
     </script>
 </body>
 </html>

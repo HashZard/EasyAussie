@@ -174,6 +174,18 @@ export class NotificationService {
     
     const element = document.getElementById(`notification-${id}`);
     if (element) {
+      // 清理全局函数
+      const buttons = element.querySelectorAll('button[onclick^="window.action_"]');
+      buttons.forEach(button => {
+        const onclick = button.getAttribute('onclick');
+        if (onclick) {
+          const match = onclick.match(/window\.(action_[^(]+)\(/);
+          if (match) {
+            delete (window as any)[match[1]];
+          }
+        }
+      });
+      
       element.style.animation = 'slideOutRight 0.3s ease-in-out forwards';
       setTimeout(() => {
         element.remove();
@@ -187,10 +199,22 @@ export class NotificationService {
    * 清除所有通知
    */
   clear(): void {
-    this.notifications.clear();
+    // 清理所有全局函数
     if (this.container) {
+      const buttons = this.container.querySelectorAll('button[onclick^="window.action_"]');
+      buttons.forEach(button => {
+        const onclick = button.getAttribute('onclick');
+        if (onclick) {
+          const match = onclick.match(/window\.(action_[^(]+)\(/);
+          if (match) {
+            delete (window as any)[match[1]];
+          }
+        }
+      });
       this.container.innerHTML = '';
     }
+    
+    this.notifications.clear();
     this.notify();
   }
 
@@ -329,18 +353,24 @@ export class NotificationService {
 
     return `
       <div class="flex gap-2 mt-2">
-        ${actions.map(action => `
-          <button
-            onclick="${action.action}"
-            class="px-3 py-1 text-xs rounded-md transition-colors ${
-              action.primary 
-                ? 'bg-current text-white hover:opacity-80' 
-                : 'border border-current hover:bg-current hover:text-white'
-            }"
-          >
-            ${action.label}
-          </button>
-        `).join('')}
+        ${actions.map((action, index) => {
+          const actionId = `action_${Date.now()}_${index}`;
+          // 将函数存储到全局对象中，以便在HTML中调用
+          (window as any)[actionId] = action.action;
+          
+          return `
+            <button
+              onclick="window.${actionId}()"
+              class="px-3 py-1 text-xs rounded-md transition-colors ${
+                action.primary 
+                  ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                  : 'border border-gray-400 text-gray-700 hover:bg-gray-100'
+              }"
+            >
+              ${action.label}
+            </button>
+          `;
+        }).join('')}
       </div>
     `;
   }
