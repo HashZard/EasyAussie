@@ -32,6 +32,50 @@ def handle_file_uploads(file_dict: dict, folder: str) -> dict:
     return saved
 
 
+def save_form(request) -> str:
+    """保存表单数据（每次都创建新记录）"""
+    email = g.current_user.email
+    form_type = request.form.get('formType')
+    remark = request.form.get('remark')
+
+    if not email or not form_type:
+        raise ValueError("Missing email or formType")
+
+    # 校验表单类型
+    if FormType.is_valid(form_type) is False:
+        raise ValueError("Invalid form type: {}".format(form_type))
+
+    # 处理字段
+    form_data = request.form.to_dict(flat=False)
+    for key, value in form_data.items():
+        if not key.endswith("[]") and isinstance(value, list) and len(value) == 1:
+            form_data[key] = value[0]
+    form_data.pop('formType', None)
+    form_data.pop('remark', None)
+
+    # 处理文件上传
+    folder = os.path.join(UploadConfig.UPLOAD_FOLDER, email_to_folder(email))
+    new_files = handle_file_uploads(request.files, folder)
+
+    # 处理空字段: 移除不保存
+    for key in list(form_data.keys()):
+        value = form_data[key]
+        if value is None or (isinstance(value, str) and value.strip() == ""):
+            form_data.pop(key)
+
+    # 直接创建新记录
+    form = StandardForm(
+        email=email,
+        form_type=form_type,
+        form_data=json.dumps(form_data, ensure_ascii=False),
+        files=json.dumps(new_files, ensure_ascii=False),
+        remark=remark,
+    )
+    db.session.add(form)
+    db.session.commit()
+    return "created"
+
+
 def save_or_update_form(request) -> str:
     email = g.current_user.email
     form_type = request.form.get('formType')
@@ -73,8 +117,7 @@ def save_or_update_form(request) -> str:
         form.files = json.dumps(merged_files, ensure_ascii=False)
         form.remark = remark
         db.session.commit()
-        # 返回更新详情和文件数量
-        return "created"
+        return "updated"
     else:
         form = StandardForm(
             email=email,

@@ -25,7 +25,7 @@ def handle_login(email, password, code):
     db.session.commit()
     
     token = user.get_auth_token()
-    roles = [role.name for role in user.roles]
+    roles = [role.code for role in user.roles]  # 使用 code 而不是 name
 
     return {
         "success": True,
@@ -50,12 +50,29 @@ def handle_register(email, password, code):
     if current_app.user_datastore.find_user(email=email):
         return {"success": False, "message": "用户已存在", "status": 409}
 
-    user = current_app.user_datastore.create_user(
-        email=email,
-        password=hash_password(password),
-        active=True
-    )
-    db.session.commit()
+    try:
+        user = current_app.user_datastore.create_user(
+            email=email,
+            password=hash_password(password),
+            active=True
+        )
+        db.session.flush()  # 确保用户ID被生成
+
+        # 分配默认角色 - 直接查询 Role 表
+        from backend.app.models.auth_obj.user import Role
+        default_role = Role.query.filter_by(code='user', is_active=True).first()
+        
+        if default_role:
+            user.roles.append(default_role)
+            db.session.commit()
+            current_app.logger.info(f"成功为用户 {email} 分配默认角色 'user'")
+        else:
+            # 如果没有找到默认角色，抛出异常
+            raise ValueError("默认角色 'user' 不存在")
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"用户注册失败: {str(e)}")
+        return {"success": False, "message": "注册失败，请重试", "status": 500}
 
     return {"success": True, "message": "注册成功"}
 

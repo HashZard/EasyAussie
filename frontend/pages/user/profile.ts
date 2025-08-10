@@ -39,28 +39,24 @@ export async function getUserProfile(): Promise<UserProfile> {
         const response = await httpClient.get<any>('/api/profile');
         
         if (response.success && response.data) {
-            // httpClient将后端响应包装在data字段中，后端返回格式：{success: true, data: {...}}
-            // 所以实际的用户数据在 response.data（这是后端响应的完整对象）
-            const backendResponse = response.data;
+            // httpClient已经自动处理了数据转换，response.data就是转换后的用户数据
+            const data = response.data;
+
+            const profile: UserProfile = {
+                id: data.id?.toString() || currentUser?.id?.toString() || '1',
+                email: data.email || currentUser?.email || '',
+                name: data.name || currentUser?.name || '',
+                wechatNickname: data.wechatNickname || '', // httpClient已将wechat_nickname转换为wechatNickname
+                role: (data.roles?.[0] || currentUser?.roles?.[0] || 'user') as any,
+                status: data.active ? 'active' as const : 'disabled' as const,
+                createdAt: data.createdAt || currentUser?.createdAt || new Date().toISOString(), // httpClient已将created_at转换为createdAt
+                lastLogin: data.lastLoginAt || currentUser?.lastLoginAt || undefined, // httpClient已将last_login_at转换为lastLoginAt
+                phone: data.phone || '', // phone字段保持不变
+                address: data.address || '',
+                avatar: data.avatar || ''
+            };
             
-            if (backendResponse.success && backendResponse.data) {
-                const data = backendResponse.data;
-                
-                const profile: UserProfile = {
-                    id: data.id?.toString() || currentUser?.id?.toString() || '1',
-                    email: data.email || currentUser?.email || '',
-                    name: data.name || currentUser?.name || '',
-                    wechatNickname: data.wechatNickname || '',
-                    role: (data.roles?.[0] || currentUser?.roles?.[0] || 'user') as any,
-                    status: data.active ? 'active' as const : 'disabled' as const,
-                    createdAt: data.createdAt || currentUser?.createdAt || new Date().toISOString(),
-                    lastLogin: data.lastLoginAt || currentUser?.lastLoginAt || undefined,
-                    phone: data.phone || '',
-                    address: data.address || ''
-                };
-                
-                return profile;
-            }
+            return profile;
         }
         
         // 如果API失败，直接使用当前登录用户的信息作为基础
@@ -134,18 +130,16 @@ export async function getAccountStats(): Promise<AccountStats> {
         const response = await httpClient.get<any>('/api/orders/stats');
         
         if (response.success && response.data) {
-            const backendResponse = response.data;
+            // httpClient已经处理了数据转换，response.data就是转换后的统计数据
+            const stats = response.data;
             
-            if (backendResponse.success && backendResponse.data) {
-                const stats = backendResponse.data;
-                return {
-                    totalOrders: stats.totalOrders || 0,
-                    completedOrders: stats.completedOrders || 0,
-                    pendingOrders: stats.pendingOrders || 0,
-                    processingOrders: stats.processingOrders || 0,
-                    totalSpent: stats.totalSpent || 0
-                };
-            }
+            return {
+                totalOrders: stats.totalOrders || 0,
+                completedOrders: stats.completedOrders || 0,
+                pendingOrders: stats.pendingOrders || 0,
+                processingOrders: stats.processingOrders || 0,
+                totalSpent: stats.totalSpent || 0
+            };
         }
         
         // 如果API调用失败，返回默认值
@@ -388,8 +382,6 @@ export async function initializeProfilePage(): Promise<void> {
                 }
             }
         });
-        
-        console.log('Profile page initialized with TypeScript and auto-fill functionality');
     } catch (error) {
         console.error('Error initializing profile page:', error);
     }
@@ -521,9 +513,11 @@ async function handleSaveProfile(): Promise<void> {
         
         const profileData = {
             name: nameInput?.value.trim() || '',
-            wechatNickname: wechatNicknameInput?.value.trim() || '',
+            wechatNickname: wechatNicknameInput?.value.trim() || '', // 使用驼峰命名，httpClient会自动转换为蛇形
             phone: phoneInput?.value.trim() || ''
         };
+        
+        console.log('Sending profile data:', profileData); // 调试日志
         
         // 显示保存状态
         if (saveBtn) {

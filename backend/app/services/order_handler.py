@@ -10,133 +10,19 @@ app_logger = logging.getLogger('app_logger')
 
 
 def form_to_order(standard_form: StandardForm) -> Dict[str, Any]:
-    """将StandardForm转换为Order格式"""
+    """将StandardForm转换为返回格式，只返回StandardForm实际拥有的字段"""
     return {
+        # StandardForm的所有字段
         'id': str(standard_form.id),
-        'title': get_order_title_by_type(standard_form.form_type, standard_form.form_data),
-        'type': map_form_type_to_order_type(standard_form.form_type),
+        'email': standard_form.email,
+        'formType': standard_form.form_type,
+        'formData': standard_form.form_data,  # 原始JSON字符串，由前端解析
+        'files': standard_form.files,
+        'remark': standard_form.remark,
         'status': standard_form.status or 'pending',
-        'amount': 0,  # 目前不涉及金额
-        'currency': 'AUD',
         'createdAt': standard_form.created_gmt.isoformat(),
-        'updatedAt': standard_form.updated_gmt.isoformat() if standard_form.updated_gmt else None,
-        'description': extract_description_from_form_data(standard_form.form_data, standard_form.form_type),
-        'notes': standard_form.remark
+        'updatedAt': standard_form.updated_gmt.isoformat() if standard_form.updated_gmt else None
     }
-
-
-def get_order_title_by_type(form_type: str, form_data: str = None) -> str:
-    """根据表单类型生成订单标题"""
-    type_titles = {
-        'inspection': '房屋检查服务',
-        'airportPickup': '机场接送服务',
-        'rentalApplication': '租房申请服务',
-        'coverletter': '求职信服务',
-        'test': '测试服务',
-        'other': '其他服务'
-    }
-    
-    base_title = type_titles.get(form_type, '服务订单')
-    
-    # 尝试从表单数据中提取更具体的信息
-    if form_data:
-        try:
-            data = json.loads(form_data) if isinstance(form_data, str) else form_data
-            
-            # 房屋检查：提取地址信息
-            if form_type == 'inspection' and 'property_add' in data:
-                return f"房屋检查 - {data['property_add']}"
-            
-            # 机场接送：提取接送信息
-            elif form_type == 'airportPickup':
-                if 'pickupLocation' in data or 'dropoffLocation' in data:
-                    pickup = data.get('pickupLocation', '未知地点')
-                    dropoff = data.get('dropoffLocation', '未知地点')
-                    return f"机场接送 - {pickup} → {dropoff}"
-            
-            # 租房申请：提取申请信息
-            elif form_type == 'rentalApplication' and 'propertyAddress' in data:
-                return f"租房申请 - {data['propertyAddress']}"
-                
-            # 求职信：提取职位信息
-            elif form_type == 'coverletter' and 'position' in data:
-                return f"求职信 - {data['position']}"
-                
-        except (json.JSONDecodeError, KeyError, TypeError):
-            pass
-    
-    return base_title
-
-
-def map_form_type_to_order_type(form_type: str) -> str:
-    """将表单类型映射为订单类型"""
-    type_mapping = {
-        'inspection': 'inspection',
-        'airportPickup': 'transfer',
-        'rentalApplication': 'application',
-        'coverletter': 'application',
-        'test': 'other',
-        'other': 'other'
-    }
-    return type_mapping.get(form_type, 'other')
-
-
-def extract_description_from_form_data(form_data: str, form_type: str) -> str:
-    """从表单数据中提取描述信息"""
-    if not form_data:
-        return ''
-    
-    try:
-        data = json.loads(form_data) if isinstance(form_data, str) else form_data
-        
-        # 根据不同表单类型提取关键信息
-        if form_type == 'inspection':
-            parts = []
-            if 'property_add' in data:
-                parts.append(f"地址: {data['property_add']}")
-            if 'appointment_date' in data:
-                parts.append(f"预约时间: {data['appointment_date']}")
-            return ' | '.join(parts)
-            
-        elif form_type == 'airportPickup':
-            parts = []
-            if 'pickupLocation' in data:
-                parts.append(f"接: {data['pickupLocation']}")
-            if 'dropoffLocation' in data:
-                parts.append(f"送: {data['dropoffLocation']}")
-            if 'pickupTime' in data:
-                parts.append(f"时间: {data['pickupTime']}")
-            return ' | '.join(parts)
-            
-        elif form_type == 'rentalApplication':
-            parts = []
-            if 'propertyAddress' in data:
-                parts.append(f"地址: {data['propertyAddress']}")
-            if 'rentAmount' in data:
-                parts.append(f"租金: {data['rentAmount']}")
-            return ' | '.join(parts)
-            
-        elif form_type == 'coverletter':
-            parts = []
-            if 'position' in data:
-                parts.append(f"职位: {data['position']}")
-            if 'company' in data:
-                parts.append(f"公司: {data['company']}")
-            return ' | '.join(parts)
-        
-        # 默认返回前几个字段的组合
-        key_fields = ['name', 'title', 'type', 'subject']
-        parts = []
-        for field in key_fields:
-            if field in data and data[field]:
-                parts.append(f"{data[field]}")
-                if len(parts) >= 2:  # 最多显示2个字段
-                    break
-        
-        return ' | '.join(parts) if parts else '详情请查看订单详情'
-        
-    except (json.JSONDecodeError, TypeError):
-        return '详情请查看订单详情'
 
 
 def get_user_orders(email: str, page: int = 1, per_page: int = 10, 
@@ -153,19 +39,8 @@ def get_user_orders(email: str, page: int = 1, per_page: int = 10,
     
     # 类型筛选
     if type_filter and type_filter != 'all':
-        # 需要将订单类型映射回表单类型
-        form_types = []
-        if type_filter == 'inspection':
-            form_types = ['inspection']
-        elif type_filter == 'transfer':
-            form_types = ['airportPickup']
-        elif type_filter == 'application':
-            form_types = ['rentalApplication', 'coverletter']
-        elif type_filter == 'other':
-            form_types = ['test', 'other']
-        
-        if form_types:
-            query = query.filter(StandardForm.form_type.in_(form_types))
+        if FormType.is_valid(type_filter):
+            query = query.filter(StandardForm.form_type == type_filter)
     
     # 搜索筛选
     if search:
@@ -250,14 +125,12 @@ def get_order_stats(email: str) -> Dict[str, Any]:
     
     # 按类型统计
     type_stats = {}
-    for form_type in ['inspection', 'airportPickup', 'rentalApplication', 'coverletter', 'test']:
+    # 使用枚举获取所有有效的表单类型
+    for form_type_enum in FormType:
+        form_type = form_type_enum.value
         count = base_query.filter(StandardForm.form_type == form_type).count()
         if count > 0:
-            order_type = map_form_type_to_order_type(form_type)
-            if order_type in type_stats:
-                type_stats[order_type] += count
-            else:
-                type_stats[order_type] = count
+            type_stats[form_type] = count
     
     return {
         'totalOrders': total_orders,

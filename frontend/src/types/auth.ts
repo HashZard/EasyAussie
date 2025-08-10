@@ -3,8 +3,15 @@ export interface User {
   email: string;
   roles: string[];
   name?: string;
+  wechatNickname?: string;
+  phone?: string;
   avatar?: string;
+  active?: boolean;
+  allPermissions?: string[];
+  highestRole?: string;
+  highestRoleLevel?: number;
   createdAt?: string;
+  updatedAt?: string;
   lastLoginAt?: string;
 }
 

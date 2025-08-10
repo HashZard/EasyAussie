@@ -64,6 +64,7 @@
                 this.navigationItems = [
                     { key: 'dashboard', label: '仪表盘', icon: 'fas fa-tachometer-alt' },
                     { key: 'users', label: '用户管理', icon: 'fas fa-users' },
+                    { key: 'roles', label: '角色管理', icon: 'fas fa-user-tag' },
                     { key: 'forms', label: '表单管理', icon: 'fas fa-file-alt' }
                 ];
             }
@@ -81,6 +82,10 @@
                     users: {
                         getContent: () => import('./users.ts').then(m => m.getUsersPageContent()),
                         initialize: () => import('./users.ts').then(m => m.initializeUsersPage())
+                    },
+                    roles: {
+                        getContent: () => import('./roles.ts').then(m => m.getRolesPageContent()),
+                        initialize: () => import('./roles.ts').then(m => m.initializeRolesPage())
                     },
                     forms: {
                         getContent: () => import('./forms.ts').then(m => m.getFormsPageContent()),

@@ -1,4 +1,8 @@
 #!/bin/bash
+# =============================================================================
+# EasyAussie 简化启动脚本
+# 一键启动开发环境，自动处理数据库迁移和管理员初始化
+# =============================================================================
 
 PROJECT_ROOT="/Users/zard/VScodeProject/EasyAussie"
 BACKEND_PATH="$PROJECT_ROOT/backend"
@@ -6,79 +10,56 @@ FRONTEND_PATH="$PROJECT_ROOT/frontend"
 VENV_PATH="$PROJECT_ROOT/venv"
 NGINX_CONFIG_PATH="$PROJECT_ROOT/deploy/local_deploy/nginx.conf"
 
-# 检查命令行参数
-RESET_DB=false
-if [ "$1" = "--reset-db" ]; then
-    RESET_DB=true
-    echo "🔄 将重置数据库（--reset-db 参数）"
-fi
+# 显示脚本信息
+echo "🚀 EasyAussie 开发环境启动"
+echo "================================="
 
-# === Shutdown previous Flask and Nginx processes ===
+# ===== 停止现有服务 =====
 function shutdown_services() {
-    echo "🧹 Stopping any existing services..."
+    echo "🧹 停止现有服务..."
 
-    # Kill Flask (port 8000)
-    FLASK_PIDS=$(lsof -ti tcp:8000)
+    # 停止 Flask (端口 8000)
+    FLASK_PIDS=$(lsof -ti tcp:8000 2>/dev/null)
     if [ -n "$FLASK_PIDS" ]; then
-        echo "❌ Killing Flask process(es) on port 8000: $FLASK_PIDS"
-        for pid in $FLASK_PIDS; do
-            kill -9 "$pid"
-        done
-    else
-        echo "✅ No Flask process found on port 8000"
+        echo "   ❌ 停止 Flask 服务 (PID: $FLASK_PIDS)"
+        kill -9 $FLASK_PIDS 2>/dev/null
     fi
 
-    # Kill Frontend Vite dev server (port 3001)
-    VITE_PIDS=$(lsof -ti tcp:3001)
+    # 停止前端开发服务器 (端口 3001)
+    VITE_PIDS=$(lsof -ti tcp:3001 2>/dev/null)
     if [ -n "$VITE_PIDS" ]; then
-        echo "❌ Killing Vite dev server on port 3001: $VITE_PIDS"
-        for pid in $VITE_PIDS; do
-            kill -9 "$pid"
-        done
-    else
-        echo "✅ No Vite dev server found on port 3001"
+        echo "   ❌ 停止前端开发服务器 (PID: $VITE_PIDS)"
+        kill -9 $VITE_PIDS 2>/dev/null
     fi
 
-    # Kill Nginx (port 3000)
-    NGINX_PIDS=$(lsof -ti tcp:3000)
+    # 停止 Nginx (端口 3000) - 仅尝试普通用户权限
+    NGINX_PIDS=$(lsof -ti tcp:3000 2>/dev/null)
     if [ -n "$NGINX_PIDS" ]; then
-        echo "❌ Killing processes on port 3000: $NGINX_PIDS"
-        for pid in $NGINX_PIDS; do
-            kill -9 "$pid"
-        done
-    else
-        echo "✅ No process using port 3000"
+        echo "   ❌ 停止 Nginx 服务 (PID: $NGINX_PIDS)"
+        kill -9 $NGINX_PIDS 2>/dev/null
     fi
-
-    # Kill nginx master in this project path
-    NGINX_MASTERS=$(ps aux | grep 'nginx: master' | grep "$PROJECT_ROOT" | awk '{print $2}')
-    if [ -n "$NGINX_MASTERS" ]; then
-        echo "❌ Killing project-specific nginx master(s): $NGINX_MASTERS"
-        echo "$NGINX_MASTERS" | xargs sudo kill -9
-    else
-        echo "✅ No nginx master process found in this project"
-    fi
-
-    # Fallback: kill all nginx
-    echo "🔪 Killing all nginx-related processes..."
-    ps aux | grep '[n]ginx' | awk '{print $2}' | xargs sudo kill -9 2>/dev/null
 
     sleep 1
+    echo "✅ 服务清理完成"
 }
 
-# ===== 创建虚拟环境（如不存在） =====
+# ===== 设置 Python 虚拟环境 =====
 function setup_venv() {
+    echo "🐍 设置 Python 虚拟环境..."
+    
     if [ ! -d "$VENV_PATH" ]; then
-        echo "🐍 正在创建虚拟环境..."
+        echo "   📦 创建虚拟环境..."
         python3 -m venv "$VENV_PATH"
-    else
-        echo "✅ 虚拟环境已存在"
     fi
+    
     source "$VENV_PATH/bin/activate"
+    
     if [ -f "$PROJECT_ROOT/requirements.txt" ]; then
-        echo "📦 安装依赖..."
-        pip install -r "$PROJECT_ROOT/requirements.txt"
+        echo "   📚 安装 Python 依赖..."
+        pip install -r "$PROJECT_ROOT/requirements.txt" --quiet
     fi
+    
+    echo "✅ Python 环境准备完成"
 }
 
 # ===== 设置前端环境 =====
@@ -86,28 +67,79 @@ function setup_frontend() {
     echo "🎨 设置前端环境..."
     cd "$FRONTEND_PATH" || exit
     
-    # 检查是否已安装依赖
     if [ ! -d "node_modules" ]; then
-        echo "📦 安装前端依赖..."
-        npm install
+        echo "   📦 安装前端依赖..."
+        npm install --silent
+    fi
+    
+    echo "✅ 前端环境准备完成"
+}
+
+# ===== 数据库初始化和迁移 =====
+function setup_database() {
+    echo "🗄️  初始化数据库..."
+    cd "$PROJECT_ROOT" || exit
+    
+    # 激活虚拟环境
+    source "$VENV_PATH/bin/activate"
+    
+    export FLASK_APP=backend.app:create_app
+    export FLASK_ENV=development
+    export PYTHONPATH="$PROJECT_ROOT"
+
+    # 检查是否需要初始化数据库
+    if [ ! -d "$PROJECT_ROOT/migrations" ]; then
+        echo "   🆕 首次运行，初始化数据库迁移..."
+        
+        # 初始化 Alembic
+        flask db init --quiet || { echo "❌ flask db init 失败"; exit 1; }
+        
+        # 生成第一个迁移文件
+        flask db migrate -m "Initial migration" --quiet || { echo "❌ flask db migrate 失败"; exit 1; }
+        
+        # 应用迁移
+        flask db upgrade --quiet || { echo "❌ flask db upgrade 失败"; exit 1; }
+        
+        echo "   ✅ 数据库初始化完成"
     else
-        echo "✅ 前端依赖已存在"
+        echo "   🔄 检查数据库迁移状态..."
+        
+        # 检查是否有待应用的迁移
+        if ! flask db current >/dev/null 2>&1; then
+            echo "   ⏫ 应用数据库迁移..."
+            flask db upgrade --quiet || {
+                echo "   🔄 生成新的迁移文件..."
+                flask db migrate -m "Auto migration" --quiet || { echo "❌ 迁移失败"; exit 1; }
+                flask db upgrade --quiet || { echo "❌ 应用迁移失败"; exit 1; }
+            }
+        fi
+        
+        echo "   ✅ 数据库迁移完成"
     fi
 }
 
-# ===== 启动前端开发服务 =====
-function start_frontend() {
-    echo "🚀 启动前端开发服务（端口 3001）..."
-    cd "$FRONTEND_PATH" || exit
-    npm run dev &
-    FRONTEND_PID=$!
-    echo "前端进程 PID: $FRONTEND_PID"
-    sleep 3
+# ===== 初始化管理员账户 =====
+function init_admin() {
+    echo "👤 初始化管理员账户..."
+    cd "$PROJECT_ROOT" || exit
+    
+    # 激活虚拟环境
+    source "$VENV_PATH/bin/activate"
+    
+    export FLASK_APP=backend.app:create_app
+    export FLASK_ENV=development
+    export PYTHONPATH="$PROJECT_ROOT"
+    
+    # 直接运行管理员初始化脚本（脚本内部会处理所有检查逻辑）
+    python "$PROJECT_ROOT/backend/scripts/init_admin.py" || {
+        echo "❌ 管理员初始化失败"
+        exit 1
+    }
 }
 
-# ===== 启动 Flask 开发服务 =====
-function start_flask() {
-    echo "🚀 启动 Flask 开发服务（端口 8000）..."
+# ===== 启动后端服务 =====
+function start_backend() {
+    echo "🚀 启动后端服务..."
     cd "$PROJECT_ROOT" || exit
     
     # 激活虚拟环境
@@ -118,140 +150,172 @@ function start_flask() {
     export FLASK_ENV=development
     export PYTHONPATH="$PROJECT_ROOT"
     
-    # 后台启动Flask
-    flask run --host=0.0.0.0 --port=8000 &
+    # 创建日志目录
+    LOG_DIR="$PROJECT_ROOT/logs"
+    mkdir -p "$LOG_DIR"
+    
+    # 后台启动Flask，输出日志到文件
+    nohup flask run --host=0.0.0.0 --port=8000 > "$LOG_DIR/backend.log" 2>&1 &
     FLASK_PID=$!
-    echo "Flask 进程 PID: $FLASK_PID"
+    echo "   ✅ Flask 服务已启动 (PID: $FLASK_PID, Port: 8000)"
+    echo "   📋 后端日志文件: $LOG_DIR/backend.log"
+    
+    # 等待服务启动
     sleep 3
 }
 
-# ===== 启动 Nginx =====
+# ===== 启动前端服务 =====
+function start_frontend() {
+    echo "🎨 启动前端服务..."
+    cd "$FRONTEND_PATH" || exit
+    
+    # 创建日志目录
+    LOG_DIR="$PROJECT_ROOT/logs"
+    mkdir -p "$LOG_DIR"
+    
+    # 后台启动前端开发服务器，输出日志到文件
+    nohup npm run dev > "$LOG_DIR/frontend.log" 2>&1 &
+    FRONTEND_PID=$!
+    echo "   ✅ 前端开发服务器已启动 (PID: $FRONTEND_PID, Port: 3001)"
+    echo "   📋 前端日志文件: $LOG_DIR/frontend.log"
+    
+    # 等待服务启动
+    sleep 3
+}
+
+# ===== 启动 Nginx 代理 (可选) =====
 function start_nginx() {
-    echo "🌐 启动本地 Nginx（端口 3000）..."
-    sudo nginx -c "$NGINX_CONFIG_PATH"
-    sleep 2
+    echo "🌐 尝试启动 Nginx 代理..."
+    
+    if [ -f "$NGINX_CONFIG_PATH" ]; then
+        # 尝试以当前用户权限启动nginx
+        nginx -c "$NGINX_CONFIG_PATH" 2>/dev/null && {
+            echo "   ✅ Nginx 代理已启动 (Port: 3000)"
+        } || {
+            # 如果失败，尝试sudo（静默失败）
+            sudo nginx -c "$NGINX_CONFIG_PATH" 2>/dev/null && {
+                echo "   ✅ Nginx 代理已启动 (Port: 3000)"
+            } || {
+                echo "   ⚠️  Nginx 启动失败，跳过代理服务"
+                echo "      提示：可直接使用前端服务 http://localhost:3001"
+            }
+        }
+    else
+        echo "   ⚠️  Nginx 配置文件不存在，跳过代理服务"
+    fi
 }
 
 # ===== 检查服务状态 =====
 function check_services() {
-    echo "🧪 检查服务状态..."
+    echo "🔍 检查服务状态..."
     
-    # 等待服务启动
-    sleep 5
+    # 等待服务完全启动
+    sleep 2
     
     # 检查后端服务
-    echo "检查 Flask 后端服务..."
-    if curl -s --max-time 5 http://localhost:8000/ >/dev/null 2>&1; then
-        echo "✅ Flask 后端正常运行 (http://localhost:8000)"
+    if curl -s --max-time 5 http://localhost:8000/api/profile >/dev/null 2>&1; then
+        echo "   ✅ 后端服务正常运行"
     else
-        echo "❌ Flask 后端未响应，检查启动日志"
+        echo "   ⚠️  后端服务可能未完全启动"
     fi
     
     # 检查前端服务
-    echo "检查前端开发服务..."
     if curl -s --max-time 5 http://localhost:3001/ >/dev/null 2>&1; then
-        echo "✅ 前端开发服务正常运行 (http://localhost:3001)"
+        echo "   ✅ 前端服务正常运行"
     else
-        echo "❌ 前端开发服务未响应，检查启动日志"
+        echo "   ⚠️  前端服务可能未完全启动"
     fi
     
-    # 检查Nginx（如果启用）
+    # 检查Nginx
     if curl -s --max-time 5 http://localhost:3000/ >/dev/null 2>&1; then
-        echo "✅ Nginx 正常运行 (http://localhost:3000)"
-    else
-        echo "ℹ️  Nginx 未启用或未响应"
+        echo "   ✅ Nginx 代理正常运行"
     fi
 }
 
-
-# 数据迁移
-function run_migrations() {
-    echo ">>> 正在初始化数据库迁移系统..."
-    cd "$PROJECT_ROOT" || exit
-
-    # 激活虚拟环境
-    source "$VENV_PATH/bin/activate"
+# ===== 显示完成信息 =====
+function show_completion() {
+    echo ""
+    echo "🎉 开发环境启动完成！"
+    echo "================================="
+    echo ""
+    echo "📋 服务地址："
+    echo "   🎨 前端开发服务: http://localhost:3001 (推荐，支持热重载)"
+    echo "   🐍 后端API服务:  http://localhost:8000"
+    echo "   🌐 Nginx代理:    http://localhost:3000 (如果可用)"
+    echo ""
+    echo "👤 默认管理员账户："
+    echo "   📧 邮箱: admin@easyaussie.com"
+    echo "   🔑 密码: admin2025"
+    echo ""
+    echo "📋 查看日志："
+    echo "   🐍 后端日志: tail -f $PROJECT_ROOT/logs/backend.log"
+    echo "   🎨 前端日志: tail -f $PROJECT_ROOT/logs/frontend.log"
+    echo "   📊 实时监控: tail -f $PROJECT_ROOT/logs/*.log"
+    echo ""
+    echo "💡 使用提示："
+    echo "   - 前端文件修改会自动热重载"
+    echo "   - 后端修改需要重新运行此脚本"
+    echo "   - 按 Ctrl+C 可以在任何时候停止服务"
+    echo ""
+    echo "🔍 查看运行状态："
+    echo "   ps aux | grep -E '(flask|node.*vite)'"
+    echo ""
     
-    export FLASK_APP=backend.app:create_app
-    export FLASK_ENV=development
-    export PYTHONPATH="$PROJECT_ROOT"
-
-    # 检查是否需要重置或首次运行
-    if [ "$RESET_DB" = true ] || [ ! -d "$PROJECT_ROOT/migrations" ]; then
-        if [ "$RESET_DB" = true ]; then
-            echo "🔄 强制重置数据库..."
-        else
-            echo "🆕 首次运行，初始化数据库..."
-        fi
-        
-        echo "🗑️  清理旧的迁移和数据库文件..."
-        rm -rf "$PROJECT_ROOT/migrations"
-        find "$PROJECT_ROOT" -name "*.db" -delete 2>/dev/null || true
-
-        echo "📦 初始化新的 Alembic 目录..."
-        flask db init || { echo '❌ flask db init 失败'; exit 1; }
-
-        echo "🔄 生成第一个迁移脚本..."
-        flask db migrate -m "Initial migration" || { echo '❌ flask db migrate 失败'; exit 1; }
-
-        echo "⏫ 执行数据库升级..."
-        flask db upgrade || { echo '❌ flask db upgrade 失败'; exit 1; }
-    else
-        echo "📋 检测到已存在的迁移文件，跳过数据库重置"
-        echo "💡 如需重置数据库，请先删除 migrations 文件夹"
-        
-        # 尝试应用任何新的迁移
-        echo "🔄 检查并应用新的迁移..."
-        flask db upgrade || { echo '⚠️  迁移升级失败，可能需要手动检查'; }
+    # 自动打开浏览器
+    if command -v open >/dev/null 2>&1; then
+        echo "🌍 正在打开浏览器..."
+        open "http://localhost:3001"
     fi
-
-    echo "✅ 数据库迁移完成"
 }
 
-# ===== 自动打开浏览器页面 =====
-function open_browser() {
-    echo "🌍 打开浏览器..."
-    echo "   前端开发服务: http://localhost:3001"
-    echo "   后端API服务: http://localhost:8000"
-    echo "   Nginx服务: http://localhost:3000"
+# ===== 主执行流程 =====
+function main() {
+    # 检查是否在正确的目录
+    if [ ! -f "$FRONTEND_PATH/package.json" ] || [ ! -f "$PROJECT_ROOT/requirements.txt" ]; then
+        echo "❌ 错误：项目文件不完整"
+        echo "   检查前端目录：$FRONTEND_PATH"
+        echo "   检查根目录：$PROJECT_ROOT"
+        exit 1
+    fi
     
-    # 优先打开前端开发服务（热重载）
-    open "http://localhost:3001"
+    # 执行启动流程
+    shutdown_services
+    setup_venv
+    setup_frontend
+    setup_database
+    init_admin
+    start_backend
+    start_frontend
+    start_nginx
+    check_services
+    show_completion
+    
+    # 保持脚本运行，监听中断信号
+    echo "📌 服务正在运行中... (按 Ctrl+C 停止所有服务)"
+    echo "💡 提示: 按 'l' + Enter 查看实时日志，按 'q' + Enter 退出日志监控"
+    
+    # 设置信号处理
+    trap 'echo ""; echo "🛑 正在停止服务..."; shutdown_services; echo "✅ 所有服务已停止"; exit 0' INT
+    
+    # 等待用户输入或中断
+    while true; do
+        read -t 1 -r input 2>/dev/null
+        case "$input" in
+            "l"|"L")
+                echo "📋 开始监控日志 (按 Ctrl+C 退出日志监控)..."
+                echo "================================="
+                tail -f "$PROJECT_ROOT/logs/backend.log" "$PROJECT_ROOT/logs/frontend.log" 2>/dev/null || echo "⚠️ 日志文件不存在"
+                echo "📌 回到主监控模式..."
+                ;;
+            "q"|"Q")
+                echo "🛑 正在停止服务..."
+                shutdown_services
+                echo "✅ 所有服务已停止"
+                exit 0
+                ;;
+        esac
+    done
 }
 
-# ===== 执行流程 =====
-echo "🔧 开始本地开发环境配置"
-shutdown_services
-setup_venv
-setup_frontend
-
-# 先运行数据库迁移
-run_migrations
-
-# 启动服务（先后端再前端）
-start_flask
-start_frontend
-start_nginx  # 启动nginx代理服务
-
-# 检查服务状态
-check_services
-open_browser
-
-echo "🎉 本地服务已全部启动！"
-echo ""
-echo "📋 服务地址："
-echo "   🎨 前端开发服务: http://localhost:3001 (推荐，支持热重载)"
-echo "   🐍 后端API服务:  http://localhost:8000"
-echo "   🌐 Nginx服务:    http://localhost:3000 (可选)"
-echo ""
-echo "💡 提示："
-echo "   - 前端文件修改会自动刷新"
-echo "   - 后端修改需要手动重启"
-echo "   - 按 Ctrl+C 停止所有服务"
-echo "   - 数据库数据会被保留，除非使用 --reset-db 参数"
-echo ""
-echo "🔍 查看服务状态："
-echo "   ps aux | grep -E '(flask|node.*vite)'"
-echo ""
-echo "🗃️  数据库管理："
-echo "   重置数据库: bash setup.sh --reset-db"
+# 运行主函数
+main

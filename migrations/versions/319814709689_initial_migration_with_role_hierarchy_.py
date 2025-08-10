@@ -1,8 +1,8 @@
-"""Initial migration
+"""Initial migration with role hierarchy support
 
-Revision ID: 60f8daed10a1
+Revision ID: 319814709689
 Revises: 
-Create Date: 2025-08-03 10:52:07.993635
+Create Date: 2025-08-10 18:16:31.472394
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '60f8daed10a1'
+revision = '319814709689'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -31,13 +31,20 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('role',
-    sa.Column('name', sa.String(length=80), nullable=False),
+    sa.Column('code', sa.String(length=80), nullable=False),
+    sa.Column('display_name', sa.String(length=100), nullable=False),
     sa.Column('description', sa.String(length=255), nullable=True),
+    sa.Column('parent_role_id', sa.Integer(), nullable=True),
+    sa.Column('level', sa.Integer(), nullable=True),
+    sa.Column('is_active', sa.Boolean(), nullable=True),
+    sa.Column('color', sa.String(length=20), nullable=True),
+    sa.Column('icon', sa.String(length=50), nullable=True),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('created_gmt', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
     sa.Column('updated_gmt', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
+    sa.ForeignKeyConstraint(['parent_role_id'], ['role.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('name')
+    sa.UniqueConstraint('code')
     )
     op.create_table('standard_form',
     sa.Column('email', sa.String(length=120), nullable=False),
@@ -45,6 +52,7 @@ def upgrade():
     sa.Column('form_data', sa.Text(), nullable=False),
     sa.Column('files', sa.Text(), nullable=True),
     sa.Column('remark', sa.String(length=255), nullable=True),
+    sa.Column('status', sa.String(length=20), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('created_gmt', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
     sa.Column('updated_gmt', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
@@ -54,6 +62,11 @@ def upgrade():
     sa.Column('email', sa.String(length=128), nullable=False),
     sa.Column('password', sa.String(length=255), nullable=False),
     sa.Column('active', sa.Boolean(), nullable=True),
+    sa.Column('name', sa.String(length=100), nullable=True),
+    sa.Column('wechat_nickname', sa.String(length=100), nullable=True),
+    sa.Column('phone', sa.String(length=20), nullable=True),
+    sa.Column('avatar', sa.String(length=255), nullable=True),
+    sa.Column('last_login_at', sa.DateTime(), nullable=True),
     sa.Column('fs_uniquifier', sa.String(length=64), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('created_gmt', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),

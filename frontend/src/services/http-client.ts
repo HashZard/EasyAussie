@@ -102,6 +102,139 @@ export class HttpClient {
   }
 
   /**
+   * 将蛇形命名转换为驼峰命名
+   */
+  private toCamelCase(str: string): string {
+    return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+  }
+
+  /**
+   * 将驼峰命名转换为蛇形命名
+   */
+  private toSnakeCase(str: string): string {
+    return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+  }
+
+  /**
+   * 递归转换对象的键名从蛇形到驼峰（后端响应 → 前端）
+   */
+  private convertKeysToCamelCase(obj: any): any {
+    if (obj === null || obj === undefined) {
+      return obj;
+    }
+
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.convertKeysToCamelCase(item));
+    }
+
+    if (typeof obj === 'object') {
+      const converted: any = {};
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          const camelKey = this.toCamelCase(key);
+          converted[camelKey] = this.convertKeysToCamelCase(obj[key]);
+        }
+      }
+      return converted;
+    }
+
+    return obj;
+  }
+
+  /**
+   * 递归转换对象的键名从驼峰到蛇形（前端请求 → 后端）
+   */
+  private convertKeysToSnakeCase(obj: any): any {
+    if (obj === null || obj === undefined) {
+      return obj;
+    }
+
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.convertKeysToSnakeCase(item));
+    }
+
+    if (typeof obj === 'object') {
+      const converted: any = {};
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          const snakeKey = this.toSnakeCase(key);
+          converted[snakeKey] = this.convertKeysToSnakeCase(obj[key]);
+        }
+      }
+      return converted;
+    }
+
+    return obj;
+  }
+
+  /**
+   * 统一处理API响应数据结构
+   * 智能解析嵌套的数据结构，提取实际数据
+   */
+  private processApiResponse(rawResponse: any): any {
+    // 如果响应本身就是数组，直接返回并转换字段命名
+    if (Array.isArray(rawResponse)) {
+      return {
+        success: true,
+        data: this.convertKeysToCamelCase(rawResponse),
+        status: 200,
+        message: 'OK'
+      };
+    }
+
+    // 如果响应是对象
+    if (typeof rawResponse === 'object' && rawResponse !== null) {
+      // 检查是否是标准的API响应格式
+      if (rawResponse.hasOwnProperty('success') && rawResponse.hasOwnProperty('data')) {
+        // 情况1: 标准格式 { success: true, data: [...] }
+        return {
+          success: rawResponse.success,
+          data: this.convertKeysToCamelCase(rawResponse.data),
+          status: 200,
+          message: rawResponse.message || 'OK'
+        };
+      }
+
+      // 检查是否是嵌套的响应格式 (httpClient包装的)
+      if (rawResponse.data && typeof rawResponse.data === 'object') {
+        // 情况2: 嵌套格式 { data: { success: true, data: [...] }, status: 200 }
+        if (rawResponse.data.hasOwnProperty('success') && rawResponse.data.hasOwnProperty('data')) {
+          return {
+            success: rawResponse.data.success,
+            data: this.convertKeysToCamelCase(rawResponse.data.data),
+            status: rawResponse.status || 200,
+            message: rawResponse.message || rawResponse.data.message || 'OK'
+          };
+        }
+        
+        // 情况3: 简单嵌套 { data: [...], status: 200 }
+        return {
+          success: rawResponse.success !== false, // 默认为true，除非明确为false
+          data: this.convertKeysToCamelCase(rawResponse.data),
+          status: rawResponse.status || 200,
+          message: rawResponse.message || 'OK'
+        };
+      }
+
+      // 情况4: 直接的对象响应，可能包含业务数据
+      return {
+        success: rawResponse.success !== false,
+        data: this.convertKeysToCamelCase(rawResponse),
+        status: rawResponse.status || 200,
+        message: rawResponse.message || 'OK'
+      };
+    }
+
+    // 其他情况：包装为标准格式
+    return {
+      success: true,
+      data: rawResponse,
+      status: 200,
+      message: 'OK'
+    };
+  }
+
+  /**
    * 核心请求方法
    */
   async request<T = any>(config: RequestConfig): Promise<ApiResponse<T>> {
@@ -139,7 +272,9 @@ export class HttpClient {
           // FormData 会自动设置 Content-Type
           delete (fetchOptions.headers as any)['Content-Type'];
         } else {
-          fetchOptions.body = JSON.stringify(processedConfig.data);
+          // 将前端驼峰命名转换为后端蛇形命名
+          const convertedData = this.convertKeysToSnakeCase(processedConfig.data);
+          fetchOptions.body = JSON.stringify(convertedData);
         }
       }
 
@@ -163,11 +298,13 @@ export class HttpClient {
       }
 
       // 构建响应对象
+      const processedResponse = this.processApiResponse(responseData);
+      
       const apiResponse: ApiResponse<T> = {
-        data: responseData,
+        data: processedResponse.data,
         status: response.status,
-        success: response.ok,
-        message: response.statusText,
+        success: processedResponse.success,
+        message: processedResponse.message || response.statusText,
       };
 
       if (!response.ok) {

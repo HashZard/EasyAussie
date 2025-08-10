@@ -86,8 +86,6 @@ class EasyAussieApp {
     // 确保 html 和 body 可以滚动
     document.documentElement.style.overflow = '';
     document.documentElement.classList.remove('overflow-hidden');
-    
-    console.log('🔄 页面滚动已恢复');
   }
 
   /**

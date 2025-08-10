@@ -5,7 +5,7 @@
 export interface FormData {
     id: string;
     title: string;
-    type: 'inspection' | 'transfer' | 'application' | 'other';
+    type: 'inspection' | 'airportPickup' | 'rentalApplication' | 'coverletter' | 'test';
     status: 'draft' | 'pending' | 'approved' | 'rejected';
     submittedBy: string;
     submittedAt: string;
@@ -16,7 +16,7 @@ export interface FormData {
 export interface FormFilters {
     search: string;
     status: 'all' | 'draft' | 'pending' | 'approved' | 'rejected';
-    type: 'all' | 'inspection' | 'transfer' | 'application' | 'other';
+    type: 'all' | 'inspection' | 'airportPickup' | 'rentalApplication' | 'coverletter' | 'test';
     priority: 'all' | 'low' | 'medium' | 'high' | 'urgent';
 }
 
@@ -45,8 +45,8 @@ export async function getFormsList(filters: FormFilters, page: number = 1): Prom
         },
         {
             id: '2',
-            title: '学校转学申请',
-            type: 'transfer',
+            title: '机场接送申请',
+            type: 'airportPickup',
             status: 'approved',
             submittedBy: 'user2@example.com',
             submittedAt: '2024-07-28T14:22:00Z',
@@ -55,8 +55,8 @@ export async function getFormsList(filters: FormFilters, page: number = 1): Prom
         },
         {
             id: '3',
-            title: '签证申请表',
-            type: 'application',
+            title: '租房申请表',
+            type: 'rentalApplication',
             status: 'draft',
             submittedBy: 'user3@example.com',
             submittedAt: '2024-07-25T11:18:00Z',
@@ -65,12 +65,22 @@ export async function getFormsList(filters: FormFilters, page: number = 1): Prom
         },
         {
             id: '4',
-            title: '其他服务申请',
-            type: 'other',
+            title: '求职信申请',
+            type: 'coverletter',
             status: 'rejected',
             submittedBy: 'user4@example.com',
             submittedAt: '2024-07-20T13:20:00Z',
             lastModified: '2024-07-22T10:30:00Z',
+            priority: 'low'
+        },
+        {
+            id: '5',
+            title: '测试服务申请',
+            type: 'test',
+            status: 'pending',
+            submittedBy: 'user5@example.com',
+            submittedAt: '2024-08-03T09:15:00Z',
+            lastModified: '2024-08-03T09:15:00Z',
             priority: 'low'
         }
     ];
@@ -92,11 +102,12 @@ export async function getFormsList(filters: FormFilters, page: number = 1): Prom
 export function getFormTypeDisplayName(type: FormData['type']): string {
     const typeMap: Record<FormData['type'], string> = {
         'inspection': '房屋检查',
-        'transfer': '学校转学',
-        'application': '签证申请',
-        'other': '其他服务'
+        'airportPickup': '机场接送',
+        'rentalApplication': '租房申请',
+        'coverletter': '求职信',
+        'test': '测试服务'
     };
-    return typeMap[type];
+    return typeMap[type] || '未知类型';
 }
 
 /**

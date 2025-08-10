@@ -12,7 +12,7 @@ app_logger = logging.getLogger('app_logger')
 @standard_form.route('/form-submit', methods=['POST'])
 @token_required
 def standard_submit():
-    form_type_str = request.form.get('formType')  # camelCase，不再做转换
+    form_type_str = request.form.get('formType') 
 
     if not form_type_str:
         app_logger.error("[SUBMIT] 提交失败：缺少 formType 或 email")
@@ -27,8 +27,8 @@ def standard_submit():
         app_logger.info("[SUBMIT] 无上传文件")
 
     try:
-        # 保存或更新数据库记录
-        action = standard_form_handler.save_or_update_form(request)
+        # 保存数据库记录（每次都创建新记录）
+        action = standard_form_handler.save_form(request)
 
         # Post-Save Hook：针对部分表单执行额外操作
         if FormType.is_valid(form_type_str):

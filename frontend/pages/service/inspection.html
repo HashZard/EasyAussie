@@ -137,7 +137,6 @@
             
             const form = e.target;
             const submitBtn = form.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
 
             // 检查用户是否已登录
             if (!authStore.isAuthenticated()) {
@@ -156,6 +155,13 @@
                 return;
             }
 
+            // 显示用户须知弹窗
+            const userConfirmed = await showUserNoticeModal();
+            if (!userConfirmed) {
+                return; // 用户未确认，不提交
+            }
+
+            const originalText = submitBtn.textContent;
             let loadingId = null;
             try {
                 submitBtn.disabled = true;
@@ -225,6 +231,246 @@
                 submitBtn.disabled = false;
                 submitBtn.textContent = originalText;
             }
+        }
+
+        // 显示用户须知弹窗
+        function showUserNoticeModal() {
+            return new Promise((resolve) => {
+                const modal = createUserNoticeModal();
+                document.body.appendChild(modal);
+                
+                // 显示弹窗
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden'; // 防止背景滚动
+                
+                // 确认按钮事件
+                const confirmBtn = modal.querySelector('#confirm-notice-btn');
+                const cancelBtn = modal.querySelector('#cancel-notice-btn');
+                const closeBtn = modal.querySelector('#close-notice-btn');
+                
+                const closeModal = (confirmed = false) => {
+                    document.body.style.overflow = ''; // 恢复滚动
+                    modal.remove();
+                    resolve(confirmed);
+                };
+                
+                confirmBtn.addEventListener('click', () => closeModal(true));
+                cancelBtn.addEventListener('click', () => closeModal(false));
+                closeBtn.addEventListener('click', () => closeModal(false));
+                
+                // 点击背景关闭
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal(false);
+                    }
+                });
+                
+                // ESC键关闭
+                const handleEsc = (e) => {
+                    if (e.key === 'Escape') {
+                        document.removeEventListener('keydown', handleEsc);
+                        closeModal(false);
+                    }
+                };
+                document.addEventListener('keydown', handleEsc);
+            });
+        }
+
+        // 创建用户须知弹窗
+        function createUserNoticeModal() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            modal.id = 'user-notice-modal';
+            
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+                    <!-- 弹窗头部 -->
+                    <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-info-circle text-blue-600 text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">服务须知</h3>
+                                <p class="text-sm text-gray-600">请仔细阅读以下条款，确保您了解服务详情</p>
+                            </div>
+                        </div>
+                        <button type="button" class="text-gray-400 hover:text-gray-600 transition-colors" id="close-notice-btn">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- 弹窗内容 -->
+                    <div class="flex-1 overflow-y-auto p-6">
+                        <div class="space-y-8">
+                            <!-- 注意事项 -->
+                            <div class="bg-amber-50 border border-amber-200 rounded-lg p-5">
+                                <div class="flex items-center space-x-2 mb-4">
+                                    <i class="fas fa-exclamation-triangle text-amber-600"></i>
+                                    <h4 class="text-lg font-semibold text-amber-800">重要注意事项</h4>
+                                </div>
+                                
+                                <div class="space-y-4 text-sm text-gray-700">
+                                    <!-- 付费政策 -->
+                                    <div class="bg-white rounded-md p-4 border border-amber-100">
+                                        <h5 class="font-medium text-gray-900 mb-2 flex items-center">
+                                            <span class="w-6 h-6 bg-amber-100 rounded-full text-amber-700 text-xs flex items-center justify-center mr-2">1</span>
+                                            付费政策
+                                        </h5>
+                                        <p class="text-gray-700 pl-8">服务需预先付费，支持澳币（AUD）或人民币（RMB）支付。</p>
+                                    </div>
+                                    
+                                    <!-- 退改规定 -->
+                                    <div class="bg-white rounded-md p-4 border border-amber-100">
+                                        <h5 class="font-medium text-gray-900 mb-3 flex items-center">
+                                            <span class="w-6 h-6 bg-amber-100 rounded-full text-amber-700 text-xs flex items-center justify-center mr-2">2</span>
+                                            退改规定
+                                        </h5>
+                                        <div class="pl-8 space-y-2">
+                                            <div class="flex items-start space-x-2">
+                                                <span class="text-red-500 mt-1">•</span>
+                                                <span><strong>当天临时取消：</strong>不予退款</span>
+                                            </div>
+                                            <div class="flex items-start space-x-2">
+                                                <span class="text-yellow-500 mt-1">•</span>
+                                                <span><strong>提前1-3天通知：</strong>退还50%费用</span>
+                                            </div>
+                                            <div class="flex items-start space-x-2">
+                                                <span class="text-green-500 mt-1">•</span>
+                                                <span><strong>提前3天以上通知：</strong>全额退款</span>
+                                            </div>
+                                            <div class="bg-gray-50 rounded p-2 mt-3 text-xs text-gray-600">
+                                                <strong>特殊说明：</strong>中介或房东取消看房时，同样按以上规定处理；若中介迟到,可等待10分钟。
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 看房建议 -->
+                                    <div class="bg-white rounded-md p-4 border border-amber-100">
+                                        <h5 class="font-medium text-gray-900 mb-3 flex items-center">
+                                            <span class="w-6 h-6 bg-amber-100 rounded-full text-amber-700 text-xs flex items-center justify-center mr-2">3</span>
+                                            看房须知
+                                        </h5>
+                                        <div class="pl-8 space-y-2">
+                                            <div class="flex items-start space-x-2">
+                                                <span class="text-blue-500 mt-1">•</span>
+                                                <span><strong>看房时长：</strong>一般为10-15分钟（由中介规定）</span>
+                                            </div>
+                                            <div class="flex items-start space-x-2">
+                                                <span class="text-blue-500 mt-1">•</span>
+                                                <span><strong>提问建议：</strong>请提前提供1-5个关键问题，我们会尽量向中介了解</span>
+                                            </div>
+                                            <div class="bg-blue-50 rounded p-2 mt-3 text-xs text-gray-600">
+                                                <strong>温馨提示：</strong>由于中介接待租客较多（部分房源超过20组），请确保问题简洁明了。
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 服务流程 -->
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-5">
+                                <div class="flex items-center space-x-2 mb-4">
+                                    <i class="fas fa-home text-blue-600"></i>
+                                    <h4 class="text-lg font-semibold text-blue-800">代看房流程</h4>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="space-y-3 text-sm">
+                                        <div class="flex items-start space-x-3">
+                                            <span class="w-6 h-6 bg-blue-100 rounded-full text-blue-700 text-xs flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+                                            <span class="text-gray-700">到达现场，拍摄房屋周边环境视频</span>
+                                        </div>
+                                        <div class="flex items-start space-x-3">
+                                            <span class="w-6 h-6 bg-blue-100 rounded-full text-blue-700 text-xs flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+                                            <span class="text-gray-700">与中介签到，提供预约信息</span>
+                                        </div>
+                                        <div class="flex items-start space-x-3">
+                                            <span class="w-6 h-6 bg-blue-100 rounded-full text-blue-700 text-xs flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
+                                            <span class="text-gray-700">进入房屋，拍摄视频/照片</span>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-3 text-sm">
+                                        <div class="flex items-start space-x-3">
+                                            <span class="w-6 h-6 bg-blue-100 rounded-full text-blue-700 text-xs flex items-center justify-center flex-shrink-0 mt-0.5">4</span>
+                                            <span class="text-gray-700">检查房屋采光、隔音、家具等</span>
+                                        </div>
+                                        <div class="flex items-start space-x-3">
+                                            <span class="w-6 h-6 bg-blue-100 rounded-full text-blue-700 text-xs flex items-center justify-center flex-shrink-0 mt-0.5">5</span>
+                                            <span class="text-gray-700">向中介咨询您关心的问题</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-blue-100 rounded-md p-3 mt-4">
+                                    <p class="text-sm text-blue-800">
+                                        <i class="fas fa-lightbulb mr-2"></i>
+                                        <strong>服务说明：</strong>本服务为基础代看，不提供专业验房报告。如需入住前房屋检查，属于不同服务类别。
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- 服务内容 -->
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-5">
+                                <div class="flex items-center space-x-2 mb-4">
+                                    <i class="fas fa-check-circle text-green-600"></i>
+                                    <h4 class="text-lg font-semibold text-green-800">服务内容包含</h4>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="space-y-2 text-sm">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-video text-green-600 w-4"></i>
+                                            <span class="text-gray-700">一镜到底高清视频（中介允许时）</span>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-map-marker-alt text-green-600 w-4"></i>
+                                            <span class="text-gray-700">房屋外部与周边环境展示</span>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-bus text-green-600 w-4"></i>
+                                            <span class="text-gray-700">简单交通信息介绍</span>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-2 text-sm">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-question-circle text-green-600 w-4"></i>
+                                            <span class="text-gray-700">向中介咨询关键问题（最多5个）</span>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-search text-green-600 w-4"></i>
+                                            <span class="text-gray-700">检查采光、隔音、家具等基本情况</span>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-camera text-green-600 w-4"></i>
+                                            <span class="text-gray-700">详细照片和视频记录</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 弹窗底部 -->
+                    <div class="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50">
+                        <div class="flex items-center space-x-2 text-sm text-gray-600">
+                            <i class="fas fa-info-circle"></i>
+                            <span>请确认您已阅读并理解以上条款</span>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button type="button" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors" id="cancel-notice-btn">
+                                返回修改
+                            </button>
+                            <button type="button" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2" id="confirm-notice-btn">
+                                <i class="fas fa-check"></i>
+                                <span>我已知晓，确认提交</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return modal;
         }
 
         // ================== 表单缓存相关功能 ==================
@@ -711,40 +957,7 @@
         </div>
     </div>
 
-    <!-- 帮助区域 -->
-    <div class="ea-help-section">
-        <div class="ea-service-container">
-            <div class="ea-help-card">
-                <h3 class="ea-help-title">
-                    <i class="fas fa-question-circle"></i>
-                    常见问题
-                </h3>
-                <div class="ea-faq-list">
-                    <div class="ea-faq-item">
-                        <span class="ea-faq-q">Q:</span>
-                        <div class="ea-faq-content">
-                            <div class="ea-faq-question">看房报告包含什么内容？</div>
-                            <p class="ea-faq-answer">包括高清视频、房屋状况评价、周边环境介绍、专业建议等。</p>
-                        </div>
-                    </div>
-                    <div class="ea-faq-item">
-                        <span class="ea-faq-q">Q:</span>
-                        <div class="ea-faq-content">
-                            <div class="ea-faq-question">如果看房时间与中介安排冲突怎么办？</div>
-                            <p class="ea-faq-answer">我们会协调最佳时间，或建议备选方案。</p>
-                        </div>
-                    </div>
-                    <div class="ea-faq-item">
-                        <span class="ea-faq-q">Q:</span>
-                        <div class="ea-faq-content">
-                            <div class="ea-faq-question">费用什么时候支付？</div>
-                            <p class="ea-faq-answer">看房完成并发送报告后再付款，确保服务质量。</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 </main>
 
 <div id="footer"></div>

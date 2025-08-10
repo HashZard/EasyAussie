@@ -6,21 +6,20 @@ import { httpClient } from '../../src/services/http-client';
 
 export interface Order {
     id: string;
-    title: string;
-    type: 'inspection' | 'transfer' | 'application' | 'other';
+    email: string;
+    formType: 'inspection' | 'airportPickup' | 'rentalApplication' | 'coverletter' | 'test';
+    formData: string; // JSON字符串，需要前端解析
+    files?: string;
+    remark?: string;
     status: 'pending' | 'processing' | 'completed' | 'cancelled';
-    amount: number;
-    currency: string;
     createdAt: string;
-    updatedAt: string;
-    description?: string;
-    notes?: string;
+    updatedAt?: string;
 }
 
 export interface OrderFilters {
     search: string;
     status: 'all' | 'pending' | 'processing' | 'completed' | 'cancelled';
-    type: 'all' | 'inspection' | 'transfer' | 'application' | 'other';
+    type: 'all' | 'inspection' | 'airportPickup' | 'rentalApplication' | 'coverletter' | 'test';
 }
 
 export interface PaginationInfo {
@@ -59,21 +58,18 @@ export async function getUserOrders(filters: OrderFilters, page: number = 1): Pr
         const response = await httpClient.get<any>(`/api/orders?${params.toString()}`);
         
         if (response.success && response.data) {
-            const backendResponse = response.data;
-            
-            if (backendResponse.success && backendResponse.data) {
-                return {
-                    orders: backendResponse.data,
-                    pagination: {
-                        currentPage: backendResponse.pagination.currentPage,
-                        totalPages: backendResponse.pagination.totalPages,
-                        totalItems: backendResponse.pagination.totalItems,
-                        itemsPerPage: backendResponse.pagination.itemsPerPage,
-                        hasNext: backendResponse.pagination.hasNext,
-                        hasPrev: backendResponse.pagination.hasPrev
-                    }
-                };
-            }
+            // httpClient现在会自动处理嵌套数据结构
+            return {
+                orders: response.data.data || response.data,
+                pagination: {
+                    currentPage: response.data.pagination?.currentPage || 1,
+                    totalPages: response.data.pagination?.totalPages || 1,
+                    totalItems: response.data.pagination?.totalItems || 0,
+                    itemsPerPage: response.data.pagination?.itemsPerPage || 10,
+                    hasNext: response.data.pagination?.hasNext || false,
+                    hasPrev: response.data.pagination?.hasPrev || false
+                }
+            };
         }
         
         // 如果API调用失败，返回空结果
@@ -118,11 +114,8 @@ export async function getOrderStats(): Promise<{
         const response = await httpClient.get<any>('/api/orders/stats');
         
         if (response.success && response.data) {
-            const backendResponse = response.data;
-            
-            if (backendResponse.success && backendResponse.data) {
-                return backendResponse.data;
-            }
+            // httpClient现在会自动处理嵌套数据结构
+            return response.data;
         }
         
         // 如果API调用失败，返回默认值
@@ -156,11 +149,8 @@ export async function getOrderDetail(orderId: string): Promise<Order | null> {
         const response = await httpClient.get<any>(`/api/orders/${orderId}`);
         
         if (response.success && response.data) {
-            const backendResponse = response.data;
-            
-            if (backendResponse.success && backendResponse.data) {
-                return backendResponse.data;
-            }
+            // httpClient现在会自动处理嵌套数据结构
+            return response.data;
         }
         
         return null;
@@ -179,8 +169,8 @@ export async function cancelOrder(orderId: string): Promise<boolean> {
         const response = await httpClient.post<any>(`/api/orders/${orderId}/cancel`);
         
         if (response.success && response.data) {
-            const backendResponse = response.data;
-            return backendResponse.success || false;
+            // httpClient现在会自动处理嵌套数据结构
+            return response.data.success || response.success;
         }
         
         return false;
@@ -192,16 +182,55 @@ export async function cancelOrder(orderId: string): Promise<boolean> {
 }
 
 /**
+ * 根据表单类型和数据生成订单标题
+ */
+function generateOrderTitle(order: Order): string {
+    const typeMap: Record<Order['formType'], string> = {
+        'inspection': '房屋检查服务',
+        'airportPickup': '机场接送服务',
+        'rentalApplication': '租房申请服务',
+        'coverletter': '求职信服务',
+        'test': '测试服务'
+    };
+    
+    const baseTitle = typeMap[order.formType] || '服务订单';
+    
+    try {
+        const data = JSON.parse(order.formData);
+        
+        // 根据表单类型生成更具体的标题
+        if (order.formType === 'inspection' && data.address) {
+            return `房屋检查 - ${data.address}`;
+        } else if (order.formType === 'airportPickup') {
+            if (data.pickupLocation || data.dropoffLocation) {
+                const pickup = data.pickupLocation || '未知地点';
+                const dropoff = data.dropoffLocation || '未知地点';
+                return `机场接送 - ${pickup} → ${dropoff}`;
+            }
+        } else if (order.formType === 'rentalApplication' && data.propertyAddress) {
+            return `租房申请 - ${data.propertyAddress}`;
+        } else if (order.formType === 'coverletter' && data.position) {
+            return `求职信 - ${data.position}`;
+        }
+    } catch (error) {
+        // 解析失败，使用基础标题
+    }
+    
+    return baseTitle;
+}
+
+/**
  * 获取订单类型显示名称
  */
-export function getOrderTypeDisplayName(type: Order['type']): string {
-    const typeMap: Record<Order['type'], string> = {
+export function getOrderTypeDisplayName(formType: Order['formType']): string {
+    const typeMap: Record<Order['formType'], string> = {
         'inspection': '房屋检查',
-        'transfer': '机场接送',
-        'application': '申请服务',
-        'other': '其他服务'
+        'airportPickup': '机场接送',
+        'rentalApplication': '租房申请',
+        'coverletter': '求职信',
+        'test': '测试服务'
     };
-    return typeMap[type];
+    return typeMap[formType] || '未知类型';
 }
 
 /**
@@ -256,7 +285,6 @@ function generateDesktopOrderTable(orders: Order[]): string {
                         <th>订单信息</th>
                         <th>类型</th>
                         <th>状态</th>
-                        <th>金额</th>
                         <th>创建时间</th>
                         <th>操作</th>
                     </tr>
@@ -266,29 +294,22 @@ function generateDesktopOrderTable(orders: Order[]): string {
                         <tr>
                             <td>
                                 <div>
-                                    <div class="text-sm font-medium text-gray-900">${order.title}</div>
+                                    <div class="text-sm font-medium text-gray-900">${generateOrderTitle(order)}</div>
                                     <div class="text-sm text-gray-500">订单号: ${order.id}</div>
-                                    ${order.description ? `<div class="text-xs text-gray-400 mt-1">${order.description}</div>` : ''}
                                 </div>
                             </td>
                             <td>
-                                <span class="status-badge status-info">${getOrderTypeDisplayName(order.type)}</span>
+                                <span class="status-badge status-info">${getOrderTypeDisplayName(order.formType)}</span>
                             </td>
                             <td>
                                 <span class="${getStatusDisplay(order.status).className}">${getStatusDisplay(order.status).label}</span>
                             </td>
-                            <td class="text-sm font-medium text-gray-900">${formatCurrency(order.amount, order.currency)}</td>
                             <td class="text-sm text-gray-900">${formatDate(order.createdAt)}</td>
                             <td>
                                 <div class="flex items-center space-x-2">
                                     <button class="btn btn-sm btn-secondary" data-action="view" data-order-id="${order.id}">
                                         <i class="fas fa-eye"></i>
                                     </button>
-                                    ${order.status === 'pending' ? `
-                                        <button class="btn btn-sm btn-warning" data-action="cancel" data-order-id="${order.id}">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    ` : ''}
                                     ${order.status === 'completed' ? `
                                         <button class="btn btn-sm btn-success" data-action="download" data-order-id="${order.id}">
                                             <i class="fas fa-download"></i>
@@ -313,14 +334,13 @@ function generateMobileOrderList(orders: Order[]): string {
             ${orders.map(order => `
                 <div class="mobile-table-row">
                     <div class="mb-3">
-                        <div class="font-medium text-gray-900 mb-1">${order.title}</div>
+                        <div class="font-medium text-gray-900 mb-1">${generateOrderTitle(order)}</div>
                         <div class="text-sm text-gray-500">订单号: ${order.id}</div>
-                        ${order.description ? `<div class="text-xs text-gray-400 mt-1">${order.description}</div>` : ''}
                     </div>
                     
                     <div class="mobile-table-cell">
                         <span class="mobile-table-label">类型</span>
-                        <span class="status-badge status-info">${getOrderTypeDisplayName(order.type)}</span>
+                        <span class="status-badge status-info">${getOrderTypeDisplayName(order.formType)}</span>
                     </div>
                     
                     <div class="mobile-table-cell">
@@ -329,27 +349,19 @@ function generateMobileOrderList(orders: Order[]): string {
                     </div>
                     
                     <div class="mobile-table-cell">
-                        <span class="mobile-table-label">金额</span>
-                        <span class="mobile-table-value font-medium">${formatCurrency(order.amount, order.currency)}</span>
-                    </div>
-                    
-                    <div class="mobile-table-cell">
                         <span class="mobile-table-label">创建时间</span>
                         <span class="mobile-table-value">${formatDate(order.createdAt)}</span>
                     </div>
                     
-                    ${order.notes ? `
+                    ${order.remark ? `
                         <div class="mobile-table-cell">
                             <span class="mobile-table-label">备注</span>
-                            <span class="mobile-table-value text-xs">${order.notes}</span>
+                            <span class="mobile-table-value text-xs">${order.remark}</span>
                         </div>
                     ` : ''}
                     
                     <div class="flex justify-end space-x-2 mt-3 pt-3 border-t border-gray-200">
                         <button class="btn btn-sm btn-secondary" data-action="view" data-order-id="${order.id}">查看</button>
-                        ${order.status === 'pending' ? `
-                            <button class="btn btn-sm btn-warning" data-action="cancel" data-order-id="${order.id}">取消</button>
-                        ` : ''}
                         ${order.status === 'completed' ? `
                             <button class="btn btn-sm btn-success" data-action="download" data-order-id="${order.id}">下载</button>
                         ` : ''}
@@ -569,9 +581,6 @@ async function handleOrderAction(event: Event): Promise<void> {
             case 'view':
                 await handleViewOrder(orderId!);
                 break;
-            case 'cancel':
-                await handleCancelOrder(orderId!);
-                break;
             case 'download':
                 await handleDownloadOrder(orderId!);
                 break;
@@ -591,6 +600,53 @@ function showOrderDetailModal(order: Order): void {
     
     // 设置事件监听器
     setupOrderDetailModal(modal);
+}
+
+/**
+ * 解析并格式化表单数据为可读格式
+ */
+function parseFormData(formData: string, formType: string): string {
+    try {
+        const data = JSON.parse(formData);
+        let html = '<div class="space-y-2">';
+        
+        // 只处理 inspection 和 airportPickup
+        if (formType === 'inspection') {
+            // 房屋检查表单
+            if (data.wxid) html += `<div><span class="text-gray-500">微信名称:</span> <span class="ml-2">${data.wxid}</span></div>`;
+            if (data.name) html += `<div><span class="text-gray-500">预约姓名:</span> <span class="ml-2">${data.name}</span></div>`;
+            if (data.address) html += `<div><span class="text-gray-500">房产地址:</span> <span class="ml-2">${data.address}</span></div>`;
+            if (data.appointmentDate) html += `<div><span class="text-gray-500">预约时间:</span> <span class="ml-2">${formatDate(data.appointmentDate)}</span></div>`;
+            if (data.email) html += `<div><span class="text-gray-500">预约邮箱:</span> <span class="ml-2">${data.email}</span></div>`;
+            if (data.phone) html += `<div><span class="text-gray-500">联系电话:</span> <span class="ml-2">${data.phone}</span></div>`;
+            
+            // 检查清单
+            if (data['checklist[]'] && Array.isArray(data['checklist[]']) && data['checklist[]'].length > 0) {
+                html += '<div><span class="text-gray-500">检查清单:</span></div>';
+                html += '<ul class="ml-4 list-disc">';
+                data['checklist[]'].forEach((item: string) => {
+                    html += `<li class="text-gray-700">${item}</li>`;
+                });
+                html += '</ul>';
+            }
+        } else if (formType === 'airportPickup') {
+            // 机场接送表单
+            if (data.pickupLocation) html += `<div><span class="text-gray-500">接机地点:</span> <span class="ml-2">${data.pickupLocation}</span></div>`;
+            if (data.dropoffLocation) html += `<div><span class="text-gray-500">送达地点:</span> <span class="ml-2">${data.dropoffLocation}</span></div>`;
+            if (data.pickupTime) html += `<div><span class="text-gray-500">接机时间:</span> <span class="ml-2">${formatDate(data.pickupTime)}</span></div>`;
+            if (data.passengerName) html += `<div><span class="text-gray-500">乘客姓名:</span> <span class="ml-2">${data.passengerName}</span></div>`;
+            if (data.flightNumber) html += `<div><span class="text-gray-500">航班号:</span> <span class="ml-2">${data.flightNumber}</span></div>`;
+            if (data.contactNumber) html += `<div><span class="text-gray-500">联系电话:</span> <span class="ml-2">${data.contactNumber}</span></div>`;
+        } else {
+            // 其他类型显示暂不支持详细解析
+            html += '<div class="text-gray-500">该表单类型暂不支持详细解析，请联系客服查看详情。</div>';
+        }
+        
+        html += '</div>';
+        return html;
+    } catch (error) {
+        return `<div class="text-red-500">表单数据解析失败: ${error.message}</div>`;
+    }
 }
 
 /**
@@ -621,7 +677,7 @@ function createOrderDetailModal(order: Order): HTMLElement {
                         </div>
                         <div>
                             <span class="text-gray-500">订单类型:</span>
-                            <span class="ml-2">${getOrderTypeDisplayName(order.type)}</span>
+                            <span class="ml-2">${getOrderTypeDisplayName(order.formType)}</span>
                         </div>
                         <div>
                             <span class="text-gray-500">订单状态:</span>
@@ -640,8 +696,8 @@ function createOrderDetailModal(order: Order): HTMLElement {
                         </div>
                         ` : ''}
                         <div>
-                            <span class="text-gray-500">金额:</span>
-                            <span class="ml-2 font-medium">${formatCurrency(order.amount, order.currency)}</span>
+                            <span class="text-gray-500">联系方式:</span>
+                            <span class="ml-2">${order.email}</span>
                         </div>
                     </div>
                 </div>
@@ -649,33 +705,49 @@ function createOrderDetailModal(order: Order): HTMLElement {
                 <!-- 订单标题 -->
                 <div class="border-b border-gray-200 pb-4">
                     <h4 class="font-medium text-gray-900 mb-2">订单标题</h4>
-                    <p class="text-gray-700">${order.title}</p>
+                    <p class="text-gray-700">${generateOrderTitle(order)}</p>
                 </div>
                 
-                <!-- 订单描述 -->
-                ${order.description ? `
+                <!-- 表单数据 -->
                 <div class="border-b border-gray-200 pb-4">
-                    <h4 class="font-medium text-gray-900 mb-2">详细描述</h4>
-                    <p class="text-gray-700 whitespace-pre-wrap">${order.description}</p>
+                    <h4 class="font-medium text-gray-900 mb-2">表单详情</h4>
+                    ${parseFormData(order.formData, order.formType)}
+                </div>
+                
+                <!-- 文件信息 -->
+                ${order.files ? `
+                <div class="border-b border-gray-200 pb-4">
+                    <h4 class="font-medium text-gray-900 mb-2">相关文件</h4>
+                    <div class="text-sm text-gray-600">
+                        <p>文件信息: ${order.files}</p>
+                    </div>
                 </div>
                 ` : ''}
                 
                 <!-- 备注信息 -->
-                ${order.notes ? `
+                ${order.remark ? `
                 <div class="border-b border-gray-200 pb-4">
                     <h4 class="font-medium text-gray-900 mb-2">备注信息</h4>
-                    <p class="text-gray-700 whitespace-pre-wrap">${order.notes}</p>
+                    <p class="text-gray-700 whitespace-pre-wrap">${order.remark}</p>
                 </div>
                 ` : ''}
                 
+                <!-- 客服联系信息 -->
+                <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
+                    <h4 class="font-medium text-yellow-800 mb-2">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        需要取消订单？
+                    </h4>
+                    <p class="text-yellow-700 mb-2">如需取消订单或有任何疑问，请联系客服：</p>
+                    <div class="text-sm text-yellow-700 space-y-1">
+                        <div><i class="fab fa-weixin mr-2"></i>微信: EasyAussie_Service</div>
+                        <div><i class="fas fa-envelope mr-2"></i>邮箱: service@easyaussie.com</div>
+                        <div><i class="fas fa-phone mr-2"></i>电话: +61 412 345 678</div>
+                    </div>
+                </div>
+                
                 <!-- 操作按钮 -->
                 <div class="flex justify-end space-x-3 mt-6">
-                    ${order.status === 'pending' ? `
-                        <button type="button" class="btn btn-warning" id="cancel-order-btn" data-order-id="${order.id}">
-                            <i class="fas fa-times mr-2"></i>
-                            取消订单
-                        </button>
-                    ` : ''}
                     <button type="button" class="btn btn-secondary" id="close-btn">关闭</button>
                 </div>
             </div>
@@ -691,7 +763,6 @@ function createOrderDetailModal(order: Order): HTMLElement {
 function setupOrderDetailModal(modal: HTMLElement): void {
     const closeBtn = modal.querySelector('#close-modal-btn') as HTMLButtonElement;
     const closeBtnBottom = modal.querySelector('#close-btn') as HTMLButtonElement;
-    const cancelOrderBtn = modal.querySelector('#cancel-order-btn') as HTMLButtonElement;
     
     // 关闭模态框函数
     const closeModal = () => {
@@ -708,17 +779,6 @@ function setupOrderDetailModal(modal: HTMLElement): void {
             closeModal();
         }
     });
-    
-    // 取消订单按钮事件
-    if (cancelOrderBtn) {
-        cancelOrderBtn.addEventListener('click', async () => {
-            const orderId = cancelOrderBtn.dataset.orderId;
-            if (orderId) {
-                closeModal(); // 先关闭模态框
-                await handleCancelOrder(orderId);
-            }
-        });
-    }
 }
 
 /**
@@ -740,34 +800,6 @@ async function handleViewOrder(orderId: string): Promise<void> {
         console.error('Error viewing order:', error);
         if ((window as any).notificationService) {
             (window as any).notificationService.error('获取订单详情失败');
-        }
-    }
-}
-
-/**
- * 处理取消订单
- */
-async function handleCancelOrder(orderId: string): Promise<void> {
-    if (confirm('确定要取消这个订单吗？')) {
-        try {
-            const success = await cancelOrder(orderId);
-            
-            if (success) {
-                if ((window as any).notificationService) {
-                    (window as any).notificationService.success('订单已取消');
-                }
-                // 刷新订单列表
-                await refreshOrdersList();
-            } else {
-                if ((window as any).notificationService) {
-                    (window as any).notificationService.error('取消订单失败');
-                }
-            }
-        } catch (error) {
-            console.error('Error cancelling order:', error);
-            if ((window as any).notificationService) {
-                (window as any).notificationService.error('取消订单失败');
-            }
         }
     }
 }

@@ -1,5 +1,5 @@
 import { httpClient } from '../services/http-client';
-import type { User, LoginCredentials, RegisterData, AuthResponse, AuthConfig } from '../types/auth';
+import type { User, LoginCredentials, RegisterData, AuthConfig } from '../types/auth';
 
 /**
  * 现代化的用户认证存储和管理
@@ -131,21 +131,18 @@ export class AuthStore {
    */
   async login(credentials: LoginCredentials): Promise<User> {
     try {
-      const response = await httpClient.post<AuthResponse>('/api/login', {
+      const response = await httpClient.post<{user: User, token: string}>('/api/login', {
         email: credentials.email,
         password: credentials.password,
         captcha: credentials.captcha,
       });
-      
-      // httpClient 会将后端响应包装在 data 字段中
-      const backendResponse = response.data;
-      
-      if (backendResponse.success && backendResponse.data) {
-        await this.setAuthData(backendResponse.data.user, backendResponse.data.token);
-        return backendResponse.data.user;
+
+      if (response.success && response.data && response.data.user) {
+        await this.setAuthData(response.data.user, response.data.token);
+        return response.data.user;
       }
       
-      throw new Error(backendResponse.message || 'Login failed');
+      throw new Error(response.message || 'Login failed');
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -157,17 +154,16 @@ export class AuthStore {
    */
   async register(data: RegisterData): Promise<User> {
     try {
-      const response = await httpClient.post<AuthResponse>('/api/register', data);
+      const response = await httpClient.post<{user: User, token: string}>('/api/register', data);
       
-      // httpClient 会将后端响应包装在 data 字段中
-      const backendResponse = response.data;
-      
-      if (backendResponse.success && backendResponse.data) {
-        await this.setAuthData(backendResponse.data.user, backendResponse.data.token);
-        return backendResponse.data.user;
+      // httpClient 现在会自动处理嵌套数据结构
+      // response.data 直接是 {user: User, token: string}
+      if (response.success && response.data && response.data.user) {
+        await this.setAuthData(response.data.user, response.data.token);
+        return response.data.user;
       }
       
-      throw new Error(backendResponse.message || 'Registration failed');
+      throw new Error(response.message || 'Registration failed');
     } catch (error) {
       console.error('Registration error:', error);
       throw error;
@@ -193,27 +189,25 @@ export class AuthStore {
    */
   async fetchUserProfile(): Promise<User | null> {
     try {
-      const response = await httpClient.get<any>('/api/profile');
+      const response = await httpClient.get<User | null>('/api/profile');
       
-      // httpClient将后端响应放在data字段中，后端返回格式：{success: true, data: {...}}
-      const backendResponse = response.data;
-      
-      if (backendResponse.success) {
+      // httpClient现在会自动处理嵌套数据结构
+      // response.data 直接是用户对象或null
+      if (response.success) {
         // 如果data为null，说明用户未登录
-        if (!backendResponse.data) {
+        if (!response.data) {
           return null;
         }
         
-        // 转换后端格式到前端 User 接口
-        const backendUser = backendResponse.data;
+        // response.data 直接是用户对象
         const user: User = {
-          id: backendUser.id || 0,
-          email: backendUser.email,
-          roles: backendUser.roles || [],
-          name: backendUser.name,
-          avatar: backendUser.avatar,
-          createdAt: backendUser.createdAt,
-          lastLoginAt: backendUser.lastLoginAt
+          id: response.data.id || 0,
+          email: response.data.email,
+          roles: response.data.roles || [],
+          name: response.data.name,
+          avatar: response.data.avatar,
+          createdAt: response.data.createdAt,
+          lastLoginAt: response.data.lastLoginAt
         };
         
         this.setUser(user);

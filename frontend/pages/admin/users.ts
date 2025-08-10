@@ -3,19 +3,28 @@
  */
 
 import { httpClient } from '../../src/services/http-client';
+import { roleManager, getRoleDisplayNameSync as getRoleDisplayName } from '../../src/config/roles';
 
-export interface User {
+interface User {
     id: string;
     email: string;
     name: string;
-    phone?: string;
-    wechat_nickname?: string;
-    avatar?: string;
-    role: 'admin' | 'paid1' | 'paid2' | 'user';
+    phone: string;
+    wechatNickname?: string;
+    avatar: string;
+    role: 'admin' | 'user' | 'staff';
     status: 'active' | 'disabled';
     createdAt: string;
     lastLogin?: string;
-    roles?: string[]; // 后端返回的角色数组
+    roles: string[];
+}
+
+export interface Role {
+    id: string;
+    name: string;
+    description: string;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 export interface UserFilters {
@@ -47,23 +56,24 @@ export async function getUsersList(filters: UserFilters, page: number = 1): Prom
         if (filters.wechat) queryParams.append('wechat', filters.wechat);
         
         const url = `/admin/users${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-        console.log('Fetching users from:', url); // 添加调试日志
+        console.log('Fetching users from:', url);
         
-        const response = await httpClient.get<any>(url);
-        console.log('User list response:', response); // 添加调试日志
+        const response = await httpClient.get(url);
+        console.log('User list response:', response);
         
-        if (response.success && response.data && response.data.users) {
-            let users = response.data.users.map((user: any) => ({
+        if (response.success && response.data) {
+            // httpClient现在已经自动处理嵌套数据结构并转换字段名为驼峰
+            let users = (Array.isArray(response.data) ? response.data : response.data.users || []).map((user: any) => ({
                 id: user.id?.toString() || '',
                 email: user.email || '',
                 name: user.name || '',
                 phone: user.phone || '',
-                wechat_nickname: user.wechat_nickname || '',
+                wechatNickname: user.wechatNickname || '',
                 avatar: user.avatar || '',
                 role: (user.roles && user.roles.length > 0 ? user.roles[0] : 'user') as User['role'],
                 status: user.active ? 'active' as const : 'disabled' as const,
-                createdAt: user.created_at || new Date().toISOString(),
-                lastLogin: user.last_login_at || undefined,
+                createdAt: user.createdAt || new Date().toISOString(),
+                lastLogin: user.lastLoginAt || undefined,
                 roles: user.roles || []
             }));
             
@@ -124,14 +134,14 @@ export async function getUsersList(filters: UserFilters, page: number = 1): Prom
  */
 export async function toggleUserStatus(email: string, active: boolean): Promise<boolean> {
     try {
-        const response = await httpClient.post<any>('/admin/toggle-user', {
+        const response = await httpClient.post('/admin/toggle-user', {
             email,
             active
         });
         
         if (response.success && response.data) {
-            const backendResponse = response.data;
-            return backendResponse.success;
+            // httpClient已统一处理数据结构，直接使用success字段
+            return response.data.success;
         }
         
         return false;
@@ -146,14 +156,14 @@ export async function toggleUserStatus(email: string, active: boolean): Promise<
  */
 export async function assignRoleToUser(email: string, role: string): Promise<boolean> {
     try {
-        const response = await httpClient.post<any>('/admin/assign-role', {
+        const response = await httpClient.post('/admin/assign-role', {
             email,
             role
         });
         
         if (response.success && response.data) {
-            const backendResponse = response.data;
-            return backendResponse.success;
+            // httpClient已统一处理数据结构，直接使用success字段
+            return response.data.success;
         }
         
         return false;
@@ -168,14 +178,14 @@ export async function assignRoleToUser(email: string, role: string): Promise<boo
  */
 export async function removeRoleFromUser(email: string, role: string): Promise<boolean> {
     try {
-        const response = await httpClient.post<any>('/admin/remove-role', {
+        const response = await httpClient.post('/admin/remove-role', {
             email,
             role
         });
         
         if (response.success && response.data) {
-            const backendResponse = response.data;
-            return backendResponse.success;
+            // httpClient已统一处理数据结构，直接使用success字段
+            return response.data.success;
         }
         
         return false;
@@ -190,14 +200,14 @@ export async function removeRoleFromUser(email: string, role: string): Promise<b
  */
 export async function resetUserPassword(email: string, newPassword: string): Promise<boolean> {
     try {
-        const response = await httpClient.post<any>('/admin/reset-password', {
+        const response = await httpClient.post('/admin/reset-password', {
             email,
             new_password: newPassword
         });
         
         if (response.success && response.data) {
-            const backendResponse = response.data;
-            return backendResponse.success;
+            // httpClient已统一处理数据结构，直接使用success字段
+            return response.data.success;
         }
         
         return false;
@@ -205,19 +215,6 @@ export async function resetUserPassword(email: string, newPassword: string): Pro
         console.error('Error resetting user password:', error);
         return false;
     }
-}
-
-/**
- * 获取角色显示名称
- */
-export function getRoleDisplayName(role: User['role']): string {
-    const roleMap: Record<User['role'], string> = {
-        'admin': '管理员',
-        'paid1': 'VIP用户',
-        'paid2': '高级用户',
-        'user': '普通用户'
-    };
-    return roleMap[role];
 }
 
 /**
@@ -243,6 +240,315 @@ export function formatDate(dateString: string): string {
         hour: '2-digit',
         minute: '2-digit'
     });
+}
+
+/**
+ * 创建编辑用户模态框
+ */
+async function createEditUserModal(user: User): Promise<HTMLElement> {
+    // 确保角色数据是最新的
+    const availableRoles = await roleManager.getAllRoles();
+    
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.id = 'edit-user-modal';
+    
+    const rolesList = (user.roles || []).map(role => 
+        `<div class="flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+            <span>${getRoleDisplayName(role)}</span>
+            <button type="button" class="ml-2 text-blue-600 hover:text-blue-800" 
+                    data-action="remove-role" data-role="${role}">
+                <i class="fas fa-times text-xs"></i>
+            </button>
+        </div>`
+    ).join('');
+    
+    // 生成角色选项，排除用户已有的角色
+    const roleOptions = availableRoles
+        .filter(role => !user.roles?.includes(role.code))
+        .map(role => `<option value="${role.code}">${role.displayName}${role.description ? ` - ${role.description}` : ''}</option>`)
+        .join('');
+    
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">编辑用户</h3>
+                <button type="button" class="text-gray-400 hover:text-gray-600" id="close-modal-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-6">
+                <div class="border-b border-gray-200 pb-4">
+                    <h4 class="font-medium text-gray-900 mb-2">基本信息</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                        <div>
+                            <span class="text-gray-500">邮箱:</span>
+                            <span class="ml-2 font-medium">${user.email}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">姓名:</span>
+                            <span class="ml-2">${user.name || '未设置'}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">电话:</span>
+                            <span class="ml-2">${user.phone || '未设置'}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">微信昵称:</span>
+                            <span class="ml-2">${user.wechatNickname || '未设置'}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">当前状态:</span>
+                            <span class="ml-2">
+                                <span class="${getStatusDisplay(user.status).className}">${getStatusDisplay(user.status).label}</span>
+                            </span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">注册时间:</span>
+                            <span class="ml-2">${formatDate(user.createdAt)}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="border-b border-gray-200 pb-4">
+                    <h4 class="font-medium text-gray-900 mb-3">角色管理</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="form-label">当前角色</label>
+                            <div class="flex flex-wrap gap-2 mb-2" id="current-roles">
+                                ${rolesList}
+                                ${(!user.roles || user.roles.length === 0) ? '<span class="text-gray-400 text-sm">无角色</span>' : ''}
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="form-label">添加角色</label>
+                            <div class="flex gap-2">
+                                <select id="role-to-add" class="form-select flex-1">
+                                    <option value="">选择要添加的角色</option>
+                                    ${roleOptions}
+                                </select>
+                                <button type="button" class="btn btn-secondary" id="add-role-btn">
+                                    <i class="fas fa-plus mr-1"></i>添加
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="border-b border-gray-200 pb-4">
+                    <h4 class="font-medium text-gray-900 mb-3">密码管理</h4>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="form-label">新密码</label>
+                            <input type="password" id="new-password" class="form-input" placeholder="留空则不修改密码">
+                            <small class="text-gray-500 text-xs mt-1">最少6位字符</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" class="btn btn-secondary" id="cancel-btn">取消</button>
+                    <button type="button" class="btn btn-primary" id="save-user-btn">
+                        <i class="fas fa-save mr-2"></i>
+                        保存更改
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    return modal;
+}
+
+/**
+ * 设置编辑用户模态框事件
+ */
+function setupEditUserModal(modal: HTMLElement, user: User): void {
+    const closeBtn = modal.querySelector('#close-modal-btn') as HTMLButtonElement;
+    const cancelBtn = modal.querySelector('#cancel-btn') as HTMLButtonElement;
+    const saveBtn = modal.querySelector('#save-user-btn') as HTMLButtonElement;
+    const addRoleBtn = modal.querySelector('#add-role-btn') as HTMLButtonElement;
+    
+    // 关闭模态框函数
+    const closeModal = () => {
+        modal.remove();
+    };
+    
+    // 关闭按钮事件
+    closeBtn?.addEventListener('click', closeModal);
+    cancelBtn?.addEventListener('click', closeModal);
+    
+    // 点击背景关闭
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+    
+    // 角色移除事件
+    modal.addEventListener('click', async (e) => {
+        const target = e.target as HTMLElement;
+        const removeBtn = target.closest('[data-action="remove-role"]') as HTMLElement;
+        
+        if (removeBtn) {
+            const roleToRemove = removeBtn.dataset.role;
+            if (roleToRemove && confirm(`确定要移除角色 "${getRoleDisplayName(roleToRemove)}" 吗？`)) {
+                const success = await removeRoleFromUser(user.email, roleToRemove);
+                if (success) {
+                    (window as any).notificationService?.success('角色移除成功');
+                    
+                    // 更新用户的角色数据
+                    user.roles = user.roles?.filter(role => role !== roleToRemove) || [];
+                    
+                    // 重新刷新角色选择下拉框
+                    await refreshRoleSelector(modal, user);
+                    
+                    // 刷新用户列表
+                    await refreshUsersList();
+                } else {
+                    (window as any).notificationService?.error('角色移除失败');
+                }
+            }
+        }
+    });
+    
+    // 添加角色事件
+    addRoleBtn?.addEventListener('click', async () => {
+        const roleSelect = modal.querySelector('#role-to-add') as HTMLSelectElement;
+        const roleToAdd = roleSelect.value;
+        
+        if (!roleToAdd) {
+            (window as any).notificationService?.warning('请选择要添加的角色');
+            return;
+        }
+        
+        if (user.roles?.includes(roleToAdd)) {
+            (window as any).notificationService?.warning('用户已拥有此角色');
+            return;
+        }
+        
+        const success = await assignRoleToUser(user.email, roleToAdd);
+        if (success) {
+            (window as any).notificationService?.success('角色添加成功');
+            
+            // 更新用户的角色数据
+            user.roles = [...(user.roles || []), roleToAdd];
+            
+            // 重新刷新角色选择下拉框
+            await refreshRoleSelector(modal, user);
+            
+            // 刷新用户列表
+            await refreshUsersList();
+        } else {
+            (window as any).notificationService?.error('角色添加失败');
+        }
+    });
+    
+    // 保存按钮事件
+    saveBtn?.addEventListener('click', async () => {
+        await handleSaveUserChanges(modal, user, closeModal);
+    });
+}
+
+/**
+ * 处理保存用户更改
+ */
+async function handleSaveUserChanges(modal: HTMLElement, user: User, closeModal: () => void): Promise<void> {
+    try {
+        const passwordInput = modal.querySelector('#new-password') as HTMLInputElement;
+        const saveBtn = modal.querySelector('#save-user-btn') as HTMLButtonElement;
+        
+        // 显示保存状态
+        const originalText = saveBtn.innerHTML;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>保存中...';
+        saveBtn.disabled = true;
+        
+        let hasChanges = false;
+        let success = true;
+        
+        try {
+            // 处理密码更改
+            const newPassword = passwordInput.value.trim();
+            if (newPassword) {
+                if (newPassword.length < 6) {
+                    (window as any).notificationService?.error('密码最少6位字符');
+                    return;
+                }
+                
+                const passwordSuccess = await resetUserPassword(user.email, newPassword);
+                if (passwordSuccess) {
+                    hasChanges = true;
+                } else {
+                    success = false;
+                    (window as any).notificationService?.error('密码重置失败');
+                }
+            }
+            
+            if (success) {
+                if (hasChanges) {
+                    (window as any).notificationService?.success('用户信息更新成功');
+                    await refreshUsersList();
+                }
+                closeModal();
+            }
+        } finally {
+            // 恢复按钮状态
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+        }
+    } catch (error) {
+        console.error('Error saving user changes:', error);
+    }
+}
+
+/**
+ * 刷新角色选择器
+ */
+async function refreshRoleSelector(modal: HTMLElement, user: User): Promise<void> {
+    // 更新角色数据
+    const availableRoles = await roleManager.getAllRoles();
+    
+    // 重新生成当前角色显示
+    const currentRolesContainer = modal.querySelector('#current-roles') as HTMLElement;
+    const rolesList = (user.roles || []).map(role => 
+        `<div class="flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+            <span>${getRoleDisplayName(role)}</span>
+            <button type="button" class="ml-2 text-blue-600 hover:text-blue-800" 
+                    data-action="remove-role" data-role="${role}">
+                <i class="fas fa-times text-xs"></i>
+            </button>
+        </div>`
+    ).join('');
+    
+    currentRolesContainer.innerHTML = rolesList || '<span class="text-gray-400 text-sm">无角色</span>';
+    
+    // 重新生成角色选择下拉框
+    const roleSelect = modal.querySelector('#role-to-add') as HTMLSelectElement;
+    const roleOptions = availableRoles
+        .filter(role => !user.roles?.includes(role.code))
+        .map(role => `<option value="${role.code}">${role.displayName}${role.description ? ` - ${role.description}` : ''}</option>`)
+        .join('');
+    
+    roleSelect.innerHTML = `
+        <option value="">选择要添加的角色</option>
+        ${roleOptions}
+    `;
+}
+
+/**
+ * 显示编辑用户模态框
+ */
+async function showEditUserModal(user: User): Promise<void> {
+    const modal = await createEditUserModal(user);
+    document.body.appendChild(modal);
+    
+    // 显示模态框
+    modal.style.display = 'flex';
+    
+    // 设置事件监听器
+    setupEditUserModal(modal, user);
 }
 
 /**
@@ -280,8 +586,8 @@ function generateDesktopUserTable(users: User[]): string {
                             <td>
                                 <div class="space-y-1">
                                     ${user.phone ? `<div class="text-xs text-gray-600"><i class="fas fa-phone mr-1"></i>${user.phone}</div>` : ''}
-                                    ${user.wechat_nickname ? `<div class="text-xs text-gray-600"><i class="fab fa-weixin mr-1"></i>${user.wechat_nickname}</div>` : ''}
-                                    ${!user.phone && !user.wechat_nickname ? '<span class="text-xs text-gray-400">未填写</span>' : ''}
+                                    ${user.wechatNickname ? `<div class="text-xs text-gray-600"><i class="fab fa-weixin mr-1"></i>${user.wechatNickname}</div>` : ''}
+                                    ${!user.phone && !user.wechatNickname ? '<span class="text-xs text-gray-400">未填写</span>' : ''}
                                 </div>
                             </td>
                             <td>
@@ -337,8 +643,8 @@ function generateMobileUserList(users: User[]): string {
                         <span class="mobile-table-label">联系方式</span>
                         <div class="mobile-table-value space-y-1">
                             ${user.phone ? `<div class="text-xs text-gray-600"><i class="fas fa-phone mr-1"></i>${user.phone}</div>` : ''}
-                            ${user.wechat_nickname ? `<div class="text-xs text-gray-600"><i class="fab fa-weixin mr-1"></i>${user.wechat_nickname}</div>` : ''}
-                            ${!user.phone && !user.wechat_nickname ? '<span class="text-xs text-gray-400">未填写</span>' : ''}
+                            ${user.wechatNickname ? `<div class="text-xs text-gray-600"><i class="fab fa-weixin mr-1"></i>${user.wechatNickname}</div>` : ''}
+                            ${!user.phone && !user.wechatNickname ? '<span class="text-xs text-gray-400">未填写</span>' : ''}
                         </div>
                     </div>
                     
@@ -377,9 +683,54 @@ function generateMobileUserList(users: User[]): string {
 }
 
 /**
+ * 生成分页HTML
+ */
+function generatePaginationHTML(pagination: PaginationInfo): string {
+    return `
+        <div class="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4">
+            <div class="text-sm text-gray-700">
+                显示第 ${(pagination.currentPage - 1) * pagination.itemsPerPage + 1} - ${Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems)} 项，共 ${pagination.totalItems} 项
+            </div>
+            <div class="flex items-center space-x-2">
+                <button class="btn btn-sm btn-secondary" ${pagination.currentPage === 1 ? 'disabled' : ''} data-page="${pagination.currentPage - 1}">
+                    <i class="fas fa-chevron-left mr-1"></i>
+                    上一页
+                </button>
+                
+                ${Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                    let pageNum = i + 1;
+                    if (pagination.totalPages > 5) {
+                        if (pagination.currentPage > 3) {
+                            pageNum = pagination.currentPage - 2 + i;
+                        }
+                        if (pageNum > pagination.totalPages) {
+                            pageNum = pagination.totalPages - 4 + i;
+                        }
+                    }
+                    return `
+                        <button class="btn btn-sm ${pageNum === pagination.currentPage ? 'btn-primary' : 'btn-secondary'}" 
+                                data-page="${pageNum}">
+                            ${pageNum}
+                        </button>
+                    `;
+                }).join('')}
+                
+                <button class="btn btn-sm btn-secondary" ${pagination.currentPage === pagination.totalPages ? 'disabled' : ''} data-page="${pagination.currentPage + 1}">
+                    下一页
+                    <i class="fas fa-chevron-right ml-1"></i>
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+/**
  * 获取用户管理页面内容
  */
 export async function getUsersPageContent(): Promise<string> {
+    // 确保角色数据是最新的
+    const availableRoles = await roleManager.getAllRoles();
+    
     const defaultFilters: UserFilters = { 
         email: '', 
         name: '', 
@@ -390,185 +741,132 @@ export async function getUsersPageContent(): Promise<string> {
     };
     const { users, pagination } = await getUsersList(defaultFilters, 1);
 
+    // 生成角色筛选选项
+    const roleFilterOptions = availableRoles
+        .map(role => `<option value="${role.code}">${role.displayName}</option>`)
+        .join('');
+
     return `
-        <div class="space-y-4 lg:space-y-6 fade-in">
+        <div class="space-y-6">
             <!-- 页面标题和操作 -->
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 class="text-lg lg:text-xl font-semibold text-gray-900">用户管理</h1>
-                    <p class="text-sm text-gray-600">管理系统中的所有用户</p>
+                    <h2 class="text-2xl font-bold text-gray-900">用户管理</h2>
+                    <p class="text-gray-600 mt-1">管理系统用户和权限</p>
                 </div>
-                <button class="btn btn-primary" id="add-user-btn">
-                    <i class="fas fa-user-plus mr-2"></i>
-                    添加用户
-                </button>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <button class="btn btn-primary" onclick="handleAddUser()">
+                        <i class="fas fa-plus mr-2"></i>
+                        添加用户
+                    </button>
+                </div>
             </div>
 
-            <!-- 搜索和筛选 -->
-            <div class="card">
-                <div class="card-body">
-                    <!-- 精确查询条件 -->
+            <!-- 筛选器 -->
+            <div class="bg-white p-4 rounded-lg shadow border">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">筛选条件</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
-                        <div class="flex items-center justify-between mb-3">
-                            <label class="block text-sm font-medium text-gray-700">查询条件</label>
-                            <button type="button" id="clear-filters-btn" class="text-sm text-blue-600 hover:text-blue-800">
-                                <i class="fas fa-eraser mr-1"></i>清空条件
-                            </button>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
-                                <input type="email" 
-                                       id="email-filter"
-                                       placeholder="输入邮箱..."
-                                       class="form-input text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">姓名</label>
-                                <input type="text" 
-                                       id="name-filter"
-                                       placeholder="输入姓名..."
-                                       class="form-input text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">电话</label>
-                                <input type="text" 
-                                       id="phone-filter"
-                                       placeholder="输入电话..."
-                                       class="form-input text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">微信昵称</label>
-                                <input type="text" 
-                                       id="wechat-filter"
-                                       placeholder="输入微信昵称..."
-                                       class="form-input text-sm">
-                            </div>
-                        </div>
-                        
-                        <div class="flex flex-col sm:flex-row gap-4 items-end">
-                            <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">状态筛选</label>
-                                    <select id="status-filter" class="form-select text-sm">
-                                        <option value="all">所有状态</option>
-                                        <option value="active">活跃</option>
-                                        <option value="disabled">禁用</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">角色筛选</label>
-                                    <select id="role-filter" class="form-select text-sm">
-                                        <option value="all">所有角色</option>
-                                        <option value="admin">管理员</option>
-                                        <option value="paid1">VIP用户</option>
-                                        <option value="paid2">高级用户</option>
-                                        <option value="user">普通用户</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div class="flex gap-2">
-                                <button type="button" id="search-btn" class="btn btn-primary">
-                                    <i class="fas fa-search mr-2"></i>搜索
-                                </button>
-                                <button type="button" id="refresh-btn" class="btn btn-secondary">
-                                    <i class="fas fa-sync-alt mr-2"></i>刷新
-                                </button>
-                            </div>
-                        </div>
+                        <label class="form-label">邮箱</label>
+                        <input type="text" id="filter-email" class="form-input" placeholder="搜索邮箱">
                     </div>
+                    <div>
+                        <label class="form-label">姓名</label>
+                        <input type="text" id="filter-name" class="form-input" placeholder="搜索姓名">
+                    </div>
+                    <div>
+                        <label class="form-label">电话</label>
+                        <input type="text" id="filter-phone" class="form-input" placeholder="搜索电话">
+                    </div>
+                    <div>
+                        <label class="form-label">微信昵称</label>
+                        <input type="text" id="filter-wechat" class="form-input" placeholder="搜索微信昵称">
+                    </div>
+                    <div>
+                        <label class="form-label">状态</label>
+                        <select id="filter-status" class="form-select">
+                            <option value="all">全部状态</option>
+                            <option value="active">活跃</option>
+                            <option value="disabled">禁用</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">角色</label>
+                        <select id="filter-role" class="form-select">
+                            <option value="all">全部角色</option>
+                            ${roleFilterOptions}
+                        </select>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2 mt-4">
+                    <button class="btn btn-primary" id="search-btn">
+                        <i class="fas fa-search mr-2"></i>
+                        搜索
+                    </button>
+                    <button class="btn btn-secondary" id="refresh-btn">
+                        <i class="fas fa-sync-alt mr-2"></i>
+                        刷新
+                    </button>
+                    <button class="btn btn-secondary" id="clear-filters-btn">
+                        <i class="fas fa-times mr-2"></i>
+                        清空筛选
+                    </button>
                 </div>
             </div>
 
             <!-- 用户列表 -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="text-lg font-medium text-gray-900">用户列表</h2>
-                    <p class="text-sm text-gray-500 mt-1">共 ${pagination.totalItems} 个用户</p>
-                </div>
-                <div class="card-body p-0">
-                    <div id="users-table-container">
-                        ${generateDesktopUserTable(users)}
-                        ${generateMobileUserList(users)}
+            <div class="bg-white rounded-lg shadow border">
+                <div class="p-4 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-medium text-gray-900">用户列表</h3>
+                        <div class="text-sm text-gray-500">
+                            共 ${pagination.totalItems} 个用户
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- 分页 -->
-            <div class="flex items-center justify-between" id="pagination-container">
-                <div class="text-sm text-gray-700">
-                    显示第 ${(pagination.currentPage - 1) * pagination.itemsPerPage + 1} - ${Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems)} 项，共 ${pagination.totalItems} 项
+                
+                <div id="users-table-container">
+                    ${generateDesktopUserTable(users)}
+                    ${generateMobileUserList(users)}
                 </div>
-                <div class="flex items-center space-x-2">
-                    <button class="btn btn-sm btn-secondary" ${pagination.currentPage === 1 ? 'disabled' : ''} data-page="${pagination.currentPage - 1}">
-                        上一页
-                    </button>
-                    <span class="px-3 py-1 text-sm text-gray-600">第 ${pagination.currentPage} / ${pagination.totalPages} 页</span>
-                    <button class="btn btn-sm btn-secondary" ${pagination.currentPage === pagination.totalPages ? 'disabled' : ''} data-page="${pagination.currentPage + 1}">
-                        下一页
-                    </button>
+                
+                <div class="p-4 border-t border-gray-200">
+                    <div id="pagination-container">
+                        ${generatePaginationHTML(pagination)}
+                    </div>
                 </div>
             </div>
         </div>
     `;
 }
 
+// 导出函数供外部使用
+(window as any).showEditUserModal = showEditUserModal;
+
 /**
  * 初始化用户管理页面
  */
 export async function initializeUsersPage(): Promise<void> {
-    try {
-        // 设置筛选功能
-        setupFilters();
-        
-        // 设置用户操作事件
-        setupUserActions();
-        
-        // 设置分页功能
-        setupPagination();
-        
-        // 设置新的按钮事件
-        setupSearchButtons();
-        
-        console.log('Users page initialized with TypeScript');
-    } catch (error) {
-        console.error('Error initializing users page:', error);
-    }
+    // 初始化角色系统
+    await roleManager.refreshRoles();
+    
+    setupFilters();
+    setupUserActions();
+    setupPagination();
+    setupSearchButtons();
 }
 
 /**
  * 设置筛选功能
  */
 function setupFilters(): void {
-    const statusFilter = document.getElementById('status-filter') as HTMLSelectElement;
-    const roleFilter = document.getElementById('role-filter') as HTMLSelectElement;
-    const emailInput = document.getElementById('email-filter') as HTMLInputElement;
-    const nameInput = document.getElementById('name-filter') as HTMLInputElement;
-    const phoneInput = document.getElementById('phone-filter') as HTMLInputElement;
-    const wechatInput = document.getElementById('wechat-filter') as HTMLInputElement;
-    
-    // 为所有筛选器添加事件监听
-    [statusFilter, roleFilter].forEach(filter => {
-        if (filter) {
-            filter.addEventListener('change', async () => {
-                await refreshUsersList(1);
-            });
-        }
-    });
-    
-    // 为输入框添加延迟搜索
-    [emailInput, nameInput, phoneInput, wechatInput].forEach(input => {
-        if (input) {
-            let timeout: NodeJS.Timeout;
-            input.addEventListener('input', () => {
-                clearTimeout(timeout);
-                timeout = setTimeout(async () => {
-                    await refreshUsersList(1);
-                }, 500);
-            });
-        }
+    const filterInputs = document.querySelectorAll('#filter-email, #filter-name, #filter-phone, #filter-wechat');
+    filterInputs.forEach(input => {
+        input.addEventListener('keypress', (e) => {
+            if ((e as KeyboardEvent).key === 'Enter') {
+                handleSearch();
+            }
+        });
     });
 }
 
@@ -579,11 +877,6 @@ function setupUserActions(): void {
     const tableContainer = document.getElementById('users-table-container');
     if (tableContainer) {
         tableContainer.addEventListener('click', handleUserAction);
-    }
-    
-    const addUserBtn = document.getElementById('add-user-btn');
-    if (addUserBtn) {
-        addUserBtn.addEventListener('click', handleAddUser);
     }
 }
 
@@ -603,19 +896,11 @@ function setupPagination(): void {
 function setupSearchButtons(): void {
     const searchBtn = document.getElementById('search-btn');
     const refreshBtn = document.getElementById('refresh-btn');
-    const clearFiltersBtn = document.getElementById('clear-filters-btn');
-    
-    if (searchBtn) {
-        searchBtn.addEventListener('click', handleSearch);
-    }
-    
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', handleRefresh);
-    }
-    
-    if (clearFiltersBtn) {
-        clearFiltersBtn.addEventListener('click', handleClearFilters);
-    }
+    const clearBtn = document.getElementById('clear-filters-btn');
+
+    searchBtn?.addEventListener('click', handleSearch);
+    refreshBtn?.addEventListener('click', handleRefresh);
+    clearBtn?.addEventListener('click', handleClearFilters);
 }
 
 /**
@@ -636,22 +921,20 @@ async function handleRefresh(): Promise<void> {
  * 处理清空筛选条件
  */
 async function handleClearFilters(): Promise<void> {
-    // 清空所有输入框
-    const emailInput = document.getElementById('email-filter') as HTMLInputElement;
-    const nameInput = document.getElementById('name-filter') as HTMLInputElement;
-    const phoneInput = document.getElementById('phone-filter') as HTMLInputElement;
-    const wechatInput = document.getElementById('wechat-filter') as HTMLInputElement;
-    const statusFilter = document.getElementById('status-filter') as HTMLSelectElement;
-    const roleFilter = document.getElementById('role-filter') as HTMLSelectElement;
-    
+    const emailInput = document.getElementById('filter-email') as HTMLInputElement;
+    const nameInput = document.getElementById('filter-name') as HTMLInputElement;
+    const phoneInput = document.getElementById('filter-phone') as HTMLInputElement;
+    const wechatInput = document.getElementById('filter-wechat') as HTMLInputElement;
+    const statusSelect = document.getElementById('filter-status') as HTMLSelectElement;
+    const roleSelect = document.getElementById('filter-role') as HTMLSelectElement;
+
     if (emailInput) emailInput.value = '';
     if (nameInput) nameInput.value = '';
     if (phoneInput) phoneInput.value = '';
     if (wechatInput) wechatInput.value = '';
-    if (statusFilter) statusFilter.value = 'all';
-    if (roleFilter) roleFilter.value = 'all';
-    
-    // 刷新列表
+    if (statusSelect) statusSelect.value = 'all';
+    if (roleSelect) roleSelect.value = 'all';
+
     await refreshUsersList(1);
 }
 
@@ -659,8 +942,8 @@ async function handleClearFilters(): Promise<void> {
  * 获取当前页码
  */
 function getCurrentPage(): number {
-    // 从分页容器中获取当前页码，默认为1
-    return 1;
+    const activePageBtn = document.querySelector('[data-page].btn-primary') as HTMLElement;
+    return activePageBtn ? parseInt(activePageBtn.dataset.page || '1') : 1;
 }
 
 /**
@@ -689,249 +972,18 @@ async function handleUserAction(event: Event): Promise<void> {
 }
 
 /**
- * 显示编辑用户模态框
- */
-function showEditUserModal(user: User): void {
-    const modal = createEditUserModal(user);
-    document.body.appendChild(modal);
-    
-    // 显示模态框
-    modal.style.display = 'flex';
-    
-    // 设置事件监听器
-    setupEditUserModal(modal, user);
-}
-
-/**
- * 创建编辑用户模态框
- */
-function createEditUserModal(user: User): HTMLElement {
-    const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-    modal.id = 'edit-user-modal';
-    
-    modal.innerHTML = `
-        <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-semibold text-gray-900">编辑用户</h3>
-                <button type="button" class="text-gray-400 hover:text-gray-600" id="close-modal-btn">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <div class="space-y-4">
-                <!-- 用户基本信息 -->
-                <div class="border-b border-gray-200 pb-4">
-                    <h4 class="font-medium text-gray-900 mb-2">基本信息</h4>
-                    <div class="space-y-3 text-sm">
-                        <div>
-                            <span class="text-gray-500">邮箱:</span>
-                            <span class="ml-2 font-medium">${user.email}</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-500">姓名:</span>
-                            <span class="ml-2">${user.name || '未设置'}</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-500">电话:</span>
-                            <span class="ml-2">${user.phone || '未设置'}</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-500">微信昵称:</span>
-                            <span class="ml-2">${user.wechat_nickname || '未设置'}</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-500">当前状态:</span>
-                            <span class="ml-2">
-                                <span class="${getStatusDisplay(user.status).className}">${getStatusDisplay(user.status).label}</span>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 角色管理 -->
-                <div class="border-b border-gray-200 pb-4">
-                    <h4 class="font-medium text-gray-900 mb-3">角色管理</h4>
-                    <div class="space-y-3">
-                        <div>
-                            <label class="form-label">当前角色</label>
-                            <select id="user-role-select" class="form-select">
-                                <option value="user" ${user.role === 'user' ? 'selected' : ''}>普通用户</option>
-                                <option value="paid1" ${user.role === 'paid1' ? 'selected' : ''}>VIP用户</option>
-                                <option value="paid2" ${user.role === 'paid2' ? 'selected' : ''}>高级用户</option>
-                                <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>管理员</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 密码重置 -->
-                <div class="border-b border-gray-200 pb-4">
-                    <h4 class="font-medium text-gray-900 mb-3">密码管理</h4>
-                    <div class="space-y-3">
-                        <div>
-                            <label class="form-label">新密码</label>
-                            <input type="password" id="new-password" class="form-input" placeholder="留空则不修改密码">
-                            <small class="text-gray-500 text-xs mt-1">最少6位字符</small>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 操作按钮 -->
-                <div class="flex justify-end space-x-3 pt-4">
-                    <button type="button" class="btn btn-secondary" id="cancel-btn">取消</button>
-                    <button type="button" class="btn btn-primary" id="save-user-btn">
-                        <i class="fas fa-save mr-2"></i>
-                        保存更改
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    return modal;
-}
-
-/**
- * 设置编辑用户模态框事件
- */
-function setupEditUserModal(modal: HTMLElement, user: User): void {
-    const closeBtn = modal.querySelector('#close-modal-btn') as HTMLButtonElement;
-    const cancelBtn = modal.querySelector('#cancel-btn') as HTMLButtonElement;
-    const saveBtn = modal.querySelector('#save-user-btn') as HTMLButtonElement;
-    
-    // 关闭模态框函数
-    const closeModal = () => {
-        modal.remove();
-    };
-    
-    // 关闭按钮事件
-    closeBtn?.addEventListener('click', closeModal);
-    cancelBtn?.addEventListener('click', closeModal);
-    
-    // 点击背景关闭
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            closeModal();
-        }
-    });
-    
-    // 保存按钮事件
-    saveBtn?.addEventListener('click', async () => {
-        await handleSaveUserChanges(modal, user, closeModal);
-    });
-}
-
-/**
- * 处理保存用户更改
- */
-async function handleSaveUserChanges(modal: HTMLElement, user: User, closeModal: () => void): Promise<void> {
-    try {
-        const roleSelect = modal.querySelector('#user-role-select') as HTMLSelectElement;
-        const passwordInput = modal.querySelector('#new-password') as HTMLInputElement;
-        const saveBtn = modal.querySelector('#save-user-btn') as HTMLButtonElement;
-        
-        // 显示保存状态
-        const originalText = saveBtn.innerHTML;
-        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>保存中...';
-        saveBtn.disabled = true;
-        
-        let hasChanges = false;
-        let success = true;
-        const errors: string[] = [];
-        
-        try {
-            // 处理角色更改
-            const newRole = roleSelect.value as User['role'];
-            if (newRole !== user.role) {
-                // 先移除旧角色，再分配新角色
-                if (user.role !== 'user') {
-                    const removeSuccess = await removeRoleFromUser(user.email, user.role);
-                    if (!removeSuccess) {
-                        errors.push('移除旧角色失败');
-                        success = false;
-                    }
-                }
-                
-                if (success && newRole !== 'user') {
-                    const assignSuccess = await assignRoleToUser(user.email, newRole);
-                    if (!assignSuccess) {
-                        errors.push('分配新角色失败');
-                        success = false;
-                    }
-                }
-                
-                if (success) {
-                    hasChanges = true;
-                }
-            }
-            
-            // 处理密码重置
-            const newPassword = passwordInput.value.trim();
-            if (newPassword) {
-                if (newPassword.length < 6) {
-                    errors.push('密码长度至少为6位');
-                    success = false;
-                } else {
-                    const resetSuccess = await resetUserPassword(user.email, newPassword);
-                    if (!resetSuccess) {
-                        errors.push('重置密码失败');
-                        success = false;
-                    } else {
-                        hasChanges = true;
-                    }
-                }
-            }
-            
-            // 显示结果
-            if (success) {
-                if (hasChanges) {
-                    if ((window as any).notificationService) {
-                        (window as any).notificationService.success('用户信息更新成功');
-                    }
-                    closeModal();
-                    await refreshUsersList();
-                } else {
-                    if ((window as any).notificationService) {
-                        (window as any).notificationService.info('没有检测到更改');
-                    }
-                    closeModal();
-                }
-            } else {
-                if ((window as any).notificationService) {
-                    (window as any).notificationService.error('更新失败：' + errors.join('，'));
-                }
-            }
-            
-        } finally {
-            // 恢复按钮状态
-            saveBtn.innerHTML = originalText;
-            saveBtn.disabled = false;
-        }
-        
-    } catch (error) {
-        console.error('Error saving user changes:', error);
-        if ((window as any).notificationService) {
-            (window as any).notificationService.error('保存失败，请重试');
-        }
-    }
-}
-
-/**
  * 处理编辑用户
  */
 async function handleEditUser(userId: string): Promise<void> {
-    // 找到当前用户信息
+    // 根据用户ID查找用户数据
     const filters = getCurrentFilters();
-    const { users } = await getUsersList(filters, 1);
+    const { users } = await getUsersList(filters, getCurrentPage());
     const user = users.find(u => u.id === userId);
     
     if (user) {
-        showEditUserModal(user);
+        await showEditUserModal(user);
     } else {
-        if ((window as any).notificationService) {
-            (window as any).notificationService.error('未找到用户信息');
-        }
+        (window as any).notificationService?.error('用户不存在');
     }
 }
 
@@ -939,40 +991,25 @@ async function handleEditUser(userId: string): Promise<void> {
  * 处理切换用户状态
  */
 async function handleToggleUserStatus(userId: string): Promise<void> {
-    try {
-        // 找到当前用户信息
-        const filters = getCurrentFilters();
-        const { users } = await getUsersList(filters, 1);
-        const user = users.find(u => u.id === userId);
-        
-        if (!user) {
-            if ((window as any).notificationService) {
-                (window as any).notificationService.error('未找到用户信息');
-            }
-            return;
-        }
-        
-        const newStatus = user.status === 'active' ? false : true;
-        const action = newStatus ? '启用' : '禁用';
-        
-        if (confirm(`确定要${action}用户 ${user.email} 吗？`)) {
-            const success = await toggleUserStatus(user.email, newStatus);
-            
-            if (success) {
-                if ((window as any).notificationService) {
-                    (window as any).notificationService.success(`用户${action}成功`);
-                }
-                await refreshUsersList();
-            } else {
-                if ((window as any).notificationService) {
-                    (window as any).notificationService.error(`用户${action}失败`);
-                }
-            }
-        }
-    } catch (error) {
-        console.error('Error toggling user status:', error);
-        if ((window as any).notificationService) {
-            (window as any).notificationService.error('操作失败，请重试');
+    const filters = getCurrentFilters();
+    const { users } = await getUsersList(filters, getCurrentPage());
+    const user = users.find(u => u.id === userId);
+    
+    if (!user) {
+        (window as any).notificationService?.error('用户不存在');
+        return;
+    }
+    
+    const newStatus = user.status === 'active' ? false : true;
+    const action = newStatus ? '启用' : '禁用';
+    
+    if (confirm(`确定要${action}用户 ${user.email} 吗？`)) {
+        const success = await toggleUserStatus(user.email, newStatus);
+        if (success) {
+            (window as any).notificationService?.success(`用户${action}成功`);
+            await refreshUsersList();
+        } else {
+            (window as any).notificationService?.error(`用户${action}失败`);
         }
     }
 }
@@ -981,17 +1018,14 @@ async function handleToggleUserStatus(userId: string): Promise<void> {
  * 处理删除用户（暂不实现，显示提示）
  */
 async function handleDeleteUser(userId: string): Promise<void> {
-    if ((window as any).notificationService) {
-        (window as any).notificationService.warning('删除用户功能暂未实现，请联系系统管理员');
-    }
+    (window as any).notificationService?.warning('删除用户功能暂未开放');
 }
 
 /**
  * 处理添加用户
  */
 function handleAddUser(): void {
-    console.log('添加新用户');
-    // 实现添加用户逻辑
+    (window as any).notificationService?.info('添加用户功能正在开发中');
 }
 
 /**
@@ -1002,7 +1036,7 @@ async function handlePaginationClick(event: Event): Promise<void> {
     const button = target.closest('[data-page]') as HTMLElement;
     
     if (button && !button.hasAttribute('disabled')) {
-        const page = parseInt(button.dataset.page!);
+        const page = parseInt(button.dataset.page || '1');
         await refreshUsersList(page);
     }
 }
@@ -1011,20 +1045,20 @@ async function handlePaginationClick(event: Event): Promise<void> {
  * 获取当前筛选条件
  */
 function getCurrentFilters(): UserFilters {
-    const emailInput = document.getElementById('email-filter') as HTMLInputElement;
-    const nameInput = document.getElementById('name-filter') as HTMLInputElement;
-    const phoneInput = document.getElementById('phone-filter') as HTMLInputElement;
-    const wechatInput = document.getElementById('wechat-filter') as HTMLInputElement;
-    const statusFilter = document.getElementById('status-filter') as HTMLSelectElement;
-    const roleFilter = document.getElementById('role-filter') as HTMLSelectElement;
-    
+    const emailInput = document.getElementById('filter-email') as HTMLInputElement;
+    const nameInput = document.getElementById('filter-name') as HTMLInputElement;
+    const phoneInput = document.getElementById('filter-phone') as HTMLInputElement;
+    const wechatInput = document.getElementById('filter-wechat') as HTMLInputElement;
+    const statusSelect = document.getElementById('filter-status') as HTMLSelectElement;
+    const roleSelect = document.getElementById('filter-role') as HTMLSelectElement;
+
     return {
         email: emailInput?.value || '',
         name: nameInput?.value || '',
         phone: phoneInput?.value || '',
         wechat: wechatInput?.value || '',
-        status: (statusFilter?.value as UserFilters['status']) || 'all',
-        role: (roleFilter?.value as UserFilters['role']) || 'all'
+        status: (statusSelect?.value as UserFilters['status']) || 'all',
+        role: (roleSelect?.value as UserFilters['role']) || 'all'
     };
 }
 
@@ -1036,35 +1070,28 @@ async function refreshUsersList(page: number = 1): Promise<void> {
         const filters = getCurrentFilters();
         const { users, pagination } = await getUsersList(filters, page);
         
+        // 更新表格内容
         const tableContainer = document.getElementById('users-table-container');
-        const paginationContainer = document.getElementById('pagination-container');
-        
         if (tableContainer) {
             tableContainer.innerHTML = generateDesktopUserTable(users) + generateMobileUserList(users);
         }
         
+        // 更新分页
+        const paginationContainer = document.getElementById('pagination-container');
         if (paginationContainer) {
-            paginationContainer.innerHTML = `
-                <div class="text-sm text-gray-700">
-                    显示第 ${(pagination.currentPage - 1) * pagination.itemsPerPage + 1} - ${Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems)} 项，共 ${pagination.totalItems} 项
-                </div>
-                <div class="flex items-center space-x-2">
-                    <button class="btn btn-sm btn-secondary" ${pagination.currentPage === 1 ? 'disabled' : ''} data-page="${pagination.currentPage - 1}">
-                        上一页
-                    </button>
-                    <span class="px-3 py-1 text-sm text-gray-600">第 ${pagination.currentPage} / ${pagination.totalPages} 页</span>
-                    <button class="btn btn-sm btn-secondary" ${pagination.currentPage === pagination.totalPages ? 'disabled' : ''} data-page="${pagination.currentPage + 1}">
-                        下一页
-                    </button>
-                </div>
-            `;
+            paginationContainer.innerHTML = generatePaginationHTML(pagination);
         }
         
-        // 重新设置事件监听器
+        // 重新绑定事件
         setupUserActions();
         setupPagination();
         
     } catch (error) {
         console.error('Error refreshing users list:', error);
+        (window as any).notificationService?.error('刷新用户列表失败');
     }
 }
+
+// 导出全局函数
+(window as any).handleAddUser = handleAddUser;
+(window as any).refreshUsersList = refreshUsersList;
