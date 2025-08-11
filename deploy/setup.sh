@@ -289,7 +289,6 @@ function prepare_runtime_environment() {
     echo "🔐 设置上传目录权限给 $SERVICE_USER"
     sudo chown -R $SERVICE_USER:$SERVICE_USER "$UPLOAD_DIR"
     sudo chmod 755 "$UPLOAD_DIR"
-    sudo chmod 755 "$UPLOAD_DIR"
 
     ## 配置目录权限（保护敏感文件）
     if [ -d "$CONFIG_DIR" ]; then
@@ -324,33 +323,6 @@ function prepare_runtime_environment() {
     fi
 
     echo "✅ 运行环境准备完成！"
-}
-
-# 执行完整部署或更新
-
-# 初始化管理员用户
-}
-
-# 配置Flask应用日志
-function setup_flask_logging() {
-    echo ">>> 配置Flask应用日志..."
-    
-    # 确保日志目录存在
-    local LOG_APP_DIR="/var/log/easyaussie/app"
-    if [ ! -d "$LOG_APP_DIR" ]; then
-        echo "📁 创建应用日志目录..."
-        sudo mkdir -p "$LOG_APP_DIR"
-        sudo chown -R www-data:www-data "$LOG_APP_DIR"
-        sudo chmod -R 755 "$LOG_APP_DIR"
-    fi
-    
-    # 更新Flask应用以使用增强的日志配置（按天轮转）
-    echo "🔧 升级Flask应用日志配置为按天轮转..."
-    python3 "$PROJECT_PATH/deploy/update_flask_app.py" || {
-        echo "⚠️ Flask应用日志配置更新失败，使用原有配置..."
-    }
-    
-    echo "✅ Flask日志配置完成"
 }
 
 # 执行完整部署或更新
