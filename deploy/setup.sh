@@ -55,14 +55,68 @@ function update_code() {
     git pull origin master || { echo "❌ 代码更新失败"; exit 1; }
 }
 
-# 数据迁移
+# 数据库备份
+function backup_database() {
+    echo ">>> 创建数据库备份..."
+    
+    local DB_FILE="$PROJECT_PATH/backend/app.db"
+    local BACKUP_DIR="$PROJECT_PATH/backups"
+    local TIMESTAMP=$(date '+%Y%m%d_%H%M%S')
+    local BACKUP_FILE="$BACKUP_DIR/app_db_backup_$TIMESTAMP.db"
+    
+    # 创建备份目录
+    if [ ! -d "$BACKUP_DIR" ]; then
+        echo "📁 创建备份目录..."
+        mkdir -p "$BACKUP_DIR"
+    fi
+    
+    # 备份数据库
+    if [ -f "$DB_FILE" ]; then
+        echo "💾 备份数据库到: $BACKUP_FILE"
+        cp "$DB_FILE" "$BACKUP_FILE" || {
+            echo "⚠️ 数据库备份失败，但继续执行..."
+        }
+        
+        # 保留最近10个备份
+        echo "🧹 清理旧备份文件..."
+        find "$BACKUP_DIR" -name "app_db_backup_*.db" -type f | sort -r | tail -n +11 | xargs rm -f 2>/dev/null || true
+        
+        echo "✅ 数据库备份完成"
+    else
+        echo "⚠️ 数据库文件不存在，跳过备份"
+    fi
+}
+
+# 数据迁移（智能版本）
 function run_migrations() {
-    echo ">>> 正在执行数据库迁移..."
+    echo ">>> 正在执行智能数据库迁移..."
     cd $PROJECT_PATH || exit
     source $VENV_PATH/bin/activate || { echo "❌ 激活虚拟环境失败"; exit 1; }
 
     export FLASK_APP=backend.app:create_app
     export FLASK_ENV=production
+
+    # 检查数据库连接
+    echo "🔗 检查数据库连接..."
+    if ! python3 -c "
+import sys
+sys.path.insert(0, '$PROJECT_PATH')
+try:
+    from backend.app import create_app
+    app = create_app()
+    with app.app_context():
+        from backend.app.models import db
+        db.engine.execute('SELECT 1')
+    print('✅ 数据库连接正常')
+except Exception as e:
+    print(f'❌ 数据库连接失败: {e}')
+    sys.exit(1)
+"; then
+        echo "数据库连接验证成功"
+    else
+        echo "❌ 数据库连接失败，终止迁移"
+        exit 1
+    fi
 
     # 检查migrations目录是否存在
     if [ ! -d "$PROJECT_PATH/migrations" ]; then
@@ -72,38 +126,60 @@ function run_migrations() {
         echo "🔄 生成初始迁移脚本..."
         flask db migrate -m "Initial migration" || { echo '❌ 生成初始迁移失败'; exit 1; }
     else
-        echo "📂 迁移目录已存在，检查是否有新的迁移..."
-        # 只有在有代码更新时才尝试生成新迁移
-        echo "⚠️ 跳过自动生成迁移脚本，使用现有迁移文件"
+        echo "📂 迁移目录已存在，检测模型变更..."
+        
+        # 检查当前数据库版本
+        CURRENT_VERSION=$(flask db current 2>/dev/null || echo "无版本信息")
+        echo "📊 当前数据库版本: $CURRENT_VERSION"
+        
+        # 尝试生成新的迁移（检测模型变更）
+        echo "🔍 检测模型变更..."
+        TIMESTAMP=$(date '+%Y%m%d_%H%M%S')
+        MIGRATE_OUTPUT=$(flask db migrate -m "Auto migration $TIMESTAMP" 2>&1)
+        MIGRATE_EXIT_CODE=$?
+        
+        echo "$MIGRATE_OUTPUT"
+        
+        # 分析迁移输出
+        if echo "$MIGRATE_OUTPUT" | grep -q "No changes"; then
+            echo "✅ 模型无变化，无需生成新迁移"
+        elif [ $MIGRATE_EXIT_CODE -eq 0 ]; then
+            echo "🔄 检测到模型变更，已生成新的迁移文件"
+            
+            # 在应用迁移前备份数据库
+            echo "🛡️ 应用迁移前备份数据库..."
+            backup_database
+        else
+            echo "⚠️ 迁移生成可能有问题，但继续执行升级..."
+        fi
     fi
 
     echo "⏫ 执行数据库升级..."
-    flask db upgrade || { echo '❌ 数据库升级失败'; exit 1; }
+    flask db upgrade || { 
+        echo "❌ 数据库升级失败"
+        
+        # 尝试修复常见问题
+        echo "🔧 尝试修复数据库问题..."
+        flask db stamp head 2>/dev/null && {
+            echo "📌 重新标记数据库版本"
+            flask db upgrade || {
+                echo "❌ 修复失败，请手动检查"
+                exit 1
+            }
+        } || {
+            echo "❌ 无法修复，请手动检查"
+            exit 1
+        }
+    }
+
+    # 验证升级结果
+    echo "✅ 验证迁移结果..."
+    NEW_VERSION=$(flask db current 2>/dev/null || echo "获取版本失败")
+    echo "📊 升级后版本: $NEW_VERSION"
 
     echo "✅ 数据库迁移完成"
 }
 
-# 初始化管理员用户
-function init_admin_user() {
-    echo ">>> 检查并创建管理员用户..."
-    cd $PROJECT_PATH || exit
-    source $VENV_PATH/bin/activate || { echo "❌ 激活虚拟环境失败"; exit 1; }
-
-    export FLASK_APP=backend.app:create_app
-    export FLASK_ENV=production
-
-    # 检查是否存在初始化脚本
-    if [ -f "$PROJECT_PATH/backend/scripts/init_admin.py" ]; then
-        echo "🔧 运行管理员初始化脚本..."
-        python $PROJECT_PATH/backend/scripts/init_admin.py || { 
-            echo "⚠️ 管理员初始化失败，可能管理员已存在"; 
-        }
-    else
-        echo "⚠️ 未找到管理员初始化脚本，跳过管理员创建"
-    fi
-
-    echo "✅ 管理员用户检查完成"
-}
 
 # 前端构建（TypeScript 编译）
 function build_frontend() {
@@ -179,6 +255,7 @@ function prepare_runtime_environment() {
     DB_FILE="/var/www/EasyAussie/backend/app.db"
     DB_DIR="/var/www/EasyAussie/backend"
     CONFIG_DIR="/var/www/EasyAussie/backend/config"
+    BACKUP_DIR="/var/www/EasyAussie/backups"
 
     echo "==================== 🔧 准备运行环境（权限 & 目录） ===================="
 
@@ -188,9 +265,20 @@ function prepare_runtime_environment() {
         echo "➕ 创建日志目录..."
         sudo mkdir -p "$LOG_DIR"
     fi
+    
     echo "🔐 设置日志目录权限给 $SERVICE_USER"
     sudo chown -R $SERVICE_USER:$SERVICE_USER "$LOG_DIR"
-    sudo chmod 755 "$LOG_DIR"
+    sudo chmod -R 755 "$LOG_DIR"
+
+    ## 备份目录
+    echo "📁 检查备份目录: $BACKUP_DIR"
+    if [ ! -d "$BACKUP_DIR" ]; then
+        echo "➕ 创建备份目录..."
+        sudo mkdir -p "$BACKUP_DIR"
+    fi
+    echo "🔐 设置备份目录权限给 $SERVICE_USER"
+    sudo chown -R $SERVICE_USER:$SERVICE_USER "$BACKUP_DIR"
+    sudo chmod 755 "$BACKUP_DIR"
 
     ## 上传目录
     echo "📁 检查上传目录: $UPLOAD_DIR"
@@ -200,6 +288,7 @@ function prepare_runtime_environment() {
     fi
     echo "🔐 设置上传目录权限给 $SERVICE_USER"
     sudo chown -R $SERVICE_USER:$SERVICE_USER "$UPLOAD_DIR"
+    sudo chmod 755 "$UPLOAD_DIR"
     sudo chmod 755 "$UPLOAD_DIR"
 
     ## 配置目录权限（保护敏感文件）
@@ -237,7 +326,32 @@ function prepare_runtime_environment() {
     echo "✅ 运行环境准备完成！"
 }
 
+# 执行完整部署或更新
 
+# 初始化管理员用户
+}
+
+# 配置Flask应用日志
+function setup_flask_logging() {
+    echo ">>> 配置Flask应用日志..."
+    
+    # 确保日志目录存在
+    local LOG_APP_DIR="/var/log/easyaussie/app"
+    if [ ! -d "$LOG_APP_DIR" ]; then
+        echo "📁 创建应用日志目录..."
+        sudo mkdir -p "$LOG_APP_DIR"
+        sudo chown -R www-data:www-data "$LOG_APP_DIR"
+        sudo chmod -R 755 "$LOG_APP_DIR"
+    fi
+    
+    # 更新Flask应用以使用增强的日志配置（按天轮转）
+    echo "🔧 升级Flask应用日志配置为按天轮转..."
+    python3 "$PROJECT_PATH/deploy/update_flask_app.py" || {
+        echo "⚠️ Flask应用日志配置更新失败，使用原有配置..."
+    }
+    
+    echo "✅ Flask日志配置完成"
+}
 
 # 执行完整部署或更新
 if [ $# -eq 0 ]; then
@@ -258,7 +372,6 @@ else
             prepare_runtime_environment
             build_frontend
             run_migrations
-            init_admin_user
             restart_services
             ;;
         --restart)
@@ -283,3 +396,21 @@ else
 fi
 
 echo "✅ === 部署完成 === ✅"
+
+# 显示部署后信息
+echo ""
+echo "🌐 服务信息:"
+echo "   应用地址: http://your-domain.com"
+echo "   服务状态: sudo systemctl status $SERVICE_NAME"
+echo ""
+echo "📋 日志信息:"
+echo "   应用日志: tail -f /var/log/easyaussie/app.log"
+echo "   数据库日志: tail -f /var/log/easyaussie/database.log"
+echo "   服务日志: sudo journalctl -u $SERVICE_NAME -f"
+echo ""
+echo "🔧 管理命令:"
+echo "   重启服务: sudo systemctl restart $SERVICE_NAME"
+echo "   查看状态: sudo systemctl status $SERVICE_NAME"
+echo "   查看备份: ls -la $PROJECT_PATH/backups/"
+echo ""
+echo "💡 提示: 日志配置由应用程序 __init__.py 管理"
