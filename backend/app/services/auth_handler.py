@@ -82,8 +82,8 @@ def handle_update_profile(user, data):
         # 更新用户信息
         if 'name' in data:
             user.name = data['name']
-        if 'wechatNickname' in data:
-            user.wechat_nickname = data['wechatNickname']
+        if 'wechat_nickname' in data:
+            user.wechat_nickname = data['wechat_nickname']
         if 'phone' in data:
             user.phone = data['phone']
         
